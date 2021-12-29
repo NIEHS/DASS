@@ -68,6 +68,7 @@ misc/
 renv/.gitignore
 /tests
 www/user_guide.Rmd
+www/user_guide.md
 www/user_guide.out
 www/user_guide.aux
 www/user_guide.bib

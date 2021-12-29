@@ -40,6 +40,10 @@ ui <- fluidPage(
       #shiny-notification-panel {
       top:0;
       }
+      #usr_dt .dataTables_scrollBody,
+      #dt_results .dataTables_scrollBody{
+      height: 50vh;
+      }
       "
     )
   ),

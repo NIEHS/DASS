@@ -108,6 +108,7 @@ observeEvent(input$fpath, {
 output$usr_dt <- renderDataTable({
   req(usr_dt())
   datatable(usr_dt(),
+            filter = "top",
             class = "cell-border stripe hover",
             options = list(scrollY = TRUE,
                            scrollX = TRUE,
@@ -145,9 +146,9 @@ observeEvent(input$info_2o3, {
       "least 2 concordant results among the direct peptide reactivity assay (DPRA),",
       "KeratinoSens&#8482;, and human cell-line activiation test (h-CLAT).",
       "<br><br>",
-      "For more details, see",
-      "<a href='https://doi.org/https://doi.org/10.1787/b92879a4-en'>",
-      "OECD Guideline No. 497: Defined Approaches on Skin Sensitisation</a></p>"
+      "For more details, see <i>OECD Guideline No. 497: Defined Approaches on Skin",
+      "Sensitisation</i>[<a href='https://doi.org/https://doi.org/10.1787/b92879a4-en'",
+      "target = '_blank'>1</a>]</p>"
       ),
     easyClose = T
   ))
@@ -163,9 +164,9 @@ observeEvent(input$info_itsv2, {
       "peptide reactivity assay (DPRA), human cell-line activiation test (h-CLAT),",
       "and <i>in silico</i> predictions from the OECD QSAR Toolbox.",
       "<br><br>",
-      "For more details, see",
-      "<a href='https://doi.org/https://doi.org/10.1787/b92879a4-en'>",
-      "OECD Guideline No. 497: Defined Approaches on Skin Sensitisation</a></p>"
+      "For more details, see <i>OECD Guideline No. 497: Defined Approaches on Skin",
+      "Sensitisation</i>[<a href='https://doi.org/https://doi.org/10.1787/b92879a4-en'",
+      "target = '_blank'>1</a>]</p>"
     ),
     easyClose = T
   ))
@@ -180,11 +181,11 @@ observeEvent(input$info_ke31, {
       "and predicts GHS potency category based on results from the the direct",
       "peptide reactivity assay (DPRA) and human cell-line activiation test (h-CLAT).",
       "<br><br>",
-      "For more details, see",
-      "<a href='https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090'>",
-      "EPA's Interim Science Policy: Use of Alternative Approaches for Skin",
-      "Sensitization as a Replacement for Laboratory Animal Testing Draft for",
-      "Public Comment</a></p>"
+      "For more details, see EPA's <i>Interim Science Policy: Use of Alternative",
+      "Approaches for Skin Sensitization as a Replacement for Laboratory Animal",
+      "Testing Draft for Public Comment</i>[<a",
+      "href='https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090'",
+      "target = '_blank'>3</a>]</p>"
     ),
     easyClose = T
   ))
@@ -443,8 +444,9 @@ observeEvent(input$info_dpradep, {
       "and %-Lysine depletion should only contain numeric values. Missing values",
       "should be labeled as 'NA'. If negative values are reported, then co-elution",
       "is assumed and the value will not be used for scoring.<br><br>For more details, see",
-      "<a href='https://doi.org/10.1787/9789264229709-en'>OECD Test No. 442C:",
-      "In Chemico Skin Sensitisation</a></p>"
+      "<i>OECD Test No. 442C: In Chemico Skin Sensitisation</i>[<a",
+      "href='https://doi.org/10.1787/9789264229709-en'",
+      "target = '_blank'>4</a>].</p>"
     ),
     easyClose = T
   ))
@@ -461,9 +463,10 @@ observeEvent(input$info_dpracall_1, {
       "<li>'n', 'neg', 'negative', or 0 to indicate negative calls (non-sensitizers)</li>",
       "<li>Missing values should be labeled as 'NA'.</li></ul>",
       "<br>Alternatively, the %-Cysteine and %-Lysine values can be evaluated",
-      "for call. Calls are made using Tables 1 and 2 from",
-      "<a href='https://doi.org/10.1787/9789264229709-en'>OECD Test No. 442C:",
-      "In Chemico Skin Sensitisation</a></p>"
+      "for call. Calls are made using Tables 1 and 2 from <i>OECD Test No. 442C:",
+      "In Chemico Skin Sensitisation</i>[<a",
+      "href='https://doi.org/10.1787/9789264229709-en'",
+      "target = '_blank'>4</a>]</p>"
     ),
     easyClose = T
   ))
@@ -484,8 +487,9 @@ observeEvent(input$info_dpracall_2, {
       "and %-Lysine depletion should only contain numeric values. Missing values",
       "should be labeled as 'NA'. If negative values are reported, then co-elution",
       "is assumed and the chemical will not be evaluated. Calls are made using Tables 1 and 2 from",
-      "<a href='https://doi.org/10.1787/9789264229709-en'>OECD Test No. 442C:",
-      "In Chemico Skin Sensitisation</a></p>"
+      "<i>OECD Test No. 442C: In Chemico Skin Sensitisation</i>[<a",
+      "href='https://doi.org/10.1787/9789264229709-en'",
+      "target = '_blank'>4</a>]</p>"
     ),
     easyClose = T
   ))
@@ -501,9 +505,9 @@ observeEvent(input$info_hclatcall, {
       "<li>'p', 'pos', 'positive', or 1 to indicate positive calls (sensitizers)</li>",
       "<li>'n', 'neg', 'negative', or 0 to indicate negative calls (non-sensitizers)</li>",
       "<li>Missing values should be labeled as 'NA'.</li></ul>",
-      "For more details, see",
-      "<a href='https://doi.org/10.1787/9789264264359-en'>OECD Test No. 442E:",
-      "In Vitro Skin Sensitisation</a></p>"
+      "For more details, see <i>OECD Test No. 442E: In Vitro Skin",
+      "Sensitisation</i>[<a href='https://doi.org/10.1787/9789264264359-en'",
+      "target = '_blank'>5</a>]</p>"
     ),
     easyClose = T
   ))
@@ -517,12 +521,11 @@ observeEvent(input$info_hclatmit, {
       "is used in the ITSv2 and KE3/1 STS defined approaches.<br><br>",
       "The column corresponding to h-CLAT MIT should only contain:<ul>",
       "<li>Numeric Values</li>",
-      "<li>'n', 'neg', or 'negative' to indicate negative calls. Note that the value",
-      "0 does <b>not</b> indicate a negative call.</li>",
+      "<li>'n', 'neg', 'negative', or 'Inf' to indicate negative calls.</li>",
       "<li>Missing values should be labeled as 'NA'.</li></ul>",
-      "For more details, see",
-      "<a href='https://doi.org/10.1787/9789264264359-en'>OECD Test No. 442E:",
-      "In Vitro Skin Sensitisation</a></p>"
+      "For more details, see <i>OECD Test No. 442E: In Vitro Skin",
+      "Sensitisation</i>[<a href='https://doi.org/10.1787/9789264264359-en'",
+      "target = '_blank'>5</a>]</p>"
     ),
     easyClose = T
   ))
@@ -543,9 +546,9 @@ observeEvent(input$info_kscall, {
       "values should be labeled 'NA'. Chemicals with KS iMax values &gt;1.5",
       "are labeled as positive and chemicals with KS iMax values &leq;1.5 are",
       "labeled as negative.<br><br>",
-      "For more details, see",
-      "<a href='https://doi.org/10.1787/9789264229822-en'>OECD Test No. 442D:",
-      "In Vitro Skin Sensitisation</a></p>"
+      "For more details, see <i>OECD Test No. 442D: In Vitro",
+      "Skin Sensitisation</i>[<a",
+      "href='https://doi.org/10.1787/9789264229822-en' target = '_blank'>6</a>]</p>"
     ),
     easyClose = T
   ))
@@ -568,9 +571,9 @@ observeEvent(input$info_oecdtbcall, {
       "chemicals outside the AD will not be evaluated.</li>",
       "<li>Missing values should be labeled 'NA'.</li>",
       "</ul>",
-      "For more details, see",
-      "<a href='https://doi.org/10.1016/j.comtox.2019.01.006'>Automated and",
-      "standardized workflows in the OECD QSAR Toolbox</a></p>"
+      "For more details, see <i>Automated and standardized workflows in the",
+      "OECD QSAR Toolbox</i>[<a href='https://doi.org/10.1016/j.comtox.2019.01.006'",
+      "target = '_blank'>7</a>].</p>"
     ),
     easyClose = T
   ))
