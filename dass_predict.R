@@ -46,7 +46,7 @@ check_cols <- function(dass = c("da_2o3", "da_itsv2", "da_ke31"),
     
     if (dpra_call_method == "call") {
       cols_to_check <- c(cols_to_check, "dpra_call")
-    } else if (ks_call_method == "pdepl") {
+    } else if (dpra_call_method == "pdepl") {
       cols_to_check <- c(cols_to_check, "dpra_pC", "dpra_pK")
     }
     
@@ -109,15 +109,37 @@ dass_predict <- function(dt, dass = c("da_2o3", "da_itsv2", "da_ke31"),
       dt[,ks_call_calculated := ks_call]
     }
   }
+  
+  if ("da_itsv2" %in% dass) {
+    dt[,id := 1:.N]
+    dt[!is.na(dpra_pC) & !is.na(dpra_pK),
+       dpra_mean_calculated := mean(c(max(0, dpra_pC), max(0, dpra_pK))),
+       by = id]
+    dt[,id := NULL]
+  }
+  
   # Set DPRA Call based on user selection
   if (!is.null(dpra_call_method)) {
     if (dpra_call_method == "call") {
       dpra_call <- dt[,dpra_call]
     } else if (dpra_call_method == "pdepl") {
+      # Calculate dpra mean
+      if (!"da_itsv2" %in% dass) {
+        dt[,id := 1:.N]
+        dt[!is.na(dpra_pC) & !is.na(dpra_pK),
+           dpra_mean_calculated := mean(c(max(0, dpra_pC), max(0, dpra_pK))),
+           by = id]
+        dt[,id := NULL]
+      }
+      
+      # Call is set as a variable
       dpra_call <- dt[,fcase(
-        is.na(dpra_pC) | dpra_pC < 0, as.numeric(NA),
-        is.na(dpra_pK) | dpra_pK < 0, fifelse(dpra_pC <= 13.89, 0, 1),
-        !is.na(dpra_pC) & !is.na(dpra_pK) & dpra_pC >=0 & dpra_pK >=0, fifelse(mean(c(dpra_pK, dpra_pC)) <= 6.38, 0, 1)
+        # If %C-dep is not given, then no evaluation
+        is.na(dpra_pC), as.numeric(NA),
+        # If %K-dep is not given, use %C-dep
+        is.na(dpra_pK), fifelse(dpra_pC <= 13.89, 0, 1),
+        # If both %C and %K dep given, use mean
+        !is.na(dpra_pC) & !is.na(dpra_pK), fifelse(dpra_mean_calculated <= 6.38, 0, 1)
       )]
       dt[,dpra_call_calculated := ..dpra_call]
     }
@@ -140,6 +162,7 @@ dass_predict <- function(dt, dass = c("da_2o3", "da_itsv2", "da_ke31"),
       hclat_mit_num = dt[,hclat_mit_num],
       dpra_pC = dt[,dpra_pC],
       dpra_pK = dt[,dpra_pK],
+      dpra_mean = dt[,dpra_mean_calculated],
       oecd_call = dt[,oecd_tb_call],
       oecd_domain = dt[,oecd_tb_ad]
     )
@@ -147,6 +170,7 @@ dass_predict <- function(dt, dass = c("da_2o3", "da_itsv2", "da_ke31"),
       ITSv2_hCLAT_Score = temp$ITSv2_hCLAT_Score,
       ITSv2_DPRA_Score = temp$ITSv2_DPRA_Score,
       ITSv2_OECDQSARTB_Score = temp$ITSv2_OECDQSARTB_Score,
+      ITSv2_TotalScore = temp$ITSv2_TotalScore,
       DA_ITSv2_Call = temp$ITSv2_Call,
       DA_ITSv2_Potency = temp$ITSv2_Potency
     )
@@ -211,14 +235,9 @@ da_2o3 <- function(ks_call, hclat_call, dpra_call) {
 #                 the OECD QSAR TB applicability domain
 # Returns a Call and Potency prediction
 
-da_itsv2 <- function(hclat_mit, hclat_mit_num, dpra_pC, dpra_pK, oecd_call, oecd_domain){
-  temp <- data.table(hclat_mit, hclat_mit_num, dpra_pC, dpra_pK, oecd_call, oecd_domain)
+da_itsv2 <- function(hclat_mit, hclat_mit_num, dpra_pC, dpra_pK, dpra_mean, oecd_call, oecd_domain){
+  temp <- data.table(hclat_mit, hclat_mit_num, dpra_pC, dpra_pK, dpra_mean, oecd_call, oecd_domain)
   temp[,id := 1:nrow(temp)]
-  
-  # Calculate mean depletion, with 0 imputed for negative values
-  # Is 0 imputation necessary if DPRA mean is only used for positive
-  # values?
-  temp[,dpra_mean := mean(c(max(dpra_pC, 0), max(dpra_pK, 0))), by = id]
 
   # Calculate h-CLAT score
   temp[,hclat_score := fcase(
@@ -232,26 +251,18 @@ da_itsv2 <- function(hclat_mit, hclat_mit_num, dpra_pC, dpra_pK, oecd_call, oecd
 
   # Calculate DPRA score
   temp[,dpra_score := fcase(
-    # No depletion values
-    is.na(dpra_pC) & is.na(dpra_pK), as.numeric(NA),
-    # Both negative
-    dpra_pC < 0 & dpra_pK < 0, as.numeric(NA), 
-    # %C-depletion missing or negative
-    is.na(dpra_pC) | dpra_pC < 0, as.numeric(NA), # Can't predict without C
-    # with lysine co-elution
-    dpra_pK < 0 | is.na(dpra_pK), fcase(
-      dpra_pC >= 98.24, 3,
-      dpra_pC >= 23.09 & dpra_pC <98.24, 2,
-      dpra_pC >= 13.89 & dpra_pC <23.09, 1, 
-      dpra_pC < 13.89, 0
-    ),
-    # no co-elution
-    dpra_pC >= 0 & dpra_pK >= 0, fcase(
-      dpra_mean >= 42.47, 3,
-      dpra_mean >= 22.62 & dpra_mean <42.47, 2,
-      dpra_mean >= 6.38 & dpra_mean < 22.62, 1, 
-      dpra_mean < 6.38, 0
-    )
+    # No %C-dep
+    is.na(dpra_pC), as.numeric(NA),
+    # No %K-dep
+    is.na(dpra_pK), fcase(dpra_pC >= 98.24, 3,
+                          dpra_pC >= 23.09, 2,
+                          dpra_pC >= 13.89, 1,
+                          dpra_pC < 13.89, 0),
+    # Both given
+    !is.na(dpra_pC) & !is.na(dpra_pK), fcase(dpra_mean >= 42.47, 3,
+                                             dpra_mean >= 22.62, 2, 
+                                             dpra_mean >= 6.38, 1,
+                                             dpra_mean < 6.38, 0)
   ), by = id]
 
   # Calculate OECD QSAR TB SCORE
@@ -311,6 +322,7 @@ da_itsv2 <- function(hclat_mit, hclat_mit_num, dpra_pC, dpra_pK, oecd_call, oecd
     ITSv2_hCLAT_Score = temp$hclat_score,
     ITSv2_DPRA_Score = temp$dpra_score,
     ITSv2_OECDQSARTB_Score = temp$oecd_score,
+    ITSv2_TotalScore = temp$itsv2_score,
     ITSv2_Call = temp$itsv2_call,
     ITSv2_Potency = temp$itsv2_cat
   )

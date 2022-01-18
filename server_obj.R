@@ -108,7 +108,9 @@ observeEvent(input$fpath, {
 output$usr_dt <- renderDataTable({
   req(usr_dt())
   datatable(usr_dt(),
-            filter = "top",
+            # selectize-input in step 2 won't work if filter argument 
+            # https://github.com/rstudio/shiny/issues/3125
+            # filter = "top",
             class = "cell-border stripe hover",
             options = list(scrollY = TRUE,
                            scrollX = TRUE,
@@ -431,6 +433,26 @@ observeEvent(input$load_cols, {
     updateCollapse(session,
                    id = "panels",
                    open = "panel_col_options")
+  }
+})
+
+## Calculated Options -----
+observeEvent(input$dpra_call_choice, {
+  if (input$dpra_call_choice == "call") {
+    if (!"da_itsv2" %in% dass_choice()) {
+      updateSelectInput(inputId = "dpra_pC_col", selected = "")
+      updateSelectInput(inputId = "dpra_pK_col", selected = "")
+    }
+  } else if (input$dpra_call_choice == "pdepl") {
+    updateSelectInput(inputId = "dpra_call_col", selected = "")
+  }
+})
+
+observeEvent(input$ks_choice, {
+  if (input$ks_choice == "call") {
+    updateSelectInput(inputId = "ks_imax_col", selected = "")
+  } else if (input$ks_choice == "imax") {
+    updateSelectInput(inputId = "ks_call_col", selected = "")
   }
 })
 
@@ -1188,6 +1210,6 @@ output$downloadres <- downloadHandler(
     paste0(fname, "_DASSResults_", Sys.Date(), ".csv")
   },
   content = function(con) {
-    write.csv(x = dass_res(), file = con)
+    write.csv(x = dass_res(), file = con, quote = F, row.names = F)
   }
 )

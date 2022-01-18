@@ -14,8 +14,8 @@ the data.table\[[3](#ref-datatable)\], DT\[[4](#ref-dt)\],
 shiny\[[5](#ref-shiny)\], shinyBS\[[6](#ref-shinybs)\], and
 shinyjs\[[7](#ref-shinyjs)\] packages will be installed.
 
-This app was created using R v.4.1.2\[[8](#ref-R-base)\] and has been
-tested in Google Chrome v.91 on Windows 10.
+This app was developed and tested on Windows 10 using R
+v.4.1.2\[[8](#ref-R-base)\] and Google Chrome v.91.
 
 # Installation
 
@@ -32,16 +32,15 @@ Once the app is launched, to begin, click *Browse* to upload your data.
 The data file must be comma-delimited (.csv) or tab-delimited (.tsv,
 .txt). The first row should contain column names. Columns must be
 formatted as described in Step 2. Once you select a file, the data can
-be viewed by clicking on the *Data* tab.
+be viewed by clicking on the *View Data* tab.
 
 # Step 1: Select Defined Approaches
 
 After uploading your data, the *Step 1* tab will open. Select the DAs
 you want to apply and click Done. The DAs are based on the first 3 key
 events (KEs) in the Adverse Outcome Pathway (AOP) for Skin Sensitization
-Initiated by Covalent Binding to Proteins\[[9](#ref-oecd_aop)\].
-
-The KEs are covered by validated OECD test methods:
+Initiated by Covalent Binding to Proteins\[[9](#ref-oecd_aop)\]. Each KE
+is represented by a validated OECD test method:
 
 1.  The direct peptide reactivity assay (DPRA)\[[10](#ref-oecd_dpra)\]
     maps to the first KE, protein binding.
@@ -71,26 +70,124 @@ QSAR Toolbox\[[13](#ref-YORDANOVA201989)\]. Chemicals are scored for
 each assay result and the summed scores are used to predict chemical
 hazard and potency using the scoring schemes in Tables 1 and 2.
 
-| Score | h-CLAT MIT<br>(&mu;g/mL)     | DPRA<br>mean of %-C<br>and %-K depletion | DPRA<br>%-C depletion | OECD QSAR<br>Toolbox |
-|-------|------------------------------|------------------------------------------|-----------------------|----------------------|
-| 3     | &le;10                       | &ge;42.47                                | &ge;98.24             | -                    |
-| 2     | >10, &le;150                 | &ge;22.62, >42.47                        | &ge;23.09, >98.24     | -                    |
-| 1     | >150, &le;5000               | &ge;6.38, >22.62                         | &ge;13.89, >23.09     | Positive             |
-| 0     | Negative<br>(Not calculated) | <6.38                                    | <13.89                | Negative             |
+<table>
+<colgroup>
+<col style="width: 5%" />
+<col style="width: 20%" />
+<col style="width: 37%" />
+<col style="width: 22%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Score</th>
+<th style="text-align: center;">h-CLAT MIT<br>(μg/mL)</th>
+<th style="text-align: center;">DPRA<br>mean % Cysteine<br>and Lysine depletion</th>
+<th style="text-align: center;">DPRA<br>% Cysteine depletion</th>
+<th style="text-align: center;">OECD QSAR Toolbox</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">≤ 10</td>
+<td style="text-align: center;">≥42.47</td>
+<td style="text-align: center;">≥98.24</td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">&gt;10, ≤ 150</td>
+<td style="text-align: center;">≥ 22.62, &lt; 42.47</td>
+<td style="text-align: center;">≥ 23.09, &lt; 98.24</td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">&gt;150, ≤ 5000</td>
+<td style="text-align: center;">≥ 6.38, &lt; 22.62</td>
+<td style="text-align: center;">≥ 13.89, &lt; 23.09</td>
+<td style="text-align: center;">Positive</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">Negative (Not Calculated)</td>
+<td style="text-align: center;">&lt; 6.38</td>
+<td style="text-align: center;">&lt; 13.89</td>
+<td style="text-align: center;">Negative</td>
+</tr>
+</tbody>
+</table>
 
 *Table 1.* Test method scoring scheme for version 2 of the Integrated
-Testing Strategy defined approach, adapted from \[[1](#ref-oecd_dass)\]
+Testing Strategy defined approach, adapted from \[[1](#ref-oecd_dass)\].
 
-| Combined<br>Score | DPRA +<br>h-CLAT +<br> OECD QSAR TB | DPRA + h-CLAT | DPRA + OECD QSAR TB *or*<br>h-CLAT + OECD QSAR TB |
-|-------------------|-------------------------------------|---------------|---------------------------------------------------|
-| 7                 | UN GHS 1A                           | - -           |                                                   |
-| 6                 | UN GHS 1A                           | UN GHS 1A     | -                                                 |
-| 5                 | UN GHS 1B                           | UN GHS 1*     | -                                                 |
-| 4                 | UN GHS 1B                           | UN GHS 1B     | UN GHS 1*                                         |
-| 3                 | UN GHS 1B                           | UN GHS 1B     | UN GHS 1*                                         |
-| 2                 | UN GHS 1B                           | UN GHS 1B     | UN GHS 1B                                         |
-| 1                 | NC                                  | Inconclusive  | Inconclusive                                      |
-| 0                 | NC                                  | NC            | Inconclusive                                      |
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 33%" />
+<col style="width: 14%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Score</th>
+<th style="text-align: center;">DPRA +<br>h-CLAT+<br>OECD QSAR TB</th>
+<th style="text-align: center;">DPRA + h-CLAT</th>
+<th style="text-align: center;">DPRA + OECD QSAR TB or<br>h-CLAT + OECD QSAR TB</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">7</td>
+<td style="text-align: center;">UN GHS 1A</td>
+<td style="text-align: center;">-</td>
+<td style="text-align: center;">-</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">UN GHS 1A</td>
+<td style="text-align: center;">UN GHS 1A</td>
+<td style="text-align: center;">-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">UN GHS 1B</td>
+<td style="text-align: center;">UN GHS 1*</td>
+<td style="text-align: center;">-</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">UN GHS 1B</td>
+<td style="text-align: center;">UN GHS 1B</td>
+<td style="text-align: center;">UN GHS 1*</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">UN GHS 1B</td>
+<td style="text-align: center;">UN GHS 1B</td>
+<td style="text-align: center;">UN GHS 1*</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">UN GHS 1B</td>
+<td style="text-align: center;">UN GHS 1B</td>
+<td style="text-align: center;">UN GHS 1B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">NC</td>
+<td style="text-align: center;">Inconclusive</td>
+<td style="text-align: center;">Inconclusive</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">NC</td>
+<td style="text-align: center;">NC</td>
+<td style="text-align: center;">Inconclusive</td>
+</tr>
+</tbody>
+</table>
 
 *Table 2.* Potency predictions for combined scores from available
 information sources. 1\* indicates conclusive for hazard, inconclusive
@@ -105,52 +202,91 @@ Minimum Induction Threshold (MIT). If the h-CLAT predicts a
 non-sensitizer, then the DPRA result defines both hazard and potency.
 The KE 3/1 STS scheme is shown in Table 3.
 
-| Test Method | Result            | Hazard   | Potency  |
-|-------------|-------------------|----------|----------|
-| h-CLAT      | MIT &le;10        | Positive | 1A       |
-| h-CLAT      | MIT >10, &le;5000 | Positive | 1B       |
-| h-CLAT      | Negative          | Use DPRA | Use DPRA |
-| DPRA        | Positive          | Positive | 1B       |
-| DPRA        | Negative          | Negative | NC       |
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Test Method</th>
+<th style="text-align: center;">Result</th>
+<th style="text-align: center;">Hazard</th>
+<th style="text-align: center;">Potency</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">h-CLAT</td>
+<td style="text-align: center;">MIT ≤ 10</td>
+<td style="text-align: center;">Positive</td>
+<td style="text-align: center;">1A</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">h-CLAT</td>
+<td style="text-align: center;">MIT &gt; 10, &lt; 5000</td>
+<td style="text-align: center;">Positive</td>
+<td style="text-align: center;">1B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">h-CLAT</td>
+<td style="text-align: center;">MIT Negative</td>
+<td style="text-align: center;">Use DPRA</td>
+<td style="text-align: center;">Use DPRA</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">DPRA</td>
+<td style="text-align: center;">Positive</td>
+<td style="text-align: center;">Positive</td>
+<td style="text-align: center;">1B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">DPRA</td>
+<td style="text-align: center;">Negative</td>
+<td style="text-align: center;">Negative</td>
+<td style="text-align: center;">NC</td>
+</tr>
+</tbody>
+</table>
 
 *Table 3.* Hazard and potency prediction scheme. Adapted from
-\[[14](#ref-NUKADA2013609)\] and \[[15](#ref-takenouchi2015)\]
+\[[14](#ref-NUKADA2013609)\] and \[[15](#ref-takenouchi2015)\].
 
 # Step 2: Select Data Columns for Predictions
 
 After clicking “Done,” the panel for column selection will expand. All
 assay endpoints that are needed to apply the selected DAs will be shown.
-Use the dropdown menus to select the columns corresponding to the given
-assay result. Click “Done” to evaluate the values in the column for
-proper formatting.
+Use the dropdown menus to select the names of the columns corresponding
+to each given assay result. Click “Done” to evaluate the values in the
+column for proper formatting.
 
-Columns must be formatted correctly to ensure an accurate prediction. A
-description of the column requirements are given below.
+Columns must be formatted correctly to ensure an accurate prediction.
+Descriptions of the column requirements are given below.
 
 ## DPRA
 
 ### % Depletion
 
-DPRA % Depletion is used in ITSv2. The % Cysteine and % Lysine depletion
-columns must contain only numbers or NA if there is no DPRA outcome for
-the given chemical. Negative values imply co-elution. If the value for %
-Cysteine depletion is negative for a given chemical, then DPRA results
-can’t be used to predict skin sensitization. If only the value for
-Lysine is negative, then % Cysteine depletion can be used for scoring
-(Table 1). Otherwise, the mean of % Cysteine depletion and % Lysine
-depletion will be used to score the chemical.
+DPRA % Depletion is used in ITSv2. The columns for % Cysteine (%C) and %
+Lysine (%K) depletion should contain only numeric values or “NA” if the
+data do not exist for a given chemical.
+
+The mean of %C and %K depletion for each chemical is used to score the
+chemical using the scoring scheme shown in Table 1. Any negative %C or
+%K depletion values are set to 0 when calculating the mean, as specified
+in OECD Test Guideline 442c\[[10](#ref-oecd_dpra)\]. If there is no %C
+depletion value for a given chemical, then the DPRA results can’t be
+used for that chemical. If only the value for %K depletion is missing,
+then the %C depletion values are used for scoring, with a different
+scoring scheme as shown in Table 1.
 
 ### Call
 
 DPRA call should be an indicator for a positive or negative outcome from
-DPRA. Positive outcomes must be indicated by “p,” “pos,” “positive,” or
-1. Negative outcomes must be indicated by “n,” “neg,” “negative,” or 0.
-Any other values will not be used to predict skin sensitization hazard.
+DPRA. Positive outcomes must be indicated by “p,” “pos,” “positive,”
+or 1.Negative outcomes must be indicated by “n,” “neg,” “negative,” or
+0. Any other values will not be used to predict skin sensitization
+hazard.
 
-If % Cysteine depletion and % Lysine depletion are required, you will
-have the option to use those values to derive the positive or negative
-calls. Calls are defined as outlined in OECD Test Guideline 442c
-\[[10](#ref-oecd_dpra)\].
+Alternatively, the %C and %K depletion values can be provided and the
+app will define the chemical call as outlined in OECD Test Guideline
+442c \[[10](#ref-oecd_dpra)\].
 
 ## h-CLAT
 
@@ -166,9 +302,8 @@ sensitization hazard.
 
 h-CLAT minimum induction threshold (MIT) must contain either positive
 numeric values for positive outcomes or “n,” “neg,” “negative,” or “Inf”
-to indicate a negative outcome. Any other values will not be used to
-predict skin sensitization potency. Missing values will not be used to
-predict skin sensitization potency.
+to indicate a negative outcome. Any other values, including “NA,” will
+not be used to predict skin sensitization potency.
 
 ## KeratinoSens™ Call
 
@@ -199,19 +334,31 @@ potency.
 
 # Step 3: Review Selection
 
-The selected columns will be evaluated for proper formatting. In the
-*Step 3* tab, a table with the selected columns will show if any columns
-contain invalid values. Click “Run” to run the DASS predictions. If
-flagged columns were not fixed prior to running the predictions, any
-invalid values will be marked as missing and will not be used to predict
-skin sensitization hazard and potency.
+After clicking “Done” in *Step 2*, the selected columns will be
+evaluated for proper formatting. The *Step 3* tab will display a table
+with 3 columns. The “Variable” column contains the name of the assay
+endpoint the app requested. The “Selected Column” column has the name of
+the column selected for the assay endpoint. Verify that the selected
+column is correct. If needed, return to *Step 2*, update the selected
+columns and click “Done” to update the table in *Step 3*. The “Flag”
+column will contain text describing the formatting requirement that was
+violated. Updates to the data format must be made externally, and the
+data will need to be re-uploaded.
+
+After reviewing the selections, click “Run” to run the DASS predictions
+using the columns shown in “Selected Column.” If there are any
+unresolved flags, any invalid values will be marked as missing and will
+not be used to predict skin sensitization hazard and potency.
 
 # Step 4: Results
 
-The *Step 4* tab will show a table with the original data with the DASS
-prediction columns appended to the end. The table will also contain new
-columns with the converted column values that were used in the
-predictions. This may be useful if predictions were run on flagged data.
+The *Step 4* tab will show a table with the original data with DASS
+prediction columns appended to the end. Values calculated by the app and
+used in predictions will also be appended to the data. Prior to running
+the predictions, the selected columns are reformatted to ensure the
+values are properly formatted. The reformatted columns are appended to
+the data, showing exactly how the input data were processed and what
+values were used for each prediction.
 
 Click the *Download Results* button to download a file with the results
 table.
