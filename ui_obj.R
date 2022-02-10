@@ -49,7 +49,7 @@ tab_dass_select <- bsCollapsePanel(
       "<div class='checkbox'>",
       "<label>",
       "<input id='do_da_itsv2' type='checkbox'/>",
-      "<span>Integrated Testing Strategy v.2 (ITSv2)</span>",
+      "<span>Integrated Testing Strategy (ITS)</span>",
       "</label>",
       "<a id='info_itsv2' href='#' class='action-button'>",
       "<i class='glyphicon glyphicon-question-sign' role='presentation' aria-label='question-circle icon'> </i>",
@@ -109,10 +109,22 @@ tab_dass_pred <- bsCollapsePanel(
 tab_dass_results <- bsCollapsePanel(
   title = "Step 4: Results",
   value = "panel_results",
-  p(
-    "Results are shown in the table below in highlighted columns",
-    "appended to the end of your data. In addition, the values",
-    "used for evaluation are appended to your data."
+  HTML(
+    "<p>",
+    "The DASS hazard predictions are shown in the table below in",
+    "<span style='background-color: #56B4E9;'>blue</span>",
+    "highlighted columns appended to the end of your data. The columns in your data",
+    "that were selected in Step 2 are highlighted in",
+    "<span style='background-color: #F0E442;'>yellow.</span>",
+    "The selected data columns are reformatted for use in the DAs. The reformatted",
+    "colulmns are appended to your data and highlighted in",
+    "<span style='background-color: #CC79A7;'>pink.</span>",
+    "These are the actual values used for evaluation. It may be useful to",
+    "review the selected columns and their transformations to ensure",
+    "your data were properly interpreted, especially if the DAs were",
+    "run with flagged data.<br>",
+    "For more details about the appended columns, see the User Guide.",
+    "</p>"
   ),
   uiOutput("step4ui"),
   br(),
@@ -144,7 +156,7 @@ tab_ref <- bsCollapsePanel(
     "doi:https://doi.org/https://doi.org/10.1787/9789264229822-en</li>",
     "<li>Yordanova D, Schultz TW, Kuseva C, Tankova K, Ivanova H, Dermen I, et al.",
     "Automated and standardized workflows in the OECD QSAR toolbox.",
-    "Computational Toxicology. 2019;10: 89–104.",
+    "Computational Toxicology. 2019;10: 89-104.",
     "doi:https://doi.org/10.1016/j.comtox.2019.01.006</li>",
     "</ol>"
   )
@@ -167,9 +179,10 @@ ui_dass <- fluidPage(fluidRow(column(
                   "for Skin Sensitization Initiated by Covalaent Binding to", 
                   "Proteins</i>[<a href='https://doi.org/https://doi.org/10.1787/9789264221444-en'", 
                   "target = '_blank'>2</a>]. To begin, click 'Browse' below", 
-                  "and select your file. Data must be comma-delimited (.csv)", 
-                  "or tab-delimited (.txt, .tsv). Your data will be viewable by", 
-                  "clicking the Data tab. Follow the steps in each tab.", 
+                  "and select your file. Data must be comma-delimited (.csv),", 
+                  "tab-delimited (.txt, .tsv) or in the first worksheet of an",
+                  "excel file (.xls, .xlsx). Your data will be viewable by", 
+                  "clicking the View Data tab. Follow the steps in each tab.", 
                   "For more details, see the <a target = '_blank' href='user_guide.pdf'>User Guide</a>.",
                   "</p><br><br>"
                 )

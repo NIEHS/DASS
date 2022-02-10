@@ -9,7 +9,13 @@
 # server files to build app.                                                  #
 # Required Packages:                                                          #
 # - data.table, DT                                                            #
+# - openxlsx                                                                  #
+# - readxl                                                                    #
 # - shiny shinyBS shinyjs                                                     #
+# Note: The app was first created using ITSv2, which uses OECD QSAR TB.       #
+# In silico results can come from either Derek Nexus or OECD QSAR TB,         #
+# however variable names throughout the code for this app will be named after #
+# OECD QSAR TB.                                                               #
 #=============================================================================#
 
 # Load packages
@@ -18,6 +24,7 @@ require(DT)
 require(shiny)
 require(shinyBS)
 require(shinyjs)
+require(openxlsx)
 
 # Load functions
 source("dass_predict.R")

@@ -19,25 +19,32 @@ v.4.1.2\[[8](#ref-R-base)\] and Google Chrome v.91.
 
 # Installation
 
-If installing from Bitbucket, clone the repository using the “Clone”
+If installing from Bitbucket, clone the repository using the *Clone*
 button at the top of the repository. If installing from zip file, unzip
 the folder.
 
-Open the downloaded folder. To launch the app, click the run\_app.bat
+Open the downloaded folder. To launch the app, click the *run\_app.bat*
 file.
 
 # Data Import
 
-Once the app is launched, to begin, click *Browse* to upload your data.
-The data file must be comma-delimited (.csv) or tab-delimited (.tsv,
-.txt). The first row should contain column names. Columns must be
-formatted as described in Step 2. Once you select a file, the data can
-be viewed by clicking on the *View Data* tab.
+To begin, click *Browse* and select your data file. The data must be
+comma-delimited (.csv), tab-delimited (.txt, .tsv), or the first
+worksheet in an excel file (.xls, .xlsx). Data should be in a tabular
+format with rows corresponding to chemicals and columns corresponding to
+assay endpoints. The first row should contain column names. Each row,
+except the first, should contain data for only a single chemical (i.e.,
+a single row should not contain data for multiple chemicals). Each assay
+endpoint that is required for using the DAs should have a column that is
+formatted as described in Step 2 below.
+
+Once you select a file, the data can be viewed by clicking on the *View
+Data* tab.
 
 # Step 1: Select Defined Approaches
 
 After uploading your data, the *Step 1* tab will open. Select the DAs
-you want to apply and click Done. The DAs are based on the first 3 key
+you want to apply and click *Done*. The DAs are based on the first 3 key
 events (KEs) in the Adverse Outcome Pathway (AOP) for Skin Sensitization
 Initiated by Covalent Binding to Proteins\[[9](#ref-oecd_aop)\]. Each KE
 is represented by a validated OECD test method:
@@ -52,31 +59,34 @@ is represented by a validated OECD test method:
 
 ## 2 out of 3
 
-The 2 out of 3 (2o3) DA is a sequential testing strategy that identifies
-skin sensitization hazard based on KEs 1-3. Two concordant results from
-DPRA, KeratinoSens™, or h-CLAT determine the final classification as a
-sensitizer or non-sensitizer. If there are only results from two assays
-and the results are discordant, the chemical can’t be classified and
-will return an “Inconclusive” result.
+The 2 out of 3 (2o3) DA is a sequential testing strategy that predicts
+skin sensitization hazard identification (sensitizer or non-sensitizer)
+based on KEs 1-3. Two concordant results from DPRA, KeratinoSens™, or
+h-CLAT determine the final prediction as a sensitizer or non-sensitizer.
+If there are only results from two assays and the results are
+discordant, the chemical can’t be classified and will return an
+“Inconclusive” result.
 
-2o3 does not evaluate potency.
+2o3 does not predict GHS potency category.
 
 ## Integrated Testing Strategy
 
-This app implements version 2 of the Integrated Testing Strategy (ITSv2)
-DA. ITSv2 predicts skin sensitization hazard potential and potency
-category based on KEs 1 and 3 and *in silico* predictions from the OECD
-QSAR Toolbox\[[13](#ref-YORDANOVA201989)\]. Chemicals are scored for
-each assay result and the summed scores are used to predict chemical
-hazard and potency using the scoring schemes in Tables 1 and 2.
+The Integrated Testing Strategy (ITS) DA predicts skin sensitization
+hazard identification and potency category based on KEs 1 and 3 and *in
+silico* predictions from either [Derek
+Nexus](https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm)
+or the OECD QSAR Toolbox\[[13](#ref-YORDANOVA201989)\]. Chemicals are
+scored for each assay result and the summed scores are used to predict
+chemical hazard identification and potency using the scoring schemes in
+Tables 1 and 2.
 
 <table>
 <colgroup>
 <col style="width: 5%" />
 <col style="width: 20%" />
-<col style="width: 37%" />
+<col style="width: 36%" />
 <col style="width: 22%" />
-<col style="width: 14%" />
+<col style="width: 16%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -84,7 +94,7 @@ hazard and potency using the scoring schemes in Tables 1 and 2.
 <th style="text-align: center;">h-CLAT MIT<br>(μg/mL)</th>
 <th style="text-align: center;">DPRA<br>mean % Cysteine<br>and Lysine depletion</th>
 <th style="text-align: center;">DPRA<br>% Cysteine depletion</th>
-<th style="text-align: center;">OECD QSAR Toolbox</th>
+<th style="text-align: center;">In Silico Prediction</th>
 </tr>
 </thead>
 <tbody>
@@ -119,8 +129,8 @@ hazard and potency using the scoring schemes in Tables 1 and 2.
 </tbody>
 </table>
 
-*Table 1.* Test method scoring scheme for version 2 of the Integrated
-Testing Strategy defined approach, adapted from \[[1](#ref-oecd_dass)\].
+*Table 1.* Test method scoring scheme for the Integrated Testing
+Strategy, adapted from \[[1](#ref-oecd_dass)\].
 
 <table>
 <colgroup>
@@ -189,17 +199,18 @@ Testing Strategy defined approach, adapted from \[[1](#ref-oecd_dass)\].
 </tbody>
 </table>
 
-*Table 2.* Potency predictions for combined scores from available
-information sources. 1\* indicates conclusive for hazard, inconclusive
-for potency. Adapted from \[[1](#ref-oecd_dass)\].
+*Table 2.* Integrated Testing Strategy potency predictions for combined
+scores from available information sources. 1\* indicates conclusive for
+hazard, inconclusive for potency. Adapted from \[[1](#ref-oecd_dass)\].
 
 ## Key Event 3/1 Sequential Testing Strategy
 
 The KE 3/1 Sequential Testing Strategy (STS) predicts skin sensitization
-hazard and potency based on KEs 1 and 3. If the h-CLAT predicts a
-sensitizer, then the potency category is determined by the h-CLAT
-Minimum Induction Threshold (MIT). If the h-CLAT predicts a
-non-sensitizer, then the DPRA result defines both hazard and potency.
+hazard identification and potency based on KEs 1 and 3. If the h-CLAT
+predicts a sensitizer, then the hazard identification and potency
+categories are determined by the h-CLAT Minimum Induction Threshold
+(MIT). If the h-CLAT predicts a non-sensitizer, then the hazard
+identification and potency categories are determined by DPRA results.
 The KE 3/1 STS scheme is shown in Table 3.
 
 <table>
@@ -207,8 +218,8 @@ The KE 3/1 STS scheme is shown in Table 3.
 <tr class="header">
 <th style="text-align: center;">Test Method</th>
 <th style="text-align: center;">Result</th>
-<th style="text-align: center;">Hazard</th>
-<th style="text-align: center;">Potency</th>
+<th style="text-align: center;">Hazard Identification</th>
+<th style="text-align: center;">GHS Potency Category</th>
 </tr>
 </thead>
 <tbody>
@@ -220,7 +231,7 @@ The KE 3/1 STS scheme is shown in Table 3.
 </tr>
 <tr class="even">
 <td style="text-align: center;">h-CLAT</td>
-<td style="text-align: center;">MIT &gt; 10, &lt; 5000</td>
+<td style="text-align: center;">MIT &gt; 10, ≤ 5000</td>
 <td style="text-align: center;">Positive</td>
 <td style="text-align: center;">1B</td>
 </tr>
@@ -245,16 +256,19 @@ The KE 3/1 STS scheme is shown in Table 3.
 </tbody>
 </table>
 
-*Table 3.* Hazard and potency prediction scheme. Adapted from
+*Table 3.* Hazard identification and potency prediction scheme for Key
+Event 3/1 Sequential Testing Strategy. Adapted from
 \[[14](#ref-NUKADA2013609)\] and \[[15](#ref-takenouchi2015)\].
 
 # Step 2: Select Data Columns for Predictions
 
-After clicking “Done,” the panel for column selection will expand. All
+After clicking *Done*, the panel for column selection will expand. All
 assay endpoints that are needed to apply the selected DAs will be shown.
-Use the dropdown menus to select the names of the columns corresponding
-to each given assay result. Click “Done” to evaluate the values in the
-column for proper formatting.
+Dropdown menus under each assay endpoint contain the column names from
+your data. Use the dropdown menus to select the names of the columns
+corresponding to each given assay endpoint. Each column can only be
+selected once. Click *Done* to evaluate the values in the column for
+proper formatting.
 
 Columns must be formatted correctly to ensure an accurate prediction.
 Descriptions of the column requirements are given below.
@@ -263,9 +277,11 @@ Descriptions of the column requirements are given below.
 
 ### % Depletion
 
-DPRA % Depletion is used in ITSv2. The columns for % Cysteine (%C) and %
-Lysine (%K) depletion should contain only numeric values or “NA” if the
-data do not exist for a given chemical.
+DPRA %-Cysteine (%C) and %-Lysine (%K) depletion values are used in the
+ITS DA. The columns for %C and %K depletion should contain only numeric
+values. Numeric values should not have commas. Missing values should be
+blank or labeled as “NA.” Any invalid values will be treated as missing
+and will not be used to predict skin sensitization hazard.
 
 The mean of %C and %K depletion for each chemical is used to score the
 chemical using the scoring scheme shown in Table 1. Any negative %C or
@@ -276,79 +292,103 @@ used for that chemical. If only the value for %K depletion is missing,
 then the %C depletion values are used for scoring, with a different
 scoring scheme as shown in Table 1.
 
-### Call
+### Hazard Identification
 
-DPRA call should be an indicator for a positive or negative outcome from
-DPRA. Positive outcomes must be indicated by “p,” “pos,” “positive,”
-or 1.Negative outcomes must be indicated by “n,” “neg,” “negative,” or
-0. Any other values will not be used to predict skin sensitization
+DPRA hazard identification is used in the 2o3 and KE 3/1 STS DAs. The
+column for hazard identification should be an indicator for a positive
+or negative outcome from DPRA. Positive outcomes must be indicated by
+“p,” “pos,” “positive,” or 1. Negative outcomes must be indicated by
+“n,” “neg,” “negative,” or 0. The values are not case sensitive. Missing
+values should be blank or labeled as “NA.” Any invalid values will be
+treated as missing and will not be used to predict skin sensitization
 hazard.
 
-Alternatively, the %C and %K depletion values can be provided and the
-app will define the chemical call as outlined in OECD Test Guideline
-442c \[[10](#ref-oecd_dpra)\].
+Alternatively, the DPRA %C and %K depletion values can be provided and
+the app will define the chemical hazard identifications as outlined in
+OECD Test Guideline 442c \[[10](#ref-oecd_dpra)\].
 
 ## h-CLAT
 
-### Call
+### Hazard Identification
 
-h-CLAT call should be an indicator for a positive or negative outcome
-from h-CLAT. Positive outcomes must be indicated by “p,” “pos,”
-“positive,” or 1. Negative outcomes must be indicated by “n,” “neg,”
-“negative,” or 0. Any other values will not be used to predict skin
-sensitization hazard.
+H-CLAT hazard identification is used in the 2o3 DA. The column for
+h-CLAT hazard identification should be an indicator for a positive or
+negative outcome from h-CLAT. Positive outcomes must be indicated by
+“p,” “pos,” “positive,” or 1. Negative outcomes must be indicated by
+“n,” “neg,” “negative,” or 0. The values are not case sensitive. Missing
+values should be blank or labeled as “NA.” Any invalid values will be
+treated as missing and will not be used to predict skin sensitization
+hazard.
 
 ### Minimum Induction Threshold
 
-h-CLAT minimum induction threshold (MIT) must contain either positive
+The h-CLAT minimum induction threshold (MIT) is used in the ITS and KE
+3/1 STS DAs. The column for h-CLAT MIT must contain either positive
 numeric values for positive outcomes or “n,” “neg,” “negative,” or “Inf”
-to indicate a negative outcome. Any other values, including “NA,” will
-not be used to predict skin sensitization potency.
+to indicate negative outcomes. The values are not case sensitive.
+Missing values should be blank or labeled as “NA.” Any invalid values
+will be treated as missing and will not be used to predict skin
+sensitization hazard.
 
-## KeratinoSens™ Call
+## KeratinoSens™ Hazard Identification
 
-KeratinoSens™ (KS) call should be an indicator for a positive or
-negative outcome from the KS assay. Positive outcomes must be indicated
-by “p,” “pos,” “positive,” or 1. Negative outcomes must be indicated by
-“n,” “neg,” “negative,” or 0. Any other values will not be used to
+KeratinoSens™ (KS) hazard identification is used in the 2o3 DA. The
+column for KS hazard identification should be an indicator for a
+positive or negative outcome from the KS assay. Positive outcomes must
+be indicated by “p,” “pos,” “positive,” or 1. Negative outcomes must be
+indicated by “n,” “neg,” “negative,” or 0. The values are not case
+sensitive. Missing values should be blank or labeled as “NA.” Any
+invalid values will be treated as missing and will not be used to
 predict skin sensitization hazard.
 
-## OECD QSAR Toolbox
+Alternatively, iMax values can be provided and evaluated for hazard
+identification. The column corresponding to KS iMax should only contain
+numeric values. Chemicals with KS iMax values ≥ 1.5 are labeled as
+positive and chemicals with KS iMax values &lt;1.5 are labeled as
+negative.
 
-### Call
+## In Silico Prediction
 
-The OECD QSAR Toolbox (TB) call should be an indicator for a positive or
-negative prediction where positive predictions are indicated by “p,”
+### Hazard Identification
+
+*In silico* predictions should be derived from either [Derek
+Nexus](https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm)
+or the OECD QSAR Toolbox\[[13](#ref-YORDANOVA201989)\]. The column for
+*in silico* hazard identification should be an indicator for a positive
+or negative prediction where positive predictions are indicated by “p,”
 “pos,” “positive,” or 1. Negative predictions must be indicated by “n,”
-“neg,” “negative,” or 0. Any other values will not be used to predict
-skin sensitization hazard.
+“neg,” “negative,” or 0. The values are not case sensitive. Missing
+values should be blank or labeled as “NA.” Any invalid values will be
+treated as missing and will not be used to predict skin sensitization
+hazard.
 
 ### Applicability Domain
 
-The OECD QSAR Toolbox (TB) applicability domain (AD) should be an
-indicator for whether the chemical is in the AD of the toolbox’s models.
-A value of “In” or 1 indicates that the chemical is in the AD. A value
-of “Out” or 0 indicates that the chemical is outside the AD and the OECD
-QSAR TB prediction will not be used to predict skin sensitization
-potency.
+The applicability domain (AD) from the user’s chosen *in silico* tool
+should be an indicator for whether the chemical is in the AD of the
+tool’s models. A value of “In” or 1 indicates that the chemical is in
+the AD. A value of “Out” or 0 indicates that the chemical is outside the
+AD and the *in silico* prediction will not be used to predict skin
+sensitization hazard. The values are not case sensitive. Missing values
+should be blank or labeled as “NA.” Any invalid values will be treated
+as missing and will not be used to predict skin sensitization hazard.
 
 # Step 3: Review Selection
 
-After clicking “Done” in *Step 2*, the selected columns will be
+After clicking *Done* in *Step 2*, the selected columns will be
 evaluated for proper formatting. The *Step 3* tab will display a table
 with 3 columns. The “Variable” column contains the name of the assay
 endpoint the app requested. The “Selected Column” column has the name of
-the column selected for the assay endpoint. Verify that the selected
-column is correct. If needed, return to *Step 2*, update the selected
-columns and click “Done” to update the table in *Step 3*. The “Flag”
-column will contain text describing the formatting requirement that was
-violated. Updates to the data format must be made externally, and the
-data will need to be re-uploaded.
-
-After reviewing the selections, click “Run” to run the DASS predictions
-using the columns shown in “Selected Column.” If there are any
-unresolved flags, any invalid values will be marked as missing and will
-not be used to predict skin sensitization hazard and potency.
+the data column that was selected for the assay endpoint. Verify that
+the selected columns are correct. If needed, return to *Step 2*, update
+the selected columns and click *Done* to update the table in *Step 3*.
+The “Flag” column will contain text describing the formatting
+requirement that was violated. Review the format of any flagged columns.
+Updates to the data format must be made externally, and the data will
+need to be re-uploaded. After reviewing the selections, click *Run* to
+run the DASS predictions using the columns shown in “Selected Column.”
+If there are any unresolved flags, any invalid values will be marked as
+missing and will not be used to predict skin sensitization hazard.
 
 # Step 4: Results
 

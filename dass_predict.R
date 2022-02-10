@@ -7,13 +7,19 @@
 # Description: description                                                    #
 # Required Packages:                                                          #
 # - data.table                                                                #
+# - readxl                                                                    #
 #=============================================================================#
 
 # Function to read in data
 # `fpath` - user-supplied path to data file
 read_data <- function(fpath) {
-  if (!grepl("txt$|tsv$|csv$", fpath)) stop("Incorrect file extension.")
-  fread(fpath)
+  if (grepl("txt$|tsv$|csv$", fpath)) {
+    fread(fpath, colClasses = "character", na.strings = c("NA", ""))
+  } else if (grepl("xls$|xlsx$", fpath)) {
+    data.table(readxl::read_excel(fpath, na = c("NA", "")))
+  } else {
+    stop("Incorrect file extension.")
+  }
 }
 
 # grep functions for case-insensitive matching
@@ -22,7 +28,7 @@ grepl_ci <- function(str, x) grepl(pattern = str, x = x, ignore.case = T)
 
 # Function to produce the columns needed to calculate the predictions
 # the user has requested. 
-# `dass` - a vector or character string to indiciate which defined approaches
+# `dass` - a vector or character string to indicate which defined approaches
 #          will be calculated
 # `ks_call_method` - a character string that indicates if KeratinoSens Call 
 #                    will be provided as a call value or if call needs to be 
@@ -35,41 +41,47 @@ grepl_ci <- function(str, x) grepl(pattern = str, x = x, ignore.case = T)
 check_cols <- function(dass = c("da_2o3", "da_itsv2", "da_ke31"),
                        ks_call_method = NULL,
                        dpra_call_method = NULL) {
-  cols_to_check <- vector("character")
+  cols_to_check <- vector(mode = "list", length = 3)
+  names(cols_to_check) <- c("da_2o3", "da_itsv2", "da_ke31")
   # 2o3 requires KeratinoSens Call and DPRA Call
   if ("da_2o3" %in% dass) {
+    cols_to_check[["da_2o3"]] <- "hclat_call"
     if (ks_call_method == "call") {
-      cols_to_check <- c(cols_to_check, "ks_call")
+      cols_to_check[["da_2o3"]] <- c(cols_to_check[["da_2o3"]], "ks_call")
+      # cols_to_check <- c(cols_to_check, "ks_call")
     } else if (ks_call_method == "imax") {
-      cols_to_check <- c(cols_to_check, "ks_imax")
+      cols_to_check[["da_2o3"]] <- c(cols_to_check[["da_2o3"]], "ks_imax")
+      # cols_to_check <- c(cols_to_check, "ks_imax")
     }
     
     if (dpra_call_method == "call") {
-      cols_to_check <- c(cols_to_check, "dpra_call")
+      cols_to_check[["da_2o3"]] <- c(cols_to_check[["da_2o3"]], "dpra_call")
+      # cols_to_check <- c(cols_to_check, "dpra_call")
     } else if (dpra_call_method == "pdepl") {
-      cols_to_check <- c(cols_to_check, "dpra_pC", "dpra_pK")
+      cols_to_check[["da_2o3"]] <- c(cols_to_check[["da_2o3"]], "dpra_pC", "dpra_pK")
+      # cols_to_check <- c(cols_to_check, "dpra_pC", "dpra_pK")
     }
     
-    cols_to_check <- c(cols_to_check, "hclat_call")
+    # cols_to_check <- c(cols_to_check, "hclat_call")
   }
   # ITSv2 requires h-CLAT MIT, dpra %C-depletion, DPRA %K-depletion, 
   # oecd qsar tb Call, and OECD QSAR TB Applicability Domain
   if ("da_itsv2" %in% dass) {
-    cols_to_check <- c(cols_to_check, "hclat_mit", "dpra_pC", "dpra_pK", "oecd_tb_call", "oecd_tb_ad")
+    cols_to_check[["da_itsv2"]] <- c("hclat_mit", "dpra_pC", "dpra_pK", "oecd_tb_call", "oecd_tb_ad")
   }
   
   # KE 3/1 STS requires h-CLAT MIT and DPRA Call
   if ("da_ke31" %in% dass) {
+    cols_to_check[["da_ke31"]] <- "hclat_mit"
     if (dpra_call_method == "call") {
       cols_to_check <- c(cols_to_check, "dpra_call")
     } else if (dpra_call_method == "pdepl") {
       cols_to_check <- c(cols_to_check, "dpra_pC", "dpra_pK")
     }
-    
-    cols_to_check <- c(cols_to_check, "hclat_mit")
   }
   # Returns character vector
-  sort(unique(cols_to_check))
+  sort(unique(unlist(cols_to_check)))
+  # sort(unique(cols_to_check))
 }
 
 # Function that performs the requested DASS by calling the functions for each
@@ -105,7 +117,7 @@ dass_predict <- function(dt, dass = c("da_2o3", "da_itsv2", "da_ke31"),
     if (ks_call_method == "call") {
       ks_call <- dt$ks_call
     } else if (ks_call_method == "imax") {
-      ks_call <- ifelse(dt$ks_imax > 1.5, 1, 0)
+      ks_call <- ifelse(dt$ks_imax >= 1.5, 1, 0)
       dt[,ks_call_calculated := ks_call]
     }
   }
@@ -167,12 +179,12 @@ dass_predict <- function(dt, dass = c("da_2o3", "da_itsv2", "da_ke31"),
       oecd_domain = dt[,oecd_tb_ad]
     )
     res_list$DA_ITSv2 <- data.table(
-      ITSv2_hCLAT_Score = temp$ITSv2_hCLAT_Score,
-      ITSv2_DPRA_Score = temp$ITSv2_DPRA_Score,
-      ITSv2_OECDQSARTB_Score = temp$ITSv2_OECDQSARTB_Score,
-      ITSv2_TotalScore = temp$ITSv2_TotalScore,
-      DA_ITSv2_Call = temp$ITSv2_Call,
-      DA_ITSv2_Potency = temp$ITSv2_Potency
+      ITS_hCLAT_Score = temp$ITS_hCLAT_Score,
+      ITS_DPRA_Score = temp$ITS_DPRA_Score,
+      ITS_OECDQSARTB_Score = temp$ITS_OECDQSARTB_Score,
+      ITS_TotalScore = temp$ITS_TotalScore,
+      DA_ITS_Call = temp$ITS_Call,
+      DA_ITS_Potency = temp$ITS_Potency
     )
   }
 
@@ -318,13 +330,16 @@ da_itsv2 <- function(hclat_mit, hclat_mit_num, dpra_pC, dpra_pK, dpra_mean, oecd
     itsv2_cat == "NC", "0"
   )]
   
+  # Update potency score for 1*
+  temp[itsv2_cat == "1*", itsv2_cat := "Inconclusive"]
+  
   list(
-    ITSv2_hCLAT_Score = temp$hclat_score,
-    ITSv2_DPRA_Score = temp$dpra_score,
-    ITSv2_OECDQSARTB_Score = temp$oecd_score,
-    ITSv2_TotalScore = temp$itsv2_score,
-    ITSv2_Call = temp$itsv2_call,
-    ITSv2_Potency = temp$itsv2_cat
+    ITS_hCLAT_Score = temp$hclat_score,
+    ITS_DPRA_Score = temp$dpra_score,
+    ITS_OECDQSARTB_Score = temp$oecd_score,
+    ITS_TotalScore = temp$itsv2_score,
+    ITS_Call = temp$itsv2_call,
+    ITS_Potency = temp$itsv2_cat
   )
 }
 

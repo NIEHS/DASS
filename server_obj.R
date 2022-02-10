@@ -1,4 +1,4 @@
-#=============================================================================#
+# =============================================================================#
 # File Name: server_obj.r                                                     #
 # Original Creator: ktto                                                      #
 # Contact Information: comptox@ils-inc.com                                    #
@@ -8,13 +8,13 @@
 # Required Packages:                                                          #
 # - data.table, DT                                                            #
 # - shiny shinyBS shinyjs                                                     #
-#=============================================================================#
+# =============================================================================#
 
 # Reactive Values -----
 # tracks selected column names to prevent duplicate column selection
 col_select_input <- reactiveValues()
 # selected tests ordered as: 2o3, itsv2, ke 3/1 sts
-dass_choice <- reactiveVal() 
+dass_choice <- reactiveVal()
 # DASS results
 dass_res <- reactiveVal()
 # formatted data
@@ -30,7 +30,7 @@ dt_col_select <- reactiveValues(
   ks_imax = "",
   oecd_tb_call = "",
   oecd_tb_ad = ""
-) 
+)
 # table with selected columns for user to review
 dt_review <- reactiveVal()
 # indicator to trigger popup warning if running with flagged columns
@@ -76,11 +76,12 @@ observeEvent(input$fpath, {
   # Check file extension
   ext <- unlist(strsplit(input$fpath$name, "[.]"))
   ext <- ext[length(ext)]
-  if (!grepl("^csv$|^tsv$|^txt$", ext)) {
+  if (!grepl("^csv$|^tsv$|^txt$|^xls$|^xlsx$", ext)) {
     showNotification(
       type = "error",
-      "Incorrect file type. Data must be comma-delimited (csv) or tab-delimited (tsv, txt)",
-      duration = 10)
+      "Incorrect file type. Accepted file extensions: csv, tsv, txt, xlsx",
+      duration = 10
+    )
   } else {
     # Read in data
     dt <- read_data(input$fpath$datapath)
@@ -88,11 +89,12 @@ observeEvent(input$fpath, {
     col_select_input$selected <- NULL
     col_select_input$deselected <- colnames(dt)
     updateCollapse(session,
-                   id = "panels",
-                   open = "panel_dass_options")
+      id = "panels",
+      open = "panel_dass_options"
+    )
     # Resets reactive values for new dataset
-    for (i in 1:length(si_ids)){
-      updateSelectInput(inputId =si_ids[i], selected = "")
+    for (i in 1:length(si_ids)) {
+      updateSelectInput(inputId = si_ids[i], selected = "")
     }
     review_label(NULL)
     flagged(NULL)
@@ -100,42 +102,58 @@ observeEvent(input$fpath, {
     # dass_res(NULL)
     # Close all other panels
     updateCollapse(session,
-                   id = "panels",
-                   close = c("panel_col_options", "panel_review", "panel_results"))
+      id = "panels",
+      close = c("panel_col_options", "panel_review", "panel_results")
+    )
   }
 })
 
 output$usr_dt <- renderDataTable({
   req(usr_dt())
   datatable(usr_dt(),
-            # selectize-input in step 2 won't work if filter argument 
-            # https://github.com/rstudio/shiny/issues/3125
-            # filter = "top",
-            class = "cell-border stripe hover",
-            options = list(scrollY = TRUE,
-                           scrollX = TRUE,
-                           rowCallback = JS(rowCallback)))
+    # selectize-input in step 2 won't work if filter argument
+    # https://github.com/rstudio/shiny/issues/3125
+    # filter = "top",
+    class = "cell-border stripe hover",
+    options = list(
+      scrollY = TRUE,
+      scrollX = TRUE,
+      rowCallback = JS(rowCallback)
+    )
+  )
 })
 
 # Step 1: Select Approaches -----
 # Select all strategies
 observeEvent(input$dass_all, {
-  updateCheckboxInput(inputId = "do_da_2o3",
-                      value = TRUE)
-  updateCheckboxInput(inputId = "do_da_itsv2",
-                      value = TRUE)
-  updateCheckboxInput(inputId = "do_da_ke31",
-                      value = TRUE)
+  updateCheckboxInput(
+    inputId = "do_da_2o3",
+    value = TRUE
+  )
+  updateCheckboxInput(
+    inputId = "do_da_itsv2",
+    value = TRUE
+  )
+  updateCheckboxInput(
+    inputId = "do_da_ke31",
+    value = TRUE
+  )
 })
 
 # Select no strategies
 observeEvent(input$dass_none, {
-  updateCheckboxInput(inputId = "do_da_2o3",
-                      value = FALSE)
-  updateCheckboxInput(inputId = "do_da_itsv2",
-                      value = FALSE)
-  updateCheckboxInput(inputId = "do_da_ke31",
-                      value = FALSE)
+  updateCheckboxInput(
+    inputId = "do_da_2o3",
+    value = FALSE
+  )
+  updateCheckboxInput(
+    inputId = "do_da_itsv2",
+    value = FALSE
+  )
+  updateCheckboxInput(
+    inputId = "do_da_ke31",
+    value = FALSE
+  )
 })
 
 ## Questions -----
@@ -144,28 +162,29 @@ observeEvent(input$info_2o3, {
     title = "2 out of 3",
     HTML(
       "<p>The 2 out of 3 (2o3) Defined Approach is a sequential testing strategy",
-      "that classifies chemicals as sensitizers or non-sensitizers based on at",
+      "for predicting hazard identification (sensitizers or non-sensitizers) based on at",
       "least 2 concordant results among the direct peptide reactivity assay (DPRA),",
-      "KeratinoSens&#8482;, and human cell-line activiation test (h-CLAT).",
+      "KeratinoSens&trade;, and human cell-line activiation test (h-CLAT).",
       "<br><br>",
       "For more details, see <i>OECD Guideline No. 497: Defined Approaches on Skin",
       "Sensitisation</i>[<a href='https://doi.org/https://doi.org/10.1787/b92879a4-en'",
       "target = '_blank'>1</a>]</p>"
-      ),
+    ),
     easyClose = T
   ))
 })
 
 observeEvent(input$info_itsv2, {
   showModal(modalDialog(
-    title = "Integrated Testing Strategy v.2",
+    title = "Integrated Testing Strategy",
     HTML(
-      "<p>This app implements version 2 of the Integrated Testing Strategy (ITSv2)",
-      "Defined Approach. ITSv2 classifies chemicals as sensitizers or non-sensitizers",
-      "and predicts GHS potency category by scoring results from the the direct",
-      "peptide reactivity assay (DPRA), human cell-line activiation test (h-CLAT),",
-      "and <i>in silico</i> predictions from the OECD QSAR Toolbox.",
-      "<br><br>",
+      "The Integrated Testing Strategy (ITS) Defined Approach predicts chemical",
+      "hazard identification and GHS potency category by",
+      "scoring results from the the direct peptide reactivity assay (DPRA),",
+      "human cell-line activiation test (h-CLAT), and <i>in silico</i> predictions",
+      "from either <a href='https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm'",
+      "target = '_blank'>Derek Nexus</a> or the OECD QSAR Toolbox[<a href='https://doi.org/10.1016/j.comtox.2019.01.006'",
+      "target = '_blank'>7</a>].<br><br>",
       "For more details, see <i>OECD Guideline No. 497: Defined Approaches on Skin",
       "Sensitisation</i>[<a href='https://doi.org/https://doi.org/10.1787/b92879a4-en'",
       "target = '_blank'>1</a>]</p>"
@@ -179,8 +198,8 @@ observeEvent(input$info_ke31, {
     title = "Key Event 3/1 (KE 3/1) Sequential Testing Strategy (STS)",
     HTML(
       "<p>The Key Event 3/1 Sequential Testing Strategy is a sequential testing strategy",
-      "that classifies chemicals as sensitizers or non-sensitizers",
-      "and predicts GHS potency category based on results from the the direct",
+      "that predicts chemical hazard identification and",
+      "GHS potency category based on results from the the direct",
       "peptide reactivity assay (DPRA) and human cell-line activiation test (h-CLAT).",
       "<br><br>",
       "For more details, see EPA's <i>Interim Science Policy: Use of Alternative",
@@ -198,11 +217,24 @@ observeEvent(input$info_ke31, {
 observeEvent(input$load_cols, {
   req(usr_dt())
   if (all(!input$do_da_2o3 &
-          !input$do_da_itsv2 & !input$do_da_ke31)) {
-    showNotification(type = "error",
-                     ui = "No defined approaches selected.",
-                     duration = 10)
+    !input$do_da_itsv2 & !input$do_da_ke31)) {
+    showNotification(
+      type = "error",
+      ui = "No defined approaches selected.",
+      duration = 10
+    )
   } else {
+    # Ensure no columns are selected
+    col_select_input$selected <- NULL
+    col_select_input$deselected <- colnames(usr_dt())
+    
+    dt_col_check <- names(which(unlist(reactiveValuesToList(dt_col_select)) != ""))
+    if (length(dt_col_check) > 0) {
+      for (i in dt_col_check) {
+        dt_col_select[[i]] <- ""
+      }
+    }
+    
     # Names of DASS options
     dass_opts <- c("da_2o3", "da_itsv2", "da_ke31")
     # Variables needed for each DASS
@@ -212,19 +244,21 @@ observeEvent(input$load_cols, {
       da_ke31 = c("hclat_mit", "dpra_call")
     )
     # Get user DASS selection as logical vector
-    dass_selected <- c(input$do_da_2o3,
-                       input$do_da_itsv2,
-                       input$do_da_ke31)
+    dass_selected <- c(
+      input$do_da_2o3,
+      input$do_da_itsv2,
+      input$do_da_ke31
+    )
     # Filter DASS options and DASS variable vectors based on selection
     dass_opts <- dass_opts[dass_selected]
     dass_choice(dass_opts)
     dass_vars <- dass_vars[dass_selected]
     dass_vars <- sort(unique(unlist(dass_vars)))
-    
+
     # Set up UI for Panel 2
     # List of ui objects
     dt_col_ui <- list()
-    
+
     # DPRA %C- and %K-depletion
     # For DPRA call, if %C- and %K depletion are provided, user may choose
     # how to determine call - as the DPRA call column, or evaluated from
@@ -252,7 +286,7 @@ observeEvent(input$load_cols, {
       if ("dpra_call" %in% dass_vars) {
         dt_col_ui$dpra_call <- fluidRow(div(
           style = "margin-left:25px",
-          HTML("<p><span style='font-size:16px; font-weight:bold; line-height:3;'>DPRA Call</span>"),
+          HTML("<p><span style='font-size:16px; font-weight:bold; line-height:3;'>DPRA Hazard Identification</span>"),
           actionLink(inputId = "info_dpracall_1", label = NULL, icon = icon("question-sign", lib = "glyphicon")),
           HTML("</p>"),
           div(
@@ -260,10 +294,14 @@ observeEvent(input$load_cols, {
             radioButtons(
               inputId = "dpra_call_choice",
               label = NULL,
-              choiceNames = c("Use Positive/Negative Call",
-                              "Use %-Depletion Values"),
-              choiceValues = c("call",
-                               "pdepl")
+              choiceNames = c(
+                "Use Hazard Identification",
+                "Use %-Depletion Values"
+              ),
+              choiceValues = c(
+                "call",
+                "pdepl"
+              )
             ),
             div(
               style = "margin-left:25px",
@@ -271,7 +309,7 @@ observeEvent(input$load_cols, {
                 condition = "input.dpra_call_choice=='call'",
                 selectInput(
                   inputId = "dpra_call_col",
-                  label = "DPRA Call Column",
+                  label = "DPRA Hazard Identification Column",
                   choices = c("", col_select_input$deselected)
                 )
               )
@@ -282,7 +320,7 @@ observeEvent(input$load_cols, {
     } else if ("dpra_call" %in% dass_vars) {
       dt_col_ui$dpra_call <- fluidRow(div(
         style = "margin-left:25px",
-        HTML("<p><span style='font-size:16px; font-weight:bold; line-height:3;'>DPRA Call</span>"),
+        HTML("<p><span style='font-size:16px; font-weight:bold; line-height:3;'>DPRA Hazard Identification</span>"),
         actionLink(inputId = "info_dpracall_2", label = NULL, icon = icon("question-sign", lib = "glyphicon")),
         HTML("</p>"),
         div(
@@ -290,10 +328,14 @@ observeEvent(input$load_cols, {
           radioButtons(
             inputId = "dpra_call_choice",
             label = NULL,
-            choiceNames = c("Use Positive/Negative Call",
-                            "Use %-Depletion Values"),
-            choiceValues = c("call",
-                             "pdepl")
+            choiceNames = c(
+              "Use DPRA Hazard Identification",
+              "Use %-Depletion Values"
+            ),
+            choiceValues = c(
+              "call",
+              "pdepl"
+            )
           ),
           div(
             style = "margin-left:25px",
@@ -301,7 +343,7 @@ observeEvent(input$load_cols, {
               condition = "input.dpra_call_choice=='call'",
               selectInput(
                 inputId = "dpra_call_col",
-                label = "DPRA Call Column",
+                label = "DPRA Hazard Identification Column",
                 choices = c("", col_select_input$deselected)
               )
             ),
@@ -322,25 +364,25 @@ observeEvent(input$load_cols, {
         )
       ))
     }
-    
-    # h-CLAT Call
+
+    # h-CLAT sens/nonsens
     if ("hclat_call" %in% dass_vars) {
       dt_col_ui$hclat_call <- fluidRow(div(
         style = "margin-left:25px",
-        HTML("<p><span style='font-size:16px; font-weight:bold; line-height:3;'>h-CLAT Call</span>"),
+        HTML("<p><span style='font-size:16px; font-weight:bold; line-height:3;'>h-CLAT Hazard Identification</span>"),
         actionLink(inputId = "info_hclatcall", label = NULL, icon = icon("question-sign", lib = "glyphicon")),
         HTML("</p>"),
         div(
           style = "margin-left:25px",
           selectInput(
             inputId = "hclat_call_col",
-            label = "h-CLAT Call Column",
+            label = "h-CLAT Hazard Identification Column",
             choices = c("", col_select_input$deselected)
           )
         )
       ))
     }
-    
+
     # h-CLAT MIT
     if ("hclat_mit" %in% dass_vars) {
       dt_col_ui$hclat_mit <- fluidRow(div(
@@ -358,13 +400,13 @@ observeEvent(input$load_cols, {
         )
       ))
     }
-    
+
     # KS Call - User selects how it should be loaded, as the call column,
     # or as KS iMax to be evaluated as Positive/Negative
     if ("ks_call" %in% dass_vars) {
       dt_col_ui$ks <- fluidRow(div(
         style = "margin-left:25px",
-        HTML("<p><span style='font-size:16px; font-weight:bold; line-height:3;'>KeratinoSens&trade; Call</span>"),
+        HTML("<p><span style='font-size:16px; font-weight:bold; line-height:3;'>KeratinoSens&trade; Hazard Identification</span>"),
         actionLink(inputId = "info_kscall", label = NULL, icon = icon("question-sign", lib = "glyphicon")),
         HTML("</p>"),
         div(
@@ -372,10 +414,14 @@ observeEvent(input$load_cols, {
           radioButtons(
             inputId = "ks_choice",
             label = NULL,
-            choiceNames = c("Use Positive/Negative Call",
-                            "Use iMax"),
-            choiceValues = c("call",
-                             "imax")
+            choiceNames = c(
+              "Use KS Hazard Identification",
+              "Use KS iMax"
+            ),
+            choiceValues = c(
+              "call",
+              "imax"
+            )
           ),
           div(
             style = "margin-left:25px",
@@ -383,7 +429,7 @@ observeEvent(input$load_cols, {
               condition = "input.ks_choice=='call'",
               selectInput(
                 inputId = "ks_call_col",
-                label = "KS Call Column",
+                label = "KS Hazard Identification Column",
                 choices = c("", col_select_input$deselected),
                 selected = FALSE
               )
@@ -402,23 +448,23 @@ observeEvent(input$load_cols, {
       ))
     }
 
-    # OECD QSAR Toolbox
+    # in silico
     if ("oecd_tb" %in% dass_vars) {
       dt_col_ui$oecd <- fluidRow(div(
         style = "margin-left:25px",
-        HTML("<p><span style='font-size:16px; font-weight:bold; line-height:3;'>OECD QSAR Toolbox Call</span>"),
+        HTML("<p><span style='font-size:16px; font-weight:bold; line-height:3;'>In Silico Hazard Identification</span>"),
         actionLink(inputId = "info_oecdtbcall", label = NULL, icon = icon("question-sign", lib = "glyphicon")),
         HTML("</p>"),
         div(
           style = "margin-left:25px",
           selectInput(
             inputId = "oecd_call_col",
-            label = "OECD QSAR TB Call Column",
+            label = "In Silico Hazard Identification Column",
             choices = c("", col_select_input$deselected)
           ),
           selectInput(
             inputId = "oecd_ad_col",
-            label = "OECD QSAR TB Applicability Domain",
+            label = "In Silico Applicability Domain",
             choices = c("", col_select_input$deselected)
           )
         )
@@ -428,11 +474,13 @@ observeEvent(input$load_cols, {
       dt_col_ui
     })
     updateCollapse(session,
-                   id = "panels",
-                   close = "panel_dass_options")
+      id = "panels",
+      close = "panel_dass_options"
+    )
     updateCollapse(session,
-                   id = "panels",
-                   open = "panel_col_options")
+      id = "panels",
+      open = "panel_col_options"
+    )
   }
 })
 
@@ -457,15 +505,16 @@ observeEvent(input$ks_choice, {
 })
 
 ## Questions -----
+### DPRA -----
 observeEvent(input$info_dpradep, {
   showModal(modalDialog(
-    title = "Direct Peptide Reactivity Assay",
+    title = "DPRA % Depletion",
     HTML(
       "%-Cysteine and %-Lysine depletion values from the direct peptide reactivity",
-      "assay (DPRA) are used in ITSv2.<br><br>The columns corresponding to %-Cysteine",
+      "assay (DPRA) are used in ITS.<br><br>The columns corresponding to %-Cysteine",
       "and %-Lysine depletion should only contain numeric values. Missing values",
-      "should be labeled as 'NA'. If negative values are reported, then co-elution",
-      "is assumed and the value will not be used for scoring.<br><br>For more details, see",
+      "should be blank or labeled as 'NA'.",
+      "<br><br>For more details, see",
       "<i>OECD Test No. 442C: In Chemico Skin Sensitisation</i>[<a",
       "href='https://doi.org/10.1787/9789264229709-en'",
       "target = '_blank'>4</a>].</p>"
@@ -476,16 +525,17 @@ observeEvent(input$info_dpradep, {
 
 observeEvent(input$info_dpracall_1, {
   showModal(modalDialog(
-    title = "Direct Peptide Reactivity Assay",
+    title = "DPRA Hazard Identification",
     HTML(
-      "Chemical calls from the direct peptide reactivity assay (DPRA)",
+      "Chemical hazard identifications from the direct peptide reactivity assay (DPRA)",
       "are used in the 2o3 and KE3/1 STS defined approaches.<br><br>",
-      "The column corresponding to DPRA call should only contain the values:<ul>",
-      "<li>'p', 'pos', 'positive', or 1 to indicate positive calls (sensitizers)</li>",
-      "<li>'n', 'neg', 'negative', or 0 to indicate negative calls (non-sensitizers)</li>",
-      "<li>Missing values should be labeled as 'NA'.</li></ul>",
-      "<br>Alternatively, the %-Cysteine and %-Lysine values can be evaluated",
-      "for call. Calls are made using Tables 1 and 2 from <i>OECD Test No. 442C:",
+      "The column corresponding to DPRA hazard identifications should only contain the values:<ul style='margin-bottom:0px;'>",
+      "<li>'p', 'pos', 'positive', or 1 to indicate positive outcomes (sensitizers)*</li>",
+      "<li>'n', 'neg', 'negative', or 0 to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "<span style='font-size: 90%;'><i>* Case insensitive</i></span><br>",
+      "<br>Alternatively, the %-Cysteine and %-Lysine depletion values can be evaluated",
+      "for hazard identifications. Hazard identifications are made using Tables 1 and 2 from <i>OECD Test No. 442C:",
       "In Chemico Skin Sensitisation</i>[<a",
       "href='https://doi.org/10.1787/9789264229709-en'",
       "target = '_blank'>4</a>]</p>"
@@ -496,19 +546,19 @@ observeEvent(input$info_dpracall_1, {
 
 observeEvent(input$info_dpracall_2, {
   showModal(modalDialog(
-    title = "Direct Peptide Reactivity Assay",
+    title = "DPRA Hazard Identification",
     HTML(
-      "Chemical calls from the direct peptide reactivity assay (DPRA)",
+      "Chemical hazard identifications from the direct peptide reactivity assay (DPRA)",
       "are used in the 2o3 and KE3/1 STS defined approaches.<br><br>",
-      "The column corresponding to DPRA call should only contain the values:<ul>",
-      "<li>'p', 'pos', 'positive', or 1 to indicate positive calls (sensitizers)</li>",
-      "<li>'n', 'neg', 'negative', or 0 to indicate negative calls (non-sensitizers)</li>",
-      "<li>Missing values should be labeled as 'NA'.</li></ul>",
-      "<br>Alternatively, the %-Cysteine and %-Lysine values can be evaluated",
-      "for call. The columns corresponding to %-Cysteine",
+      "The column corresponding to DPRA hazard identifications should only contain the values:<ul style='margin-bottom:0px;'>",
+      "<li>'p', 'pos', 'positive', or 1 to indicate positive outcomes (sensitizers)*</li>",
+      "<li>'n', 'neg', 'negative', or 0 to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "<span style='font-size: 90%;'><i>* Case insensitive</i></span><br>",
+      "<br>Alternatively, the %-Cysteine and %-Lysine depletion values can be evaluated",
+      "for hazard identifications. The columns corresponding to %-Cysteine",
       "and %-Lysine depletion should only contain numeric values. Missing values",
-      "should be labeled as 'NA'. If negative values are reported, then co-elution",
-      "is assumed and the chemical will not be evaluated. Calls are made using Tables 1 and 2 from",
+      "should be blank or labeled as 'NA'. Hazard identifications are made using Tables 1 and 2 from",
       "<i>OECD Test No. 442C: In Chemico Skin Sensitisation</i>[<a",
       "href='https://doi.org/10.1787/9789264229709-en'",
       "target = '_blank'>4</a>]</p>"
@@ -517,16 +567,18 @@ observeEvent(input$info_dpracall_2, {
   ))
 })
 
+### h-CLAT -----
 observeEvent(input$info_hclatcall, {
   showModal(modalDialog(
-    title = "Human Cell Line Activation Test",
+    title = "h-CLAT Hazard Identification",
     HTML(
-      "Chemical calls from the human cell line activation test (h-CLAT)",
+      "Chemical hazard identifications from the human cell line activation test (h-CLAT)",
       "are used in the 2o3 defined approach.<br><br>",
-      "The column corresponding to h-CLAT call should only contain the values:<ul>",
-      "<li>'p', 'pos', 'positive', or 1 to indicate positive calls (sensitizers)</li>",
-      "<li>'n', 'neg', 'negative', or 0 to indicate negative calls (non-sensitizers)</li>",
-      "<li>Missing values should be labeled as 'NA'.</li></ul>",
+      "The column corresponding to h-CLAT hzard identification should only contain the values:<ul style='margin-bottom:0px;'>",
+      "<li>'p', 'pos', 'positive', or 1 to indicate positive outcomes (sensitizers)*</li>",
+      "<li>'n', 'neg', 'negative', or 0 to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "<span style='font-size: 90%;'><i>* Case insensitive</i></span><br><br>",
       "For more details, see <i>OECD Test No. 442E: In Vitro Skin",
       "Sensitisation</i>[<a href='https://doi.org/10.1787/9789264264359-en'",
       "target = '_blank'>5</a>]</p>"
@@ -537,14 +589,15 @@ observeEvent(input$info_hclatcall, {
 
 observeEvent(input$info_hclatmit, {
   showModal(modalDialog(
-    title = "Human Cell Line Activation Test",
+    title = "h-CLAT MIT",
     HTML(
       "Minimum induction threshold (MIT) from the human cell line activiation test (h-CLAT)",
-      "is used in the ITSv2 and KE3/1 STS defined approaches.<br><br>",
-      "The column corresponding to h-CLAT MIT should only contain:<ul>",
-      "<li>Numeric Values</li>",
-      "<li>'n', 'neg', 'negative', or 'Inf' to indicate negative calls.</li>",
-      "<li>Missing values should be labeled as 'NA'.</li></ul>",
+      "is used in the ITS and KE3/1 STS defined approaches.<br><br>",
+      "The column corresponding to h-CLAT MIT should only contain:<ul style='margin-bottom:0px;'>",
+      "<li>Numeric values</li>",
+      "<li>'n', 'neg', 'negative', or 'Inf' to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "<span style='font-size: 90%;'><i>* Case insensitive</i></span><br><br>",
       "For more details, see <i>OECD Test No. 442E: In Vitro Skin",
       "Sensitisation</i>[<a href='https://doi.org/10.1787/9789264264359-en'",
       "target = '_blank'>5</a>]</p>"
@@ -553,20 +606,22 @@ observeEvent(input$info_hclatmit, {
   ))
 })
 
+### KeratinoSens -----
 observeEvent(input$info_kscall, {
   showModal(modalDialog(
-    title = HTML("KeratinoSens&trade;"),
+    title = HTML("KeratinoSens&trade; Hazard Identification"),
     HTML(
-      "Chemical calls from the KeratinoSens&trade; (KS) assay",
+      "Chemical hazard identifications from the KeratinoSens&trade; (KS) assay",
       "are used in the 2o3 defined approach.<br><br>",
-      "The column corresponding to KS call should only contain the values:<ul>",
-      "<li>'p', 'pos', 'positive', or 1 to indicate positive calls (sensitizers)</li>",
-      "<li>'n', 'neg', 'negative', or 0 to indicate negative calls (non-sensitizers)</li>",
-      "<li>Missing values should be labeled as 'NA'.</li></ul>",
-      "Alternatively, iMax values can be provided and evaluated for call. The",
-      "column corresponding to KS iMax should contain numeric values. Missing",
-      "values should be labeled 'NA'. Chemicals with KS iMax values &gt;1.5",
-      "are labeled as positive and chemicals with KS iMax values &leq;1.5 are",
+      "The column corresponding to KS hazard identification should only contain the values:<ul style='margin-bottom:0px;>",
+      "<li>'p', 'pos', 'positive', or 1 to indicate positive outcomes (sensitizers)*</li>",
+      "<li>'n', 'neg', 'negative', or 0 to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "<span style='font-size: 90%;'><i>* Case insensitive</i></span><br><br>",
+      "Alternatively, iMax values can be provided and evaluated for hazard identification. The",
+      "column corresponding to KS iMax should contain only numeric values. Missing",
+      "values should be labeled 'NA'. Chemicals with KS iMax values &geq;1.5",
+      "are labeled as positive and chemicals with KS iMax values &lt;1.5 are",
       "labeled as negative.<br><br>",
       "For more details, see <i>OECD Test No. 442D: In Vitro",
       "Skin Sensitisation</i>[<a",
@@ -576,40 +631,43 @@ observeEvent(input$info_kscall, {
   ))
 })
 
+### In Silico -----
 observeEvent(input$info_oecdtbcall, {
   showModal(modalDialog(
-    title = "OECD QSAR Toolbox",
+    title = "In Silico Hazard Identification",
     HTML(
-      "Chemical call predictions from the OECD QSAR Toolbox (TB) are used in the",
-      "ITSv2 defined approach.<br><br>",
-      "The column corresponding to OECD QSAR TB call should only contain the values:<ul>",
-      "<li>'p', 'pos', 'positive', or 1 to indicate positive calls (sensitizers)</li>",
-      "<li>'n', 'neg', 'negative', or 0 to indicate negative calls (non-sensitizers)</li>",
-      "<li>Missing values should be labeled as 'NA'.</li></ul>",
+      "The ITS defined approach uses <i>in silico</i> predictions of hazard identification from either",
+      "<a href='https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm'",
+      "target = '_blank'>Derek Nexus</a> or the OECD QSAR Toolbox[<a",
+      "href='https://doi.org/10.1016/j.comtox.2019.01.006' target = '_blank'>7</a>].",
+      "<br><br>",
+      "The column corresponding to <i>in silico</i> hazard identification predictions should only contain the values:<ul style='margin-bottom:0px;'>",
+      "<li>'p', 'pos', 'positive', or 1 to indicate positive outcomes (sensitizers)*</li>",
+      "<li>'n', 'neg', 'negative', or 0 to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "<span style='font-size: 90%;'><i>* Case insensitive</i></span><br><br>",
       "Additionally, a column corresponding to applicability domain (AD) should",
-      "be provided. This column should only contain the values:<ul>",
-      "<li>'in' or 1 to indicate the chemical is within the AD.</li>",
-      "<li>'out' or 0 to indicate the chemical is outside the AD. Values for",
-      "chemicals outside the AD will not be evaluated.</li>",
-      "<li>Missing values should be labeled 'NA'.</li>",
-      "</ul>",
-      "For more details, see <i>Automated and standardized workflows in the",
-      "OECD QSAR Toolbox</i>[<a href='https://doi.org/10.1016/j.comtox.2019.01.006'",
-      "target = '_blank'>7</a>].</p>"
+      "be provided. This column should only contain the values:<ul style='margin-bottom:0px;>",
+      "<li>'in' or 1 to indicate the chemical is within the AD*</li>",
+      "<li>'out' or 0 to indicate the chemical is outside the AD*. Values for",
+      "chemicals outside the AD will not be evaluated</li>",
+      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "<span style='font-size: 90%;'><i>* Case insensitive</i></span>",
+      "</p>"
     ),
     easyClose = T
   ))
 })
 
+## Dropdown Updates -----
 # remove selected columns from dropdowns to prevent duplicate column selection
 # column selections
-
 observeEvent(input$dpra_call_col, {
   # Get previously selected
   old_select <- dt_col_select$dpra_call
   # Get new selected column
   new_select <- input$dpra_call_col
-  
+
   # If a change was made...
   if (old_select != new_select) {
     # If nothing was selected previously
@@ -641,9 +699,11 @@ observeEvent(input$dpra_call_col, {
     col_des_up <- na.omit(col_des_up[match(colnames(usr_dt()), col_des_up)])
     for (si in si_temp) {
       sel <- input[[si]]
-      updateSelectInput(inputId = si,
-                        choices = c("", sel, col_des_up),
-                        selected = sel)
+      updateSelectInput(
+        inputId = si,
+        choices = c("", sel, col_des_up),
+        selected = sel
+      )
     }
     dt_col_select$dpra_call <- input$dpra_call_col
   }
@@ -652,7 +712,7 @@ observeEvent(input$dpra_call_col, {
 observeEvent(input$dpra_pC_col, {
   old_select <- dt_col_select$dpra_pC
   new_select <- input$dpra_pC_col
-  
+
   if (old_select != new_select) {
     if (old_select == "" & new_select != "") {
       col_select_input$selected <-
@@ -679,9 +739,11 @@ observeEvent(input$dpra_pC_col, {
     col_des_up <- na.omit(col_des_up[match(colnames(usr_dt()), col_des_up)])
     for (si in si_temp) {
       sel <- input[[si]]
-      updateSelectInput(inputId = si,
-                        choices = c("", sel, col_des_up),
-                        selected = sel)
+      updateSelectInput(
+        inputId = si,
+        choices = c("", sel, col_des_up),
+        selected = sel
+      )
     }
     dt_col_select$dpra_pC <- input$dpra_pC_col
   }
@@ -690,7 +752,7 @@ observeEvent(input$dpra_pC_col, {
 observeEvent(input$dpra_pK_col, {
   old_select <- dt_col_select$dpra_pK
   new_select <- input$dpra_pK_col
-  
+
   if (old_select != new_select) {
     if (old_select == "" & new_select != "") {
       col_select_input$selected <-
@@ -717,9 +779,11 @@ observeEvent(input$dpra_pK_col, {
     col_des_up <- na.omit(col_des_up[match(colnames(usr_dt()), col_des_up)])
     for (si in si_temp) {
       sel <- input[[si]]
-      updateSelectInput(inputId = si,
-                        choices = c("", sel, col_des_up),
-                        selected = sel)
+      updateSelectInput(
+        inputId = si,
+        choices = c("", sel, col_des_up),
+        selected = sel
+      )
     }
     dt_col_select$dpra_pK <- input$dpra_pK_col
   }
@@ -728,7 +792,7 @@ observeEvent(input$dpra_pK_col, {
 observeEvent(input$hclat_call_col, {
   old_select <- dt_col_select$hclat_call
   new_select <- input$hclat_call_col
-  
+
   if (old_select != new_select) {
     if (old_select == "" & new_select != "") {
       col_select_input$selected <-
@@ -755,9 +819,11 @@ observeEvent(input$hclat_call_col, {
     col_des_up <- na.omit(col_des_up[match(colnames(usr_dt()), col_des_up)])
     for (si in si_temp) {
       sel <- input[[si]]
-      updateSelectInput(inputId = si,
-                        choices = c("", sel, col_des_up),
-                        selected = sel)
+      updateSelectInput(
+        inputId = si,
+        choices = c("", sel, col_des_up),
+        selected = sel
+      )
     }
     dt_col_select$hclat_call <- input$hclat_call_col
   }
@@ -766,7 +832,7 @@ observeEvent(input$hclat_call_col, {
 observeEvent(input$hclat_mit_col, {
   old_select <- dt_col_select$hclat_mit
   new_select <- input$hclat_mit_col
-  
+
   if (old_select != new_select) {
     if (old_select == "" & new_select != "") {
       col_select_input$selected <-
@@ -793,9 +859,11 @@ observeEvent(input$hclat_mit_col, {
     col_des_up <- na.omit(col_des_up[match(colnames(usr_dt()), col_des_up)])
     for (si in si_temp) {
       sel <- input[[si]]
-      updateSelectInput(inputId = si,
-                        choices = c("", sel, col_des_up),
-                        selected = sel)
+      updateSelectInput(
+        inputId = si,
+        choices = c("", sel, col_des_up),
+        selected = sel
+      )
     }
     dt_col_select$hclat_mit <- input$hclat_mit_col
   }
@@ -804,7 +872,7 @@ observeEvent(input$hclat_mit_col, {
 observeEvent(input$ks_call_col, {
   old_select <- dt_col_select$ks_call
   new_select <- input$ks_call_col
-  
+
   if (old_select != new_select) {
     if (old_select == "" & new_select != "") {
       col_select_input$selected <-
@@ -831,9 +899,11 @@ observeEvent(input$ks_call_col, {
     col_des_up <- na.omit(col_des_up[match(colnames(usr_dt()), col_des_up)])
     for (si in si_temp) {
       sel <- input[[si]]
-      updateSelectInput(inputId = si,
-                        choices = c("", sel, col_des_up),
-                        selected = sel)
+      updateSelectInput(
+        inputId = si,
+        choices = c("", sel, col_des_up),
+        selected = sel
+      )
     }
     dt_col_select$ks_call <- input$ks_call_col
   }
@@ -842,7 +912,7 @@ observeEvent(input$ks_call_col, {
 observeEvent(input$ks_imax_col, {
   old_select <- dt_col_select$ks_imax
   new_select <- input$ks_imax_col
-  
+
   if (old_select != new_select) {
     if (old_select == "" & new_select != "") {
       col_select_input$selected <-
@@ -869,9 +939,11 @@ observeEvent(input$ks_imax_col, {
     col_des_up <- na.omit(col_des_up[match(colnames(usr_dt()), col_des_up)])
     for (si in si_temp) {
       sel <- input[[si]]
-      updateSelectInput(inputId = si,
-                        choices = c("", sel, col_des_up),
-                        selected = sel)
+      updateSelectInput(
+        inputId = si,
+        choices = c("", sel, col_des_up),
+        selected = sel
+      )
     }
     dt_col_select$ks_imax <- input$ks_imax_col
   }
@@ -880,7 +952,7 @@ observeEvent(input$ks_imax_col, {
 observeEvent(input$oecd_call_col, {
   old_select <- dt_col_select$oecd_tb_call
   new_select <- input$oecd_call_col
-  
+
   if (old_select != new_select) {
     if (old_select == "" & new_select != "") {
       col_select_input$selected <-
@@ -907,9 +979,11 @@ observeEvent(input$oecd_call_col, {
     col_des_up <- na.omit(col_des_up[match(colnames(usr_dt()), col_des_up)])
     for (si in si_temp) {
       sel <- input[[si]]
-      updateSelectInput(inputId = si,
-                        choices = c("", sel, col_des_up),
-                        selected = sel)
+      updateSelectInput(
+        inputId = si,
+        choices = c("", sel, col_des_up),
+        selected = sel
+      )
     }
     dt_col_select$oecd_tb_call <- input$oecd_call_col
   }
@@ -918,7 +992,7 @@ observeEvent(input$oecd_call_col, {
 observeEvent(input$oecd_ad_col, {
   old_select <- dt_col_select$oecd_tb_ad
   new_select <- input$oecd_ad_col
-  
+
   if (old_select != new_select) {
     if (old_select == "" & new_select != "") {
       col_select_input$selected <-
@@ -945,9 +1019,11 @@ observeEvent(input$oecd_ad_col, {
     col_des_up <- na.omit(col_des_up[match(colnames(usr_dt()), col_des_up)])
     for (si in si_temp) {
       sel <- input[[si]]
-      updateSelectInput(inputId = si,
-                        choices = c("", sel, col_des_up),
-                        selected = sel)
+      updateSelectInput(
+        inputId = si,
+        choices = c("", sel, col_des_up),
+        selected = sel
+      )
     }
     dt_col_select$oecd_tb_ad <- input$oecd_ad_col
   }
@@ -956,38 +1032,41 @@ observeEvent(input$oecd_ad_col, {
 # Step 3: Review Selections -----
 # Labels for displayed table
 end_labels <- list(
-  dpra_call = "DPRA Call",
+  dpra_call = "DPRA Hazard Identification",
   dpra_pC = "DPRA %C-Depletion",
   dpra_pK = "DPRA %K-Depletion",
-  hclat_call = "h-CLAT Call",
+  hclat_call = "h-CLAT Hazard Identification",
   hclat_mit = "h-CLAT MIT",
-  ks_call = "KeratinoSens Call",
-  ks_imax = "KeratinoSens iMax",
-  oecd_tb_call = "OECD QSAR TB Call",
-  oecd_tb_ad = "OECD QSAR TB Applicability Domain"
+  ks_call = "KeratinoSens&trade; Hazard Identification",
+  ks_imax = "KeratinoSens&trade; iMax",
+  oecd_tb_call = "In Silico Hazard Identification",
+  oecd_tb_ad = "In Silico Applicability Domain"
 )
 
 # Flags for review
 end_flags <- list(
-  dpra_call = "Must be '0', 'N', 'Neg', or 'Negative' to indicate negative outcomes and '1', 'P', 'Pos', or 'Positive', to indicate positive outcomes.",
+  dpra_call = "Must be '0', 'n', 'neg', or 'negative' to indicate negative outcomes and '1', 'p', 'pos', or 'positive' to indicate positive outcomes.",
   dpra_pC = "Must be numeric",
   dpra_pK = "Must be numeric",
-  hclat_call = "Must be '0', 'N', 'Neg', or 'Negative' to indicate negative outcomes and '1', 'P', 'Pos', or 'Positive', to indicate positive outcomes.",
-  hclat_mit = "Must be 'N', 'Neg', 'Negative', or missing value to indicate negative outcomes and numeric for positive outcomes.",
-  ks_call = "Must be '0', 'N', 'Neg', or 'Negative' to indicate negative outcomes and '1', 'P', 'Pos', or 'Positive', to indicate positive outcomes.",
+  hclat_call = "Must be '0', 'n', 'neg', or 'negative' to indicate negative outcomes and '1', 'p', 'pos', or 'positive' to indicate positive outcomes.",
+  hclat_mit = "Must be 'n', 'neg', or 'negative' to indicate negative outcomes and numeric for positive outcomes.",
+  ks_call = "Must be '0', 'n', 'neg', or 'negative' to indicate negative outcomes and '1', 'p', 'pos', or 'positive' to indicate positive outcomes.",
   ks_imax = "Must be numeric",
-  oecd_tb_call = "Must be '0', 'N', 'Neg', or 'Negative' to indicate negative outcomes and '1', 'P', 'Pos', or 'Positive', to indicate positive outcomes.",
-  oecd_tb_ad = "Must be '0' or 'Out' for chemicals outside the applicability domain and '1' or 'In' for chemicals in the applicability domain"
+  oecd_tb_call = "Must be '0', 'n', 'neg', or 'negative' to indicate negative outcomes and '1', 'p', 'pos', or 'positive' to indicate positive outcomes.",
+  oecd_tb_ad = "Must be '0' or 'out' for chemicals outside the applicability domain and '1' or 'in' for chemicals in the applicability domain."
 )
 
 observeEvent(input$review_entries, {
+
   # Get selected columns
   col_summary <- reactiveValuesToList(dt_col_select)
-  
+
   # Check that all variables have a column assigned
-  cols_to_check <- check_cols(dass = dass_choice(),
-                              ks_call_method = input$ks_choice,
-                              dpra_call_method = input$dpra_call_choice)
+  cols_to_check <- check_cols(
+    dass = dass_choice(),
+    ks_call_method = input$ks_choice,
+    dpra_call_method = input$dpra_call_choice
+  )
   cols_to_check <- unlist(col_summary[cols_to_check])
   col_blank <- any(cols_to_check == "")
   if (col_blank) showNotification(type = "error", ui = "Missing required columns.", duration = 10)
@@ -995,13 +1074,13 @@ observeEvent(input$review_entries, {
 
   # List of formatted data
   dt_list <- list()
-  
+
   # Get data from selected columns
   col_dict <- dat_for_anlz$col_dict <- col_summary[names(cols_to_check)]
   col_vec <- unlist(col_dict, use.names = F)
-  col_data <- usr_dt()[,.SD,.SDcols = col_vec]
+  col_data <- usr_dt()[, .SD, .SDcols = col_vec]
   setnames(col_data, old = col_vec, new = names(col_dict))
-  
+
   col_flags <- vector(mode = "list", length = ncol(col_data))
   names(col_flags) <- names(col_data)
 
@@ -1009,33 +1088,32 @@ observeEvent(input$review_entries, {
   call_cols <- c("ks_call", "dpra_call", "hclat_call", "oecd_tb_call")
   if (any(names(col_data) %in% call_cols)) {
     call_col_names <- names(col_data)[names(col_data) %in% call_cols]
-    # Data can be entered as: 
+    # Data can be entered as:
     # Positive: 1, Pos, Positive, P
     # Negative: 0, Neg, Negative, N
     #  Count number of entries per column that have invalid values
-    call_check <- col_data[,lapply(.SD, function(x) {
-      !(grepl_ci("^1$|^0$|^p$|^n$|^pos$|^neg$|^positive$|^negative$", x)|is.na(x))
-    }), .SDcols = call_col_names
-    ][,lapply(.SD, sum), .SDcols=call_col_names]
-    call_check_id <- which(call_check >0)
+    call_check <- col_data[, lapply(.SD, function(x) {
+      !(grepl_ci("^1$|^0$|^p$|^n$|^pos$|^neg$|^positive$|^negative$", x) | is.na(x))
+    }), .SDcols = call_col_names][, lapply(.SD, sum), .SDcols = call_col_names]
+    call_check_id <- which(call_check > 0)
     if (length(call_check_id) > 0) {
       col_flags[names(call_check)[call_check_id]] <- 1
     }
     # Replace positive with 1 and negative with 0
-    dt_list$call_cols <- col_data[,lapply(.SD, function(x) {
+    dt_list$call_cols <- col_data[, lapply(.SD, function(x) {
       fcase(
         grepl_ci("^1$|^p$|^pos$|^positive$", x), 1,
         grepl_ci("^0$|^n$|^neg$|^negative$", x), 0
       )
     }), .SDcols = call_col_names]
   }
-  
+
   # Check numeric columns
   num_cols <- c("dpra_pC", "dpra_pK", "ks_imax")
   if (any(names(col_data) %in% num_cols)) {
     num_col_names <- names(col_data)[names(col_data) %in% num_cols]
     # Values must be numeric
-    num_check <- col_data[,lapply(.SD, function(x) {
+    num_check <- col_data[, lapply(.SD, function(x) {
       # Value provided, but it is not numeric
       any(!is.na(x) & is.na(suppressWarnings(as.numeric(x))))
     }), .SDcols = num_col_names]
@@ -1046,53 +1124,56 @@ observeEvent(input$review_entries, {
       col_flags[num_col_names[num_check_id]] <- 1
     }
 
-    dt_list$num_cols <- col_data[,lapply(.SD, function(x) suppressWarnings(as.numeric(x))),
-                                 .SDcols = num_col_names]
+    dt_list$num_cols <- col_data[, lapply(.SD, function(x) suppressWarnings(as.numeric(x))),
+      .SDcols = num_col_names
+    ]
   }
 
   # Check h-CLAT MIT
   if (any(names(col_data) == "hclat_mit")) {
-    mit_check <- col_data[,.(hclat_mit, hclat_mit_num = suppressWarnings(as.numeric(hclat_mit)), flag = T)]
-    
+    mit_check <- col_data[, .(hclat_mit, hclat_mit_num = suppressWarnings(as.numeric(hclat_mit)), flag = T)]
+
     # Can have numeric or 'negative'
     # Change flag to F for numeric or 'negative'
     mit_check[!is.na(hclat_mit_num), flag := F]
     mit_check[is.na(hclat_mit), flag := F]
     mit_check[grepl_ci("^n$|^neg$|^negative$", hclat_mit), flag := F]
 
-    if (any(mit_check[,flag])) {
+    if (any(mit_check[, flag])) {
       col_flags$hclat_mit <- 1
-    } 
+    }
 
     mit_check[is.na(hclat_mit_num) & flag, hclat_mit := NA]
-    mit_check[,flag := NULL]
+    mit_check[, flag := NULL]
     dt_list$mit_col <- mit_check
   }
 
   # Check applicability domain
   if (any(names(col_data) == "oecd_tb_ad")) {
-    ad_check <- col_data[,oecd_tb_ad]
+    ad_check <- col_data[, oecd_tb_ad]
     # Can be 0, 1, in, or out
-    ad_check <- !(grepl_ci("^1$|^0$|^in$|^out$", ad_check)|is.na(ad_check))
+    ad_check <- !(grepl_ci("^1$|^0$|^in$|^out$", ad_check) | is.na(ad_check))
 
     if (any(ad_check)) {
       col_flags$oecd_tb_ad <- 1
     }
-    
-    dt_list$ad_col <- col_data[,.SD,.SDcols = "oecd_tb_ad"
-             ][,.(oecd_tb_ad = fcase(grepl_ci("^1$|^in$", oecd_tb_ad), 1,
-                      grepl_ci("^0$|^out$", oecd_tb_ad), 0))
-             ]
+
+    dt_list$ad_col <- col_data[, .SD, .SDcols = "oecd_tb_ad"][, .(oecd_tb_ad = fcase(
+      grepl_ci("^1$|^in$", oecd_tb_ad), 1,
+      grepl_ci("^0$|^out$", oecd_tb_ad), 0
+    ))]
   }
-  
+
   col_flags <- lapply(col_flags, function(x) fifelse(is.null(x), 0, 1))
   names(dt_list) <- NULL
   updateCollapse(session,
-                 id = "panels",
-                 close = "panel_col_options")
+    id = "panels",
+    close = "panel_col_options"
+  )
   updateCollapse(session,
-                 id = "panels",
-                 open = "panel_review")
+    id = "panels",
+    open = "panel_review"
+  )
   dt_anlz <- do.call("cbind", dt_list)
   dat_for_anlz$col_data <- dt_anlz
   dt_review <- data.table(
@@ -1101,41 +1182,51 @@ observeEvent(input$review_entries, {
     Flag = unlist(col_flags, use.names = F)
   )
 
-  dt_review[,Flag := fcase(
+  dt_review[, Flag := fcase(
     Flag == 0, "",
     Flag == 1, unlist(end_flags[Variable])
   )]
-  dt_review[,Variable := unlist(end_labels[Variable], use.names = F)]
-  flag_row <- which(dt_review$Flag != "")
+  dt_review[, Variable := unlist(end_labels[Variable], use.names = F)]
+  dt_review(dt_review)
+})
 
+output$dt_review <- renderDataTable({
+  dt_review <- dt_review()
+  flag_row <- which(dt_review$Flag != "")
   dt_review <- datatable(dt_review,
-                           class = "table-bordered",
-                           rownames = FALSE,
-                           escape = FALSE,
+                         class = "table-bordered",
+                         rownames = FALSE,
+                         escape = FALSE,
                          selection = "none",
-                           options = list(dom = "t",
-                                          ordering = F))
+                         options = list(
+                           dom = "t",
+                           ordering = F
+                         )
+  )
   
-  if(length(flag_row) > 0) {
+  if (length(flag_row) > 0) {
     dt_review <- formatStyle(dt_review, 0, target = "row", color = styleRow(flag_row, rep("#D55E00", length = length(flag_row))))
-    review_label(paste("<p style='color:#D55E00; font-weight:bold;'>Warning:",
-                       "Selected columns have been flagged for invalid values.</p>",
-                       "<p>Review the selected columns and flags in the table below.",
-                       "Upload an updated dataset or select new columns.<br><br>",
-                       "Click 'Run' to run DASS anyway. Invalid values will be",
-                       "considered missing (NA) and will not be used to evaluate",
-                       "skin sensitization hazard or potency.</p><br>"))
+    review_label(paste(
+      "<p style='color:#D55E00; font-weight:bold;'>Warning:",
+      "Selected data columns have been flagged for invalid values.</p>",
+      "<p>Review the selected columns and flags in the table below.",
+      "Upload an updated dataset or select new columns.<br><br>",
+      "Click 'Run' to run DASS anyway. Invalid values will be",
+      "considered missing (NA) and will <b>not</b> be used to evaluate",
+      "skin sensitization hazard identification or potency.</p><br>"
+    ))
     flagged(1)
   } else {
     review_label("<p>Review the selected columns and click 'Run' to run DASS.</p><br>")
     flagged(0)
-    }
-
-  dt_review(dt_review)
+  }
+  
+  dt_review
 })
 
-output$dt_review <- renderDataTable({dt_review()})
-output$review_label <- renderText({review_label()})
+output$review_label <- renderText({
+  review_label()
+})
 
 observeEvent(input$run_dass, {
   req(flagged())
@@ -1143,8 +1234,11 @@ observeEvent(input$run_dass, {
     showModal(modalDialog(
       title = NULL,
       footer = NULL,
-      p("The selected columns have been flagged for invalid values. Invalid values",
-        "will be considered as 'no data'. Continue?"),
+      HTML(
+        "<p>The selected columns have been flagged for invalid values. Invalid",
+        "values will be considered missing (NA) and will <b>not</b> be used",
+        "to evaluate skin sensitization hazard identification or potency. Continue?</p>"
+      ),
       actionButton(inputId = "run_with_flags", label = "Run"),
       actionButton(inputId = "cancel_run", label = "Cancel")
     ))
@@ -1164,32 +1258,103 @@ observeEvent(input$cancel_run, {
 
 # Step 4: Results -----
 run_dass <- reactive({
+  ####
+  # Workaround to give dass_predict the right ks and dpra methods
+  # Example of issue:
+  # In app - select only KE 3/1 STS. Select a column for DPRA Hazard ID
+  # Go back to step 1. Deselect KE3/1 STS. Select ITS. Fill dropdowns
+  # and run DASS. dpra_call_choice is not NULL so throws an error
+  # within dass_predict
+    
+  if (any(c("da_2o3", "da_ke31") %in% dass_choice())) {
+    dpra_method <- input$dpra_call_choice
+  } else {
+    dpra_method <- NULL
+  }
+  
+  if ("da_2o3" %in% dass_choice()) {
+    ks_method <- input$ks_choice
+  } else {
+    ks_method <- NULL
+  }
+  ####
+  
   da_out <- dass_predict(
-    dt = dat_for_anlz$col_data,
-    dass = dass_choice(),
-    ks_call_method = input$ks_choice,
-    dpra_call_method = input$dpra_call_choice
+      dt = dat_for_anlz$col_data,
+      dass = dass_choice(),
+      ks_call_method = ks_method,
+      dpra_call_method = dpra_method
   )
+
+  # Reorder columns
+  col_order <- c("dpra_call", "dpra_pC", "dpra_pK",
+                 "dpra_mean_calculated", "dpra_call_calculated",
+                 "hclat_call", "hclat_mit", "hclat_mit_num",
+                 "ks_imax", "ks_call", "ks_call_calculated", 
+                 "oecd_tb_call", "oecd_tb_ad",
+                 "ITS_hCLAT_Score", "ITS_DPRA_Score", "ITS_OECDQSARTB_Score", 
+                 "ITS_TotalScore", "DA_ITS_Call", "DA_ITS_Potency", 
+                 "DA_2o3_Call", 
+                 "DA_KE31STS_Call", "DA_KE31STS_Potency")
+
+  col_match <- na.omit(match(col_order, names(da_out)))
+  da_out <- da_out[,..col_match]
+
+  new_col_names <- c("DPRA Hazard Id. Input",
+                     "DPRA %-C Depletion Input",
+                     "DPRA %-K Depletion Input",
+                     "DPRA Mean (Calculated)",
+                     "DPRA Hazard Id. Input (Calculated)",
+                     "h-CLAT Hazard Id. Input",
+                     "h-CLAT MIT Input",
+                     "h-CLAT MIT Input (Numeric Only)",
+                     "Keratinosens(TM) iMax Input",
+                     "Keratinosens(TM) Hazard Id. Input",
+                     "Keratinosens(TM) Hazard Id. Input (Calculated)",
+                     "In Silico Hazard Id. Input",
+                     "In Silico Applicability Domain Input",
+                     "DA ITS h-CLAT Score",
+                     "DA ITS DPRA Score",
+                     "DA ITS in Silico Score",
+                     "DA ITS Total Score",
+                     "DA ITS Hazard Id.",
+                     "DA ITS Potency",
+                     "DA 2o3 Hazard Id.",
+                     "DA KE 3/1 STS Hazard Id.",
+                     "DA KE 3/1 STS Potency")
+  col_match_new <- na.omit(match(names(da_out), col_order))
+  new_col_names <- new_col_names[col_match_new]
   
-  dass_res(cbind(usr_dt(), da_out))
-  updateCollapse(session,
-                 id = "panels",
-                 close = "panel_review")
-  updateCollapse(session,
-                 id = "panels",
-                 open = "panel_results")
+  setnames(da_out,
+           old = colnames(da_out),
+           new = new_col_names)
   
-  output$step4ui <- renderUI({
-    downloadButton("downloadres", "Download Results")
-  })
+  dass_res(da_out)
+  updateCollapse(session,
+      id = "panels",
+      close = "panel_review"
+    )
+    updateCollapse(session,
+      id = "panels",
+      open = "panel_results"
+    )
+
+    output$step4ui <- renderUI({
+      downloadButton("downloadres", "Download Results")
+    })
 })
 
-da_colnames <- c("DA_2o3_Call", "DA_ITSv2_Call", "DA_ITSv2_Potency", "DA_KE31STS_Call", "DA_KE31STS_Potency")
-
 output$dt_results <- renderDataTable({
-  col_sty <- da_colnames[da_colnames %in% colnames(dass_res())]
+  dass_res <- dass_res()
+  res <- cbind(usr_dt(), dass_res)
+  # Set up columns to color
+  da_sty <- grep("^DA .*", names(dass_res), value = T)
+  da_font <- grep("Hazard|Potency", da_sty, value = T)
+  in_sty <- grep("^DA .*", names(dass_res), value = T, invert = T)
+  col_sty <- dt_review()[,`Selected Column`]
+  
   datatable(
-    dass_res(),
+    res,
     class = "table-bordered",
     rownames = FALSE,
     selection = "none",
@@ -1197,19 +1362,115 @@ output$dt_results <- renderDataTable({
       scrollX = TRUE,
       rowCallback = JS(rowCallback)
     )
-  ) %>% 
-    formatStyle(columns = col_sty,
-                backgroundColor = "#DBE8FF",
-                fontWeight = "bold")
+  ) %>%
+    formatStyle(
+      columns = da_sty,
+      backgroundColor = "#56B4E9"
+    ) %>% 
+    formatStyle(
+      columns = da_font,
+      fontWeight = "bold"
+    ) %>% 
+    formatStyle(
+      columns = in_sty,
+      backgroundColor = "#CC79A7"
+    ) %>% 
+    formatStyle(
+      columns = col_sty,
+      backgroundColor = "#F0E442"
+    )
 })
+
+## Save -----
+create_file <- reactive({
+  # Create excel workbook
+  wb <- createWorkbook()
+  
+  # Add worksheets
+  addWorksheet(wb, sheetName = "Key")
+  addWorksheet(wb, sheetName = "Column Selection")
+  addWorksheet(wb, sheetName = "Results")
+  
+  # Styles
+  orange_font <- createStyle(fontColour = "#D55E00")
+  bold_font <- createStyle(textDecoration = "bold")
+  blue_bg <- createStyle(fgFill = "#56B4E9")
+  pink_bg <- createStyle(fgFill = "#CC79A7")
+  yellow_bg <- createStyle(fgFill = "#F0E442")
+  bold_blue <- createStyle(textDecoration = "bold", fgFill = "#56B4E9")
+  
+  # Create key worksheet
+  key_df <- data.frame(
+    Color = c("Blue", "Pink", "Yellow"),
+    Label = c("Defined approach result",
+              "Transformed versions of user-selected columns. These are the values used as input in the DASS",
+              "User-selected columns")
+  )
+  writeData(wb, sheet = "Key", key_df, headerStyle = bold_font)
+  addStyle(wb, sheet = "Key", style = blue_bg, row = 2, col = 1)
+  addStyle(wb, sheet = "Key", style = pink_bg, row = 3, col = 1)
+  addStyle(wb, sheet = "Key", style = yellow_bg, row = 4, col = 1)
+  
+  # Create column selection worksheet
+  # Column review table
+  col_select <- dt_review()
+  # Replace html
+  col_select[,Variable := gsub("&trade;", "(TM)", Variable)]
+  writeData(wb, sheet = "Column Selection", x = col_select, headerStyle = bold_font)
+  setColWidths(wb, sheet = "Column Selection", cols = 1:ncol(col_select), widths = "auto")
+  # Get row IDs to highlight
+  flag_row <- col_select[,which(Flag != "")]
+  if (length(flag_row) > 0) {
+    flag_row <- flag_row + 1
+    addStyle(wb, sheet = "Column Selection", style = orange_font,
+             rows = flag_row, cols = 1:ncol(col_select), gridExpand = T)
+  }
+  
+  # Create results worksheet
+  dass_res <- dass_res()
+  res <- cbind(usr_dt(), dass_res)
+  writeData(wb, sheet = "Results", x = res, headerStyle = bold_font, keepNA = TRUE, na.string = "NA")
+  setColWidths(wb, sheet = "Results", cols = 1:ncol(res), widths = "auto")
+  
+  # Highlight any ITS scores
+  score_col <- grep("^DA.*Score$", colnames(dass_res), value = T)
+  if (length(score_col) > 0) {
+    score_col <- na.omit(match(score_col, colnames(res)))
+    addStyle(wb, sheet = "Results", style = blue_bg,
+             rows = 2:(nrow(res) +1), cols = score_col, gridExpand = T)
+  }
+  
+  # Highlight columns with DA results
+  dass_res_cols <- grep("^DA.*Hazard|^DA.*Potency", colnames(dass_res), value = TRUE)
+  dass_cols <- na.omit(match(dass_res_cols, colnames(res)))
+  addStyle(wb, sheet = "Results", style = bold_blue,
+           rows = 2:(nrow(res) + 1), cols = dass_cols, gridExpand = T)
+
+  # Highlight columns used as input
+  in_cols <- grep("^DA ", colnames(dass_res), value = TRUE, invert = T)
+  in_cols <- na.omit(match(in_cols, colnames(res)))
+  
+  addStyle(wb, sheet = "Results", style = pink_bg,
+           rows = 2:(nrow(res) + 1), cols = in_cols, gridExpand = T)
+  
+  # Highlight columns that user selected
+  usr_cols <- dt_review()[,`Selected Column`]
+  usr_cols <- na.omit(match(usr_cols, colnames(res)))
+  addStyle(wb, sheet = "Results", style = yellow_bg,
+           rows = 2:(nrow(res) + 1), cols = usr_cols, gridExpand = T)
+  activeSheet(wb) <- "Results"
+  wb
+})
+
 
 output$downloadres <- downloadHandler(
   filename = function() {
     fname <- unlist(strsplit(input$fpath$name, "[.]"))
     fname <- paste(fname[-length(fname)], collapse = ".")
-    paste0(fname, "_DASSResults_", Sys.Date(), ".csv")
+    paste0(fname, "_DASSResults_", Sys.Date(), ".xlsx")
   },
   content = function(con) {
-    write.csv(x = dass_res(), file = con, quote = F, row.names = F)
+    saveWorkbook(wb = create_file(), file = con)
+    # write.csv(x = dass_res(), file = con, quote = F, row.names = F)
   }
 )
