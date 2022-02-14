@@ -29,12 +29,24 @@ require(openxlsx)
 # Load functions
 source("dass_predict.R")
 
-# Load ui objects
+# Load ui from file
 source("ui_obj.R")
 ui <- fluidPage(
+  useShinyjs(),
+  # Set CSS styles
   tags$head(
     tags$style(
       "
+      .btn-qs {
+      color:#0072B2;
+      padding:0px;
+      border-color:transparent;
+      }
+      .btn-qs:focus, .btn-qs:hover {
+      color:#0C1669;
+      background-color:transparent;
+      border-color:transparent;
+      }
       .control-label {
       white-space:nowrap;
       }
@@ -54,13 +66,17 @@ ui <- fluidPage(
       "
     )
   ),
-  titlePanel(""),
+  #titlePanel(""),
   ui_dass
 )
 
-# Read in server file
+# Read in server files
 server <- function(input, output, session) {
-  source("server_obj.R", local = TRUE)
+  source("server/Setup.R", local = TRUE)
+  source("server/Step1.R", local = TRUE)
+  source("server/Step2.R", local = TRUE)
+  source("server/Step3.R", local = TRUE)
+  source("server/Step4.R", local = TRUE)
 }
 
 # Create App -----

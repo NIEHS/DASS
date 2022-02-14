@@ -171,7 +171,6 @@ dass_predict <- function(dt, dass = c("da_2o3", "da_itsv2", "da_ke31"),
   if ("da_itsv2" %in% dass) {
     temp <- da_itsv2(
       hclat_mit = dt[,hclat_mit],
-      hclat_mit_num = dt[,hclat_mit_num],
       dpra_pC = dt[,dpra_pC],
       dpra_pK = dt[,dpra_pK],
       dpra_mean = dt[,dpra_mean_calculated],
@@ -191,7 +190,6 @@ dass_predict <- function(dt, dass = c("da_2o3", "da_itsv2", "da_ke31"),
   if("da_ke31" %in% dass) {
     temp <- da_ke31(
       hclat_mit = dt[,hclat_mit],
-      hclat_mit_num = dt[,hclat_mit_num],
       dpra_call = dpra_call
     )
     res_list$DA_KE31STS <- data.table(
@@ -247,18 +245,17 @@ da_2o3 <- function(ks_call, hclat_call, dpra_call) {
 #                 the OECD QSAR TB applicability domain
 # Returns a Call and Potency prediction
 
-da_itsv2 <- function(hclat_mit, hclat_mit_num, dpra_pC, dpra_pK, dpra_mean, oecd_call, oecd_domain){
-  temp <- data.table(hclat_mit, hclat_mit_num, dpra_pC, dpra_pK, dpra_mean, oecd_call, oecd_domain)
+da_itsv2 <- function(hclat_mit, dpra_pC, dpra_pK, dpra_mean, oecd_call, oecd_domain){
+  temp <- data.table(hclat_mit, dpra_pC, dpra_pK, dpra_mean, oecd_call, oecd_domain)
   temp[,id := 1:nrow(temp)]
 
   # Calculate h-CLAT score
   temp[,hclat_score := fcase(
-    grepl_ci("^n$|^neg$|^negative$|^Inf$", hclat_mit), 0,
-    hclat_mit_num == Inf, 0,
-    is.na(hclat_mit) | is.na(hclat_mit_num), as.numeric(NA),
-    hclat_mit_num <= 10, 3,
-    hclat_mit_num > 10 & hclat_mit_num <= 150,2,
-    hclat_mit_num >150 & hclat_mit_num <= 5000,1
+    hclat_mit == Inf, 0,
+    is.na(hclat_mit), as.numeric(NA),
+    hclat_mit <= 10, 3,
+    hclat_mit > 10 & hclat_mit <= 150,2,
+    hclat_mit >150 & hclat_mit <= 5000,1
   ), by = id]
 
   # Calculate DPRA score
@@ -291,15 +288,18 @@ da_itsv2 <- function(hclat_mit, hclat_mit_num, dpra_pC, dpra_pK, dpra_mean, oecd
   
   # Different scoring schemes are used depending on available data sources
   # Label each row based on available data
+
   temp[,flow := fcase(
     all(!is.na(c(hclat_score, dpra_score, oecd_score))), "all",
     all(!is.na(hclat_score) & !is.na(dpra_score) & is.na(oecd_score)), "no_ins",
     all(!is.na(c(hclat_score, oecd_score))) & is.na(dpra_score), "ins",
     all(!is.na(c(dpra_score, oecd_score))) & is.na(hclat_score), "ins"
   ), by = id]
-  
+
   # Calculate total ITSv2 score
-  temp[,itsv2_score := sum(c(hclat_score, dpra_score, oecd_score), na.rm = T), by = id]
+  # temp[,itsv2_score := sum(c(hclat_score, dpra_score, oecd_score), na.rm = T), by = id]
+  temp[(is.na(hclat_score) + is.na(dpra_score) + is.na(oecd_score)) < 2,
+       itsv2_score := sum(c(hclat_score, dpra_score, oecd_score), na.rm = T), by = id]
   
   # Get potency scores
   # All assays available
@@ -352,27 +352,23 @@ da_itsv2 <- function(hclat_mit, hclat_mit_num, dpra_pC, dpra_pK, dpra_mean, oecd
 # `dpra_call` - a numeric vector for DPRA call, where '0' indicates a 
 #               negative call and '1' indicates a positive call
 # Returns a Call and Potency prediction
-da_ke31 <- function(hclat_mit, hclat_mit_num, dpra_call) {
-  temp <- data.table(hclat_mit, hclat_mit_num, dpra_call)
+da_ke31 <- function(hclat_mit, dpra_call) {
+  temp <- data.table(hclat_mit, dpra_call)
   temp[,id := 1:nrow(temp)]
   
   temp[,KE31STS_Call := fcase(
-    grepl_ci("^n$|^neg$|^negative$|^Inf$", hclat_mit), dpra_call,
-    hclat_mit_num == Inf, dpra_call,
-    is.na(hclat_mit_num), as.numeric(NA),
-    !is.na(hclat_mit_num), 1
+    hclat_mit == Inf, dpra_call, 
+    is.na(hclat_mit), as.numeric(NA),
+    !is.na(hclat_mit), 1
   ), by = id]
   
   temp[,KE31STS_Potency := fcase(
     is.na(hclat_mit), as.character(NA),
-    grepl_ci("^n$|^neg$|^negative$|^Inf$", hclat_mit) & dpra_call == 1, "1B",
-    hclat_mit_num == Inf & dpra_call == 1, "1B",
-    grepl_ci("^n$|^neg$|^negative$|^Inf$", hclat_mit) & dpra_call == 0, "NC",
-    hclat_mit_num == Inf & dpra_call == 0, "NC",
-    grepl_ci("^n$|^neg$|^negative$|^Inf$", hclat_mit) & is.na(dpra_call), as.character(NA),
-    hclat_mit_num == Inf & is.na(dpra_call), as.character(NA),
-    hclat_mit_num <= 10, "1A",
-    hclat_mit_num >10 & hclat_mit_num <5000, "1B"
+    hclat_mit == Inf & dpra_call == 1, "1B",
+    hclat_mit == Inf & dpra_call == 0, "NC",
+    hclat_mit == Inf & is.na(dpra_call), as.character(NA),
+    hclat_mit <= 10, "1A",
+    hclat_mit >10 & hclat_mit <5000, "1B"
   ), by = id]
   
   list(

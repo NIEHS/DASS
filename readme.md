@@ -1,7 +1,7 @@
 # About
 
 This app uses the Defined Approaches for Skin Sensitization (DASS)
-outlined in the OECD DASS Guideline No. 497\[[1](#ref-oecd_dass)\]. The
+outlined in the OECD DASS Guideline No. 497\[[1](#ref-oecddass)\]. The
 Defined Approaches (DAs) integrate results from *in vitro* and *in
 silico* test methods to predict chemical hazard potential.
 
@@ -38,14 +38,14 @@ a single row should not contain data for multiple chemicals). Each assay
 endpoint that is required for using the DAs should have a column that is
 formatted as described in Step 2 below.
 
-Once you select a file, the data can be viewed by clicking on the *View
+Once a file is selected, the data can be viewed by clicking on the *View
 Data* tab.
 
 # Step 1: Select Defined Approaches
 
-After uploading your data, the *Step 1* tab will open. Select the DAs
-you want to apply and click *Done*. The DAs are based on the first 3 key
-events (KEs) in the Adverse Outcome Pathway (AOP) for Skin Sensitization
+After uploading the data, the *Step 1* tab will open. Select the DAs to
+apply and click *Done*. The DAs are based on the first 3 key events
+(KEs) in the Adverse Outcome Pathway (AOP) for Skin Sensitization
 Initiated by Covalent Binding to Proteins\[[9](#ref-oecd_aop)\]. Each KE
 is represented by a validated OECD test method:
 
@@ -81,127 +81,236 @@ chemical hazard identification and potency using the scoring schemes in
 Tables 1 and 2.
 
 <table>
-<colgroup>
-<col style="width: 5%" />
-<col style="width: 20%" />
-<col style="width: 36%" />
-<col style="width: 22%" />
-<col style="width: 16%" />
-</colgroup>
+<caption>
+Table 1: Test method scoring scheme for the Integrated Testing Strategy,
+adapted from \[<a href='#ref-oecddass'>1</a>\]
+</caption>
 <thead>
-<tr class="header">
-<th style="text-align: center;">Score</th>
-<th style="text-align: center;">h-CLAT MIT<br>(μg/mL)</th>
-<th style="text-align: center;">DPRA<br>mean % Cysteine<br>and Lysine depletion</th>
-<th style="text-align: center;">DPRA<br>% Cysteine depletion</th>
-<th style="text-align: center;">In Silico Prediction</th>
+<tr>
+<th style="text-align:center;">
+Score
+</th>
+<th style="text-align:center;">
+h-CLAT MIT<br>(μg/mL)
+</th>
+<th style="text-align:center;">
+DPRA<br>mean % Cysteine<br>and Lysine depletion
+</th>
+<th style="text-align:center;">
+DPRA<br>% Cysteine depletion
+</th>
+<th style="text-align:center;">
+In Silico Prediction
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: center;">3</td>
-<td style="text-align: center;">≤ 10</td>
-<td style="text-align: center;">≥42.47</td>
-<td style="text-align: center;">≥98.24</td>
-<td style="text-align: center;"></td>
+<tr>
+<td style="text-align:center;">
+3
+</td>
+<td style="text-align:center;">
+≤ 10
+</td>
+<td style="text-align:center;">
+≥42.47
+</td>
+<td style="text-align:center;">
+≥98.24
+</td>
+<td style="text-align:center;">
+</td>
 </tr>
-<tr class="even">
-<td style="text-align: center;">2</td>
-<td style="text-align: center;">&gt;10, ≤ 150</td>
-<td style="text-align: center;">≥ 22.62, &lt; 42.47</td>
-<td style="text-align: center;">≥ 23.09, &lt; 98.24</td>
-<td style="text-align: center;"></td>
+<tr>
+<td style="text-align:center;">
+2
+</td>
+<td style="text-align:center;">
+&gt;10, ≤ 150
+</td>
+<td style="text-align:center;">
+≥ 22.62, &lt; 42.47
+</td>
+<td style="text-align:center;">
+≥ 23.09, &lt; 98.24
+</td>
+<td style="text-align:center;">
+</td>
 </tr>
-<tr class="odd">
-<td style="text-align: center;">1</td>
-<td style="text-align: center;">&gt;150, ≤ 5000</td>
-<td style="text-align: center;">≥ 6.38, &lt; 22.62</td>
-<td style="text-align: center;">≥ 13.89, &lt; 23.09</td>
-<td style="text-align: center;">Positive</td>
+<tr>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+&gt;150, ≤ 5000
+</td>
+<td style="text-align:center;">
+≥ 6.38, &lt; 22.62
+</td>
+<td style="text-align:center;">
+≥ 13.89, &lt; 23.09
+</td>
+<td style="text-align:center;">
+Positive
+</td>
 </tr>
-<tr class="even">
-<td style="text-align: center;">0</td>
-<td style="text-align: center;">Negative (Not Calculated)</td>
-<td style="text-align: center;">&lt; 6.38</td>
-<td style="text-align: center;">&lt; 13.89</td>
-<td style="text-align: center;">Negative</td>
+<tr>
+<td style="text-align:center;">
+0
+</td>
+<td style="text-align:center;">
+Negative (Not Calculated)
+</td>
+<td style="text-align:center;">
+&lt; 6.38
+</td>
+<td style="text-align:center;">
+&lt; 13.89
+</td>
+<td style="text-align:center;">
+Negative
+</td>
 </tr>
 </tbody>
 </table>
-
-*Table 1.* Test method scoring scheme for the Integrated Testing
-Strategy, adapted from \[[1](#ref-oecd_dass)\].
-
 <table>
-<colgroup>
-<col style="width: 6%" />
-<col style="width: 33%" />
-<col style="width: 14%" />
-<col style="width: 46%" />
-</colgroup>
+<caption>
+Table 2: Integrated Testing Strategy potency predictions for combined
+scores from available information sources. 1\* indicates conclusive for
+hazard, inconclusive for potency. Adapted from
+\[<a href='#ref-oecddass'>1</a>\].
+</caption>
 <thead>
-<tr class="header">
-<th style="text-align: center;">Score</th>
-<th style="text-align: center;">DPRA +<br>h-CLAT+<br>OECD QSAR TB</th>
-<th style="text-align: center;">DPRA + h-CLAT</th>
-<th style="text-align: center;">DPRA + OECD QSAR TB or<br>h-CLAT + OECD QSAR TB</th>
+<tr>
+<th style="text-align:center;">
+Score
+</th>
+<th style="text-align:center;">
+DPRA +<br>h-CLAT+<br>OECD QSAR TB
+</th>
+<th style="text-align:center;">
+DPRA + h-CLAT
+</th>
+<th style="text-align:center;">
+DPRA + OECD QSAR TB or<br>h-CLAT + OECD QSAR TB
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: center;">7</td>
-<td style="text-align: center;">UN GHS 1A</td>
-<td style="text-align: center;">-</td>
-<td style="text-align: center;">-</td>
-</tr>
-<tr class="even">
-<td style="text-align: center;">6</td>
-<td style="text-align: center;">UN GHS 1A</td>
-<td style="text-align: center;">UN GHS 1A</td>
-<td style="text-align: center;">-</td>
-</tr>
-<tr class="odd">
-<td style="text-align: center;">5</td>
-<td style="text-align: center;">UN GHS 1B</td>
-<td style="text-align: center;">UN GHS 1*</td>
-<td style="text-align: center;">-</td>
-</tr>
-<tr class="even">
-<td style="text-align: center;">4</td>
-<td style="text-align: center;">UN GHS 1B</td>
-<td style="text-align: center;">UN GHS 1B</td>
-<td style="text-align: center;">UN GHS 1*</td>
-</tr>
-<tr class="odd">
-<td style="text-align: center;">3</td>
-<td style="text-align: center;">UN GHS 1B</td>
-<td style="text-align: center;">UN GHS 1B</td>
-<td style="text-align: center;">UN GHS 1*</td>
-</tr>
-<tr class="even">
-<td style="text-align: center;">2</td>
-<td style="text-align: center;">UN GHS 1B</td>
-<td style="text-align: center;">UN GHS 1B</td>
-<td style="text-align: center;">UN GHS 1B</td>
-</tr>
-<tr class="odd">
-<td style="text-align: center;">1</td>
-<td style="text-align: center;">NC</td>
-<td style="text-align: center;">Inconclusive</td>
-<td style="text-align: center;">Inconclusive</td>
-</tr>
-<tr class="even">
-<td style="text-align: center;">0</td>
-<td style="text-align: center;">NC</td>
-<td style="text-align: center;">NC</td>
-<td style="text-align: center;">Inconclusive</td>
-</tr>
-</tbody>
-</table>
+<tr>
+<td style="text-align:center;">
+7
+</td>
+<td style="text-align:center;">
+UN GHS 1A
+</td>
+<td style="text-align:center;">
 
-*Table 2.* Integrated Testing Strategy potency predictions for combined
-scores from available information sources. 1\* indicates conclusive for
-hazard, inconclusive for potency. Adapted from \[[1](#ref-oecd_dass)\].
+-   </td>
+    <td style="text-align:center;">
+
+    -   </td>
+        </tr>
+        <tr>
+        <td style="text-align:center;">
+        6
+        </td>
+        <td style="text-align:center;">
+        UN GHS 1A
+        </td>
+        <td style="text-align:center;">
+        UN GHS 1A
+        </td>
+        <td style="text-align:center;">
+
+        -   </td>
+            </tr>
+            <tr>
+            <td style="text-align:center;">
+            5
+            </td>
+            <td style="text-align:center;">
+            UN GHS 1B
+            </td>
+            <td style="text-align:center;">
+            UN GHS 1\*
+            </td>
+            <td style="text-align:center;">
+
+            -   </td>
+                </tr>
+                <tr>
+                <td style="text-align:center;">
+                4
+                </td>
+                <td style="text-align:center;">
+                UN GHS 1B
+                </td>
+                <td style="text-align:center;">
+                UN GHS 1B
+                </td>
+                <td style="text-align:center;">
+                UN GHS 1\*
+                </td>
+                </tr>
+                <tr>
+                <td style="text-align:center;">
+                3
+                </td>
+                <td style="text-align:center;">
+                UN GHS 1B
+                </td>
+                <td style="text-align:center;">
+                UN GHS 1B
+                </td>
+                <td style="text-align:center;">
+                UN GHS 1\*
+                </td>
+                </tr>
+                <tr>
+                <td style="text-align:center;">
+                2
+                </td>
+                <td style="text-align:center;">
+                UN GHS 1B
+                </td>
+                <td style="text-align:center;">
+                UN GHS 1B
+                </td>
+                <td style="text-align:center;">
+                UN GHS 1B
+                </td>
+                </tr>
+                <tr>
+                <td style="text-align:center;">
+                1
+                </td>
+                <td style="text-align:center;">
+                NC
+                </td>
+                <td style="text-align:center;">
+                Inconclusive
+                </td>
+                <td style="text-align:center;">
+                Inconclusive
+                </td>
+                </tr>
+                <tr>
+                <td style="text-align:center;">
+                0
+                </td>
+                <td style="text-align:center;">
+                NC
+                </td>
+                <td style="text-align:center;">
+                NC
+                </td>
+                <td style="text-align:center;">
+                Inconclusive
+                </td>
+                </tr>
+                </tbody>
+                </table>
 
 ## Key Event 3/1 Sequential Testing Strategy
 
@@ -214,60 +323,110 @@ identification and potency categories are determined by DPRA results.
 The KE 3/1 STS scheme is shown in Table 3.
 
 <table>
+<caption>
+Table 3. Hazard identification and potency prediction scheme for Key
+Event 3/1 Sequential Testing Strategy. Adapted from
+\[<a href='#ref-NUKADA2013609'>14</a>\] and
+\[<a href='#ref-takenouchi2015'>15</a>\].
+</caption>
 <thead>
-<tr class="header">
-<th style="text-align: center;">Test Method</th>
-<th style="text-align: center;">Result</th>
-<th style="text-align: center;">Hazard Identification</th>
-<th style="text-align: center;">GHS Potency Category</th>
+<tr>
+<th style="text-align:center;">
+Test Method
+</th>
+<th style="text-align:center;">
+Result
+</th>
+<th style="text-align:center;">
+Hazard Identification
+</th>
+<th style="text-align:center;">
+GHS Potency Category
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: center;">h-CLAT</td>
-<td style="text-align: center;">MIT ≤ 10</td>
-<td style="text-align: center;">Positive</td>
-<td style="text-align: center;">1A</td>
+<tr>
+<td style="text-align:center;">
+h-CLAT
+</td>
+<td style="text-align:center;">
+MIT ≤ 10
+</td>
+<td style="text-align:center;">
+Positive
+</td>
+<td style="text-align:center;">
+1A
+</td>
 </tr>
-<tr class="even">
-<td style="text-align: center;">h-CLAT</td>
-<td style="text-align: center;">MIT &gt; 10, ≤ 5000</td>
-<td style="text-align: center;">Positive</td>
-<td style="text-align: center;">1B</td>
+<tr>
+<td style="text-align:center;">
+h-CLAT
+</td>
+<td style="text-align:center;">
+MIT &gt; 10, ≤ 5000
+</td>
+<td style="text-align:center;">
+Positive
+</td>
+<td style="text-align:center;">
+1B
+</td>
 </tr>
-<tr class="odd">
-<td style="text-align: center;">h-CLAT</td>
-<td style="text-align: center;">MIT Negative</td>
-<td style="text-align: center;">Use DPRA</td>
-<td style="text-align: center;">Use DPRA</td>
+<tr>
+<td style="text-align:center;">
+h-CLAT
+</td>
+<td style="text-align:center;">
+MIT Negative
+</td>
+<td style="text-align:center;">
+Use DPRA
+</td>
+<td style="text-align:center;">
+Use DPRA
+</td>
 </tr>
-<tr class="even">
-<td style="text-align: center;">DPRA</td>
-<td style="text-align: center;">Positive</td>
-<td style="text-align: center;">Positive</td>
-<td style="text-align: center;">1B</td>
+<tr>
+<td style="text-align:center;">
+DPRA
+</td>
+<td style="text-align:center;">
+Positive
+</td>
+<td style="text-align:center;">
+Positive
+</td>
+<td style="text-align:center;">
+1B
+</td>
 </tr>
-<tr class="odd">
-<td style="text-align: center;">DPRA</td>
-<td style="text-align: center;">Negative</td>
-<td style="text-align: center;">Negative</td>
-<td style="text-align: center;">NC</td>
+<tr>
+<td style="text-align:center;">
+DPRA
+</td>
+<td style="text-align:center;">
+Negative
+</td>
+<td style="text-align:center;">
+Negative
+</td>
+<td style="text-align:center;">
+NC
+</td>
 </tr>
 </tbody>
 </table>
-
-*Table 3.* Hazard identification and potency prediction scheme for Key
-Event 3/1 Sequential Testing Strategy. Adapted from
-\[[14](#ref-NUKADA2013609)\] and \[[15](#ref-takenouchi2015)\].
 
 # Step 2: Select Data Columns for Predictions
 
 After clicking *Done*, the panel for column selection will expand. All
 assay endpoints that are needed to apply the selected DAs will be shown.
 Dropdown menus under each assay endpoint contain the column names from
-your data. Use the dropdown menus to select the names of the columns
-corresponding to each given assay endpoint. Each column can only be
-selected once. Click *Done* to evaluate the values in the column for
+the uploaded data. Use the dropdown menus to select the names of the
+columns corresponding to each given assay endpoint. Each column can only
+be selected once. Click *Done* to evaluate the values in the column for
 proper formatting.
 
 Columns must be formatted correctly to ensure an accurate prediction.
@@ -392,16 +551,149 @@ missing and will not be used to predict skin sensitization hazard.
 
 # Step 4: Results
 
-The *Step 4* tab will show a table with the original data with DASS
-prediction columns appended to the end. Values calculated by the app and
-used in predictions will also be appended to the data. Prior to running
-the predictions, the selected columns are reformatted to ensure the
-values are properly formatted. The reformatted columns are appended to
-the data, showing exactly how the input data were processed and what
-values were used for each prediction.
+The *Step 4* tab will display a table with the DASS predictions appended
+to the uploaded data and highlighted in . If ITS was selected, then the
+individual ITS scores are also appended and highlighted in .
 
-Click the *Download Results* button to download a file with the results
-table.
+The data columns that were selected in *Step 2* are highlighted in .
+These data columns are reformatted for use in the DAs. The reformatted
+columns are appended to the data and highlighted in . Table 4 contains a
+description of the columns and how they were reformatted. It may be
+useful to compare the selected columns and their transformations to
+ensure that data were properly interpreted, especially if the DAs were
+run with flagged data.
+
+Click the *Download Results* button to download an excel workbook with
+the results table.
+
+<table>
+<caption>
+Table 4: Descriptions of columns in the results that contain the
+reformatted user column data. These are the the values used in
+evaluating skin sensitization with the DASS.
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Column Name
+</th>
+<th style="text-align:left;">
+Description
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+DPRA Hazard Id. Input
+</td>
+<td style="text-align:left;">
+Positive hazard identifications are set to 1 and negative hazard
+identifications are set to 0. Any invalid values are set to NA.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DPRA %-C Depletion Input
+</td>
+<td style="text-align:left;">
+Only numeric values are retained. Any invalid values are set to NA.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DPRA %-K Depletion Input
+</td>
+<td style="text-align:left;">
+Only numeric values are retained. Any invalid values are set to NA.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DPRA Mean (Calculated)
+</td>
+<td style="text-align:left;">
+The calculated mean of DPRA %-C and %-K depletion values, where any
+negative values are set to 0 when calculating the mean. DPRA mean is
+used when the ITS DA is selected or when DPRA hazard identification is
+derived from depletion values.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DPRA Hazard Id. Input (Calculated)
+</td>
+<td style="text-align:left;">
+The hazard identification derived from DPRA Mean (Calculated) when 2o3
+or KE 3/1 STS DAs are selected and the user provides DPRA %-C and %-K
+depletion columns instead of a DPRA hazard identification column.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+h-CLAT Hazard Id. Input
+</td>
+<td style="text-align:left;">
+Positive hazard identifications are set to 1 and negative hazard
+identifications are set to 0. Any invalid values are set to NA.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+h-CLAT MIT Input
+</td>
+<td style="text-align:left;">
+Numeric values for positive h-CLAT results are retained. In addition,
+negative h-CLAT results are set to Inf. Any invalid values are set to
+NA.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Keratinosens(TM) iMax Input
+</td>
+<td style="text-align:left;">
+Only numeric values are retained. Any invalid values are set to NA.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Keratinosens(TM) Hazard Id. Input
+</td>
+<td style="text-align:left;">
+Positive hazard identifications are set to 1 and negative hazard
+identifications are set to 0. Any invalid values are set to NA.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Keratinosens(TM) Hazard Id. Input (Calculated)
+</td>
+<td style="text-align:left;">
+The hazard identification derived from KS(TM) iMax Input.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+In Silico Hazard Id. Input
+</td>
+<td style="text-align:left;">
+Positive hazard identifications are set to 1 and negative hazard
+identifications are set to 0. Any invalid values are set to NA.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+In Silico Applicability Domain Input
+</td>
+<td style="text-align:left;">
+Predictions in the applicability domain are set to 1 and predictions
+outside the applicability domain are set to 0. Any invalid values are
+set to NA.
+</td>
+</tr>
+</tbody>
+</table>
 
 # References
 
