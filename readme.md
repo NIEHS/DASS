@@ -1,7 +1,7 @@
 # About
 
 This app uses the Defined Approaches for Skin Sensitization (DASS)
-outlined in the OECD DASS Guideline No. 497\[[1](#ref-oecddass)\]. The
+outlined in the OECD DASS Guideline No. 497[1]. The
 Defined Approaches (DAs) integrate results from *in vitro* and *in
 silico* test methods to predict chemical hazard potential.
 
@@ -9,13 +9,13 @@ silico* test methods to predict chemical hazard potential.
 
 This app works on Windows. This app requires
 [R](https://www.r-project.org/). When first launching the app locally,
-the *renv*\[[2](#ref-renv)\] package will be installed. While launching,
-the data.table\[[3](#ref-datatable)\], DT\[[4](#ref-dt)\],
-shiny\[[5](#ref-shiny)\], shinyBS\[[6](#ref-shinybs)\], and
-shinyjs\[[7](#ref-shinyjs)\] packages will be installed.
+the *renv*[2] package will be installed. While launching,
+the data.table[3], DT[4],
+shiny[5], shinyBS[6], and
+shinyjs[7] packages will be installed.
 
 This app was developed and tested on Windows 10 using R
-v.4.1.2\[[8](#ref-R-base)\] and Google Chrome v.91.
+v.4.1.2[8] and Google Chrome v.91.
 
 # Installation
 
@@ -46,15 +46,15 @@ Data* tab.
 After uploading the data, the *Step 1* tab will open. Select the DAs to
 apply and click *Done*. The DAs are based on the first 3 key events
 (KEs) in the Adverse Outcome Pathway (AOP) for Skin Sensitization
-Initiated by Covalent Binding to Proteins\[[9](#ref-oecd_aop)\]. Each KE
+Initiated by Covalent Binding to Proteins[9]. Each KE
 is represented by a validated OECD test method:
 
-1.  The direct peptide reactivity assay (DPRA)\[[10](#ref-oecd_dpra)\]
+1.  The direct peptide reactivity assay (DPRA) [10]
     maps to the first KE, protein binding.
-2.  The KeratinoSens™\[[11](#ref-oecd_ks)\] assay maps to the second KE,
+2.  The KeratinoSens™[11] assay maps to the second KE,
     keratinocyte activation.
 3.  The human cell line activation test
-    (h-CLAT)\[[12](#ref-oecd_hclat)\] maps to the third KE, dendritic
+    (h-CLAT)[12] maps to the third KE, dendritic
     cell activation.
 
 ## 2 out of 3
@@ -75,7 +75,7 @@ The Integrated Testing Strategy (ITS) DA predicts skin sensitization
 hazard identification and potency category based on KEs 1 and 3 and *in
 silico* predictions from either [Derek
 Nexus](https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm)
-or the OECD QSAR Toolbox\[[13](#ref-YORDANOVA201989)\]. Chemicals are
+or the OECD QSAR Toolbox[13]. Chemicals are
 scored for each assay result and the summed scores are used to predict
 chemical hazard identification and potency using the scoring schemes in
 Tables 1 and 2.
@@ -83,7 +83,7 @@ Tables 1 and 2.
 <table>
 <caption>
 Table 1: Test method scoring scheme for the Integrated Testing Strategy,
-adapted from \[<a href='#ref-oecddass'>1</a>\]
+adapted from [1]
 </caption>
 <thead>
 <tr>
@@ -176,9 +176,8 @@ Negative
 <table>
 <caption>
 Table 2: Integrated Testing Strategy potency predictions for combined
-scores from available information sources. 1\* indicates conclusive for
-hazard, inconclusive for potency. Adapted from
-\[<a href='#ref-oecddass'>1</a>\].
+scores from available information sources. 1* indicates conclusive for
+hazard, inconclusive for potency. Adapted from [1].
 </caption>
 <thead>
 <tr>
@@ -325,9 +324,7 @@ The KE 3/1 STS scheme is shown in Table 3.
 <table>
 <caption>
 Table 3. Hazard identification and potency prediction scheme for Key
-Event 3/1 Sequential Testing Strategy. Adapted from
-\[<a href='#ref-NUKADA2013609'>14</a>\] and
-\[<a href='#ref-takenouchi2015'>15</a>\].
+Event 3/1 Sequential Testing Strategy. Adapted from [14] and [15].
 </caption>
 <thead>
 <tr>
@@ -445,7 +442,7 @@ and will not be used to predict skin sensitization hazard.
 The mean of %C and %K depletion for each chemical is used to score the
 chemical using the scoring scheme shown in Table 1. Any negative %C or
 %K depletion values are set to 0 when calculating the mean, as specified
-in OECD Test Guideline 442c\[[10](#ref-oecd_dpra)\]. If there is no %C
+in OECD Test Guideline 442c[10]. If there is no %C
 depletion value for a given chemical, then the DPRA results can’t be
 used for that chemical. If only the value for %K depletion is missing,
 then the %C depletion values are used for scoring, with a different
@@ -464,7 +461,7 @@ hazard.
 
 Alternatively, the DPRA %C and %K depletion values can be provided and
 the app will define the chemical hazard identifications as outlined in
-OECD Test Guideline 442c \[[10](#ref-oecd_dpra)\].
+OECD Test Guideline 442c [10].
 
 ## h-CLAT
 
@@ -512,7 +509,7 @@ negative.
 
 *In silico* predictions should be derived from either [Derek
 Nexus](https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm)
-or the OECD QSAR Toolbox\[[13](#ref-YORDANOVA201989)\]. The column for
+or the OECD QSAR Toolbox[13]. The column for
 *in silico* hazard identification should be an indicator for a positive
 or negative prediction where positive predictions are indicated by “p,”
 “pos,” “positive,” or 1. Negative predictions must be indicated by “n,”
