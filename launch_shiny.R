@@ -1,4 +1,4 @@
-#=============================================================================#
+# =============================================================================#
 # File Name: launch_shiny.R                                                   #
 # Original Creator: Kim To                                                    #
 # Contact Information: comptox@ils-inc.com                                    #
@@ -6,9 +6,10 @@
 # License: MIT                                                                #
 # Version: 0.9                                                                #
 # Description: Installs required packages and launches app                    #
-# Required Packages:
-#   - shiny
-#=============================================================================#
+# Required Packages:                                                          #
+#   - renv                                                                    #
+#   - shiny                                                                   #
+# =============================================================================#
 
 # Install renv
 if (!"renv" %in% rownames(installed.packages())) {

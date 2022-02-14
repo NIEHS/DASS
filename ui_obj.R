@@ -57,7 +57,7 @@ ui_dass <- fluidPage(fluidRow(column(
         12,
         ### for debugging
         ### use $('#browser').show(); to launch
-        actionButton("browser", "browser"),
+        # actionButton("browser", "browser"),
         # tags$script("$('#browser').hide();"),
         ###
         HTML(

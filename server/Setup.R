@@ -13,9 +13,9 @@
 # =============================================================================#
 
 ### for debugging
-observeEvent(input$browser,{
-  browser()
-})
+# observeEvent(input$browser,{
+#   browser()
+# })
 ###
 
 # Selection Names -----
@@ -119,9 +119,8 @@ observeEvent(input$fpath, {
       review_label(NULL)
       dass_res(NULL)
       output$step2ui <- renderUI({})
-      #hide("review_contents")
-      # output$dt_results <- renderDataTable({datatable(NULL)})
-      #hide("result_contents")
+      hide("review_contents")
+      hide("result_contents")
     }
 
     # Read in data

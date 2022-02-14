@@ -6,8 +6,10 @@
 # License: MIT                                                                #
 # Description: description                                                    #
 # Required Packages:                                                          #
-# - data.table                                                                #
+# - data.table, DT                                                            #
+# - openxlsx                                                                  #
 # - readxl                                                                    #
+# - shiny shinyBS shinyjs                                                     #
 #=============================================================================#
 
 # Function to read in data
@@ -48,21 +50,16 @@ check_cols <- function(dass = c("da_2o3", "da_itsv2", "da_ke31"),
     cols_to_check[["da_2o3"]] <- "hclat_call"
     if (ks_call_method == "call") {
       cols_to_check[["da_2o3"]] <- c(cols_to_check[["da_2o3"]], "ks_call")
-      # cols_to_check <- c(cols_to_check, "ks_call")
     } else if (ks_call_method == "imax") {
       cols_to_check[["da_2o3"]] <- c(cols_to_check[["da_2o3"]], "ks_imax")
-      # cols_to_check <- c(cols_to_check, "ks_imax")
     }
     
     if (dpra_call_method == "call") {
       cols_to_check[["da_2o3"]] <- c(cols_to_check[["da_2o3"]], "dpra_call")
-      # cols_to_check <- c(cols_to_check, "dpra_call")
     } else if (dpra_call_method == "pdepl") {
       cols_to_check[["da_2o3"]] <- c(cols_to_check[["da_2o3"]], "dpra_pC", "dpra_pK")
-      # cols_to_check <- c(cols_to_check, "dpra_pC", "dpra_pK")
     }
-    
-    # cols_to_check <- c(cols_to_check, "hclat_call")
+
   }
   # ITSv2 requires h-CLAT MIT, dpra %C-depletion, DPRA %K-depletion, 
   # oecd qsar tb Call, and OECD QSAR TB Applicability Domain
@@ -81,7 +78,6 @@ check_cols <- function(dass = c("da_2o3", "da_itsv2", "da_ke31"),
   }
   # Returns character vector
   sort(unique(unlist(cols_to_check)))
-  # sort(unique(cols_to_check))
 }
 
 # Function that performs the requested DASS by calling the functions for each
@@ -90,15 +86,14 @@ check_cols <- function(dass = c("da_2o3", "da_itsv2", "da_ke31"),
 #        Column names must be the column labels used throughout the app:
 #        'dpra_pC' = DPRA %C-Depletion (numeric)
 #        'dpra_pK' = DPRA %K-Depletion (numeric)
-#        'dpra_call' = DPRA Call (0 or 1)
-#        'hclat_call' = h-CLAT Call (0 or 1)
+#        'dpra_call' = DPRA Hazard ID (0 or 1)
+#        'hclat_call' = h-CLAT Hazard ID (0 or 1)
 #        'hclat_mit' = h-CLAT MIT (character)
-#        'hclat_mit_num' = h-CLAT MIT (numeric)
-#        'ks_call' = KeratinoSens Call (0 or 1)
+#        'ks_call' = KeratinoSens Hazard ID (0 or 1)
 #        'ks_imax' = KeratinoSens iMax (quantitative)
-#        'oecd_tb_call' = OECD QSAR Toolbox Call (0 or 1)
+#        'oecd_tb_call' = OECD QSAR Toolbox Hazard ID (0 or 1)
 #        'oecd_tb_ad' = OECD QSAR Toolbox Applicability Domain (0 or 1)
-# `dass` - a vector or character string to indiciate which defined approaches
+# `dass` - a vector or character string to indicate which defined approaches
 #          will be calculated
 # `ks_call_method` - a character string that indicates if KeratinoSens Call 
 #                    will be provided as a call value or if call needs to be 
@@ -233,8 +228,6 @@ da_2o3 <- function(ks_call, hclat_call, dpra_call) {
 # `hclat_mit` - character vector containing MIT values or a character string 
 #               'n', 'neg', or 'negative' (case insensitive) for negative
 #               test outcome
-# `hclat_mit_num` - a numeric vector containing h-CLAT MIT from tests with
-#                   positive calls
 # `dpra_pC` - numeric vector for %C-depletion
 # `dpra_pK` - numeric vector for %K-depletion
 # `oecd_call` - a numeric vector for OECD QSAR TB call, where '0' indicates a 
@@ -347,8 +340,6 @@ da_itsv2 <- function(hclat_mit, dpra_pC, dpra_pK, dpra_mean, oecd_call, oecd_dom
 # `hclat_mit` - character vector containing MIT values or a character string 
 #               'n', 'neg', or 'negative' (case insensitive) for negative
 #               test outcome
-# `hclat_mit_num` - a numeric vector containing h-CLAT MIT from tests with
-#                   positive calls
 # `dpra_call` - a numeric vector for DPRA call, where '0' indicates a 
 #               negative call and '1' indicates a positive call
 # Returns a Call and Potency prediction
@@ -368,7 +359,7 @@ da_ke31 <- function(hclat_mit, dpra_call) {
     hclat_mit == Inf & dpra_call == 0, "NC",
     hclat_mit == Inf & is.na(dpra_call), as.character(NA),
     hclat_mit <= 10, "1A",
-    hclat_mit >10 & hclat_mit <5000, "1B"
+    hclat_mit >10 & hclat_mit < 5000, "1B"
   ), by = id]
   
   list(
