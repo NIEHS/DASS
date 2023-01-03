@@ -421,7 +421,7 @@ observeEvent(input$info_kscall, {
     HTML(
       "Chemical hazard identifications from the KeratinoSens&trade; (KS) assay",
       "are used in the 2o3 defined approach.<br><br>",
-      "The column corresponding to KS hazard identification should only contain the values:<ul style='margin-bottom:0px;>",
+      "The column corresponding to KS hazard identification should only contain the values:<ul style='margin-bottom:0px;'>",
       "<li>'p', 'pos', 'positive', or 1 to indicate positive outcomes (sensitizers)*</li>",
       "<li>'n', 'neg', 'negative', or 0 to indicate negative outcomes (non-sensitizers)*</li>",
       "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
