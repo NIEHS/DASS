@@ -2,9 +2,9 @@
 # File Name: app.R                                                            #
 # Original Creator: Kim To                                                    #
 # Contact Information: comptox@ils-inc.com                                    #
-# Date Created: 2021-12-03                                                    #
+# Date Created: 2021-12-03                                                    #s
 # License: MIT                                                                #
-# Version: 0.9                                                                #
+# Version: 0.9.1                                                              #
 # Description: Loads required packages. Reads in functions. Loads UI and      #
 # server files to build app.                                                  #
 # Required Packages:                                                          #
@@ -25,6 +25,7 @@ require(shiny)
 require(shinyBS)
 require(shinyjs)
 require(openxlsx)
+require(shinyjqui)
 
 # Load functions
 source("dass_predict.R")
@@ -35,36 +36,7 @@ ui <- fluidPage(
   useShinyjs(),
   # Set CSS styles
   tags$head(
-    tags$style(
-      "
-      .btn-qs {
-      color:#0072B2;
-      padding:0px;
-      border-color:transparent;
-      }
-      .btn-qs:focus, .btn-qs:hover {
-      color:#0C1669;
-      background-color:transparent;
-      border-color:transparent;
-      }
-      .control-label {
-      white-space:nowrap;
-      }
-      .modal-dialog {
-      position:relative; top:calc(20%); bottom:calc(20%);
-      }
-      #fpath_progress {
-      visibility:hidden !important;
-      }
-      #shiny-notification-panel {
-      top:0;
-      }
-      #usr_dt .dataTables_scrollBody,
-      #dt_results .dataTables_scrollBody{
-      height: 50vh;
-      }
-      "
-    )
+    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
   ),
   #titlePanel(""),
   ui_dass
@@ -72,10 +44,11 @@ ui <- fluidPage(
 
 # Read in server files
 server <- function(input, output, session) {
-  source("server/Setup.R", local = TRUE)
-  source("server/Step1.R", local = TRUE)
-  source("server/Step2.R", local = TRUE)
-  source("server/Step3.R", local = TRUE)
+  # source("server/Setup.R", local = TRUE)
+  source("server/Step1-Select.R", local = TRUE)
+  source("server/Step2-UploadData.R", local = TRUE)
+  source("server/Step3-SelectColumns.R", local = TRUE)
+  source("server/Step4-ReviewColumns.R", local = TRUE)
   source("server/Step4.R", local = TRUE)
 }
 

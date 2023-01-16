@@ -1,5 +1,5 @@
 # =============================================================================#
-# File Name: Setup.R                                                           #
+# File Name: Step2-UploadData.R                                                #
 # Original Creator: ktto                                                       #
 # Contact Information: comptox@ils-inc.com                                     #
 # Date Created: 2021-02-10                                                     #
@@ -85,68 +85,9 @@ review_label <- reactiveVal()
 usr_dt <- reactiveVal()
 
 # Data Loading -----
-observeEvent(input$data_req, {
-  showModal(modalDialog(
-    title = "DASS App: Data Upload Requirements",
-    HTML(
-      "<b>General</b>",
-      "<ol>",
-      "<li>",
-      "Data can be comma-delimited (.csv), tab-delimited (.tsv, .txt)",
-      "or in the first worksheet of a Microsoft Excel workbook (.xls, .xlsx).",
-      "</li>",
-      "<li>",
-      "Data should be in a tabular format with each row corresponding to",
-      "a single substance and columns corresponding to assay endpoints. The",
-      "first row should contain column names.",
-      "</li>",
-      "<li>",
-      "Missing values should be indicated by a blank cell or as 'NA' (without quotes).",
-      "</li>",
-      "</ol>",
-      "<b>Assay Endpoints</b>",
-      "<p>Data that do not meet the assay endpoint requirements will be treated",
-      "as missing data and not used to derive predictions.</p>",
-      "<ol>",
-      "<li>",
-      "DPRA Call, hCLAT Call, KeratinoSens Call", "In Silico Prediction",
-      "<ul>",
-      "<li>",
-      "Active calls should be indicated by 'p', 'pos', 'positive', or '1'",
-      "</li>",
-      "<li>",
-      "Inactive calls should be indicated by 'n', 'neg', 'negative', or '0'",
-      "</li>",
-      "</ul>",
-      "</li>",
-      "<li>",
-      "DPRA %-Cysteine and %-Lysine Depletion, KeratinoSens iMax",
-      "<ul>",
-      "<li>",
-      "Numeric values only. No symbols.",
-      "</li>",
-      "</ul>",
-      "</li>",
-      "<li>",
-      "hCLAT MIT",
-      "<ul>",
-      "<li>",
-      "Positive outcomes must have numeric values only. No symbols.",
-      "</li>",
-      "<li>",
-      "Negative outcomes must be indicated by 'n', 'neg', 'negative', or 'Inf'",
-      "</li>",
-      "</ul>",
-      "</li>",
-      "</ol>"
-    ),
-    easyClose = T
-  ))
-})
-
 # Once the user selects a file, load the data onto the page and
 # show the defined approaches menu
-observeEvent(input$fpath, {
+observeEvent(input$button_upload, {
   # Check file extension
   ext <- unlist(strsplit(input$fpath$name, "[.]"))
   ext <- ext[length(ext)]
@@ -181,21 +122,44 @@ observeEvent(input$fpath, {
       hide("review_contents")
       hide("result_contents")
     }
-
+    
     # Read in data
     dt <- read_data(input$fpath$datapath)
     usr_dt(dt)
-
-    updateCollapse(session,
-                   id = "panels",
-                   open = "panel_dass_options"
-    )
-    # Close all other panels
-    updateCollapse(session,
-                   id = "panels",
-                   close = c("panel_col_options", "panel_review", "panel_results")
-    )
+    
+    shinyjs::show("user_data_block")
+    shinyjs::show("confirm_data")
   }
+})
+
+output$ae_req <- renderDataTable({
+  tmp <- data.frame(
+    `2o3` = c("X", "X", "X", "", "", "O", "O", "O"),
+    ITS = c("", "", "", "X", "X", "X", "X", "X"),
+    STS = c("X", "", "", "", "", "O", "O", "X"),
+    Assay = c("DPRA", "hCLAT", "KeratinoSens", "In Silico Prediction",
+              "In Silico Prediction", "DPRA", "DPRA", "hCLAT"),
+    Endpoint = c(rep("Call", 4), "Applicability Domain", "%-Cystine Depletion",
+                 "% Lysine Depletion", "Minimum Induction Threshold"),
+    `Format Requirements` = c(
+      rep("<ul><li>Active assay calls should be indicated by '1', 'p', 'pos', or 'positive'.</li>
+      <li>Inactive assay calls should be indicated by '0', 'n', 'neg', or 'negative'.</li></ul>", 4),
+      "<ul><li>Predictions within the applicability domain should be indicated by '1' or 'In'.</li><li>Predictions outside the applicability domain should be indicated by '0' or 'Out'. These will be omitted from analysis.</li></ul>",
+      "<ul><li>Numeric values only.</li><li>No symbols.</li></ul>",
+      "<ul><li>Numeric values only.</li><li>No symbols.</li></ul>",
+      "<td><ul><li>For active hCLAT calls, numeric values only. No symbols.</li><li>Indicate inactive hCLAT calls with 'Inf', 'n', 'neg', or 'negative'</li></ul>"),
+    check.names = F)
+  datatable(tmp,
+            class = "cell-border stripe hover compact",
+            rownames = FALSE,
+            options = list(
+              dom = "t",
+              autoWidth = TRUE,
+              columnDefs = list(
+                list(width = "1%", padding = "100px", targets = 0)
+                )
+              ), 
+            escape = F)
 })
 
 output$usr_dt <- renderDataTable({

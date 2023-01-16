@@ -14,7 +14,7 @@
 
 # Function to read in data
 # `fpath` - user-supplied path to data file
-read_data <- function(fpath) {
+read_data <- function(fpath, sheet = 1) {
   if (grepl("txt$|tsv$|csv$", fpath)) {
     fread(fpath, colClasses = "character", na.strings = c("NA", ""))
   } else if (grepl("xls$|xlsx$", fpath)) {

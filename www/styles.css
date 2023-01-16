@@ -1,0 +1,114 @@
+/*!
+File Name: styles.css
+Original Creator: Kim To
+Contact Information: comptox@ils-inc.com
+Date Created: 2023-01-03
+License: MIT
+Version: 0.9.1
+Description: custom style sheet
+*/
+
+/* GENERAL */
+body {
+  background-color: #DDDFF3;
+}
+
+/* BUTTONS */
+.btn-default, .btn-default:focus {
+  background-color:#527f24;
+  border-color:#234510;
+  color:#ffffff;
+  font-weight:700;
+}
+
+.btn-default:hover {
+  background-color:#234510;
+  color:#ffffff;
+  font-weight:700;
+}
+
+.btn-default:active:hover {
+  background-color:#234510;
+  color:#ffffff;
+  font-weight:700;
+}
+
+.btn-browse {
+  color:#232b5f;
+  font-weight:700;
+  border-color:#232b5f;
+}
+
+.btn-browse:hover {
+  background-color:#ACADBF;
+}
+
+/* New button class */
+.btn-qs {
+  color:#527f24;
+  padding:0px;
+  border-color:transparent;
+  background-color:transparent;
+}
+
+.btn-qs:focus, .btn-qs:hover {
+  color:#234510;
+  background-color:transparent;
+  border-color:transparent;
+}
+
+/* PANEL */
+.panel-default>.panel-heading {
+  background-color: #232b5f;
+  font-size: 2vw;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+}
+
+.panel-body {
+  padding-left: 50px; 
+  padding-right:50px; 
+}
+
+.panel-default {
+  margin-top:20px;
+  border-style:solid;
+  border-width:1px;
+}
+
+.panel-title>a {
+  display:block;
+}
+
+.control-label {
+white-space:nowrap;
+}
+.modal-dialog {
+position:relative; 
+top:calc(5%); 
+bottom:calc(20%);
+}
+
+#fpath_progress {
+  visibility:hidden !important;
+}
+#shiny-notification-panel {
+  top:0;
+}
+#usr_dt .dataTables_scrollBody,
+#dt_results .dataTables_scrollBody{
+  height: 50vh;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+#ae_req table.dataTable.compact thead th, table.dataTable.compact thead td {
+  padding-left:0;
+}
+
+#ae_req ul {
+  list-style-position: inside;
+  padding-left:0;
+}

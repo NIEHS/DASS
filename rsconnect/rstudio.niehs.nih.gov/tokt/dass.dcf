@@ -1,0 +1,14 @@
+name: dass
+title: dass
+username: tokt
+account: tokt
+server: rstudio.niehs.nih.gov
+hostUrl: https://rstudio.niehs.nih.gov/__api__
+appId: 49
+bundleId: 73
+url: https://rstudio.niehs.nih.gov:443/content/b51d906a-030e-462f-b0f2-00d3826f4317/
+when: 1673366432.09788
+lastSyncTime: 1673366432.09788
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: readme.md|misc|tests
