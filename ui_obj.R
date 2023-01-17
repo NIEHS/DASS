@@ -194,7 +194,19 @@ uploaddata_panel <- bsCollapsePanel_h2(
                  label = "Continue",
                  width = "100%",
                  style = "display:none;")
-  ))
+  ),
+  div(
+    id = "reload_block",
+    style = "display:none;",
+    hr(style = "width:50%"),
+    p("To change the selected DAs or uploaded data file, click 'Reload App.'"),
+    actionButton(
+      inputId = "reload_button",
+      label = "Reload App",
+      width = "100%"
+    )
+  )
+  )
 
 # Step 3: Select Columns -----
 selectcolumns_panel <- bsCollapsePanel_h2(

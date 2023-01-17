@@ -287,7 +287,36 @@ observeEvent(input$confirm_data, {
                    id = "panels",
                    open = "panel_col_options"
     )
+    shinyjs::disable("do_da_2o3")
+    shinyjs::disable("do_da_its")
+    shinyjs::disable("do_da_ke31")
+    shinyjs::disable("fpath")
+    shinyjs::disable("button_upload")
+    shinyjs::hide("user_data_block")
+    shinyjs::show("reload_block")
   }
+})
+
+## Reload app -----
+observeEvent(input$reload_button, {
+  showModal(
+    modalDialog(
+      title = NULL,
+      footer = NULL,
+      p("Are you sure you want to reload the app? All selections will be reset."),
+      actionButton(inputId = "confirm_reload", label = "Reload App"),
+      actionButton(inputId = "cancel_reload", label = "Cancel")
+    )
+  )
+}
+)
+
+observeEvent(input$confirm_reload, {
+  session$reload()
+})
+
+observeEvent(input$cancel_reload, {
+  removeModal()
 })
 
 ## Calculated Options -----

@@ -105,6 +105,10 @@ thead {
   background-color: #f0f0f0;
 }
 
+#ae_req ul {
+  padding-left: 1em;
+}
+
 #shiny-notification-panel {
   top:0;
 }
