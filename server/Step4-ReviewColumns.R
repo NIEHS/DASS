@@ -1,10 +1,10 @@
 # =============================================================================#
-# File Name: Step3.R                                                           #
+# File Name: Step4-ReviewColumns.R                                             #
 # Original Creator: ktto                                                       #
 # Contact Information: comptox@ils-inc.com                                     #
 # Date Created: 2021-02-10                                                     #
 # License: MIT                                                                 #
-# Description: server object for Step 3 of  DASS app.                          #
+# Description: server file for module with selection review                    #
 # Required Packages:                                                           #
 # - data.table, DT                                                             #
 # - openxlsx                                                                   #
@@ -12,19 +12,18 @@
 # - shiny shinyBS shinyjs                                                      #
 # =============================================================================#
 
-
-# Step 3: Review Selections -----
+# Step 4: Review Selections -----
 # Labels for displayed table
 end_labels <- list(
-  dpra_call = "DPRA Hazard Identification",
+  dpra_call = "DPRA Hazard Call",
   dpra_pC = "DPRA %C-Depletion",
   dpra_pK = "DPRA %K-Depletion",
-  hclat_call = "h-CLAT Hazard Identification",
+  hclat_call = "h-CLAT Hazard Call",
   hclat_mit = "h-CLAT MIT",
-  ks_call = "KeratinoSens&trade; Hazard Identification",
+  ks_call = "KeratinoSens&trade; Hazard Call",
   ks_imax = "KeratinoSens&trade; iMax",
-  oecd_tb_call = "In Silico Hazard Identification",
-  oecd_tb_ad = "In Silico Applicability Domain"
+  insilico_call = "In Silico Hazard Call",
+  insilico_ad = "In Silico Applicability Domain"
 )
 
 # Flags for review
@@ -36,14 +35,23 @@ end_flags <- list(
   hclat_mit = "Must be 'n', 'neg', 'negative', or 'Inf' to indicate negative outcomes and numeric for positive outcomes.",
   ks_call = "Must be '0', 'n', 'neg', or 'negative' to indicate negative outcomes and '1', 'p', 'pos', or 'positive' to indicate positive outcomes.",
   ks_imax = "Must be numeric",
-  oecd_tb_call = "Must be '0', 'n', 'neg', or 'negative' to indicate negative outcomes and '1', 'p', 'pos', or 'positive' to indicate positive outcomes.",
-  oecd_tb_ad = "Must be '0' or 'out' for chemicals outside the applicability domain and '1' or 'in' for chemicals in the applicability domain."
+  insilico_call = "Must be '0', 'n', 'neg', or 'negative' to indicate negative outcomes and '1', 'p', 'pos', or 'positive' to indicate positive outcomes.",
+  insilico_ad = "Must be '0' or 'out' for chemicals outside the applicability domain and '1' or 'in' for chemicals in the applicability domain."
 )
 
 observeEvent(input$review_entries, {
-  
   # Get selected columns
-  col_summary <- reactiveValuesToList(dt_col_select)
+  col_summary <- list(
+    dpra_call = input$dpra_call_col,
+    dpra_pC = input$dpra_pC_col,
+    dpra_pK = input$dpra_pK_col,
+    hclat_call = input$hclat_call_col,
+    hclat_mit = input$hclat_mit_col,
+    ks_call = input$ks_call_col,
+    ks_imax = input$ks_imax_col,
+    insilico_call = input$insilico_call_col,
+    insilico_ad = input$insilico_ad_col
+  )
   
   # Check that all variables have a column assigned
   cols_to_check <- check_cols(
@@ -69,7 +77,7 @@ observeEvent(input$review_entries, {
   names(col_flags) <- names(col_data)
   
   # Check call columns
-  call_cols <- c("ks_call", "dpra_call", "hclat_call", "oecd_tb_call")
+  call_cols <- c("ks_call", "dpra_call", "hclat_call", "insilico_call")
   if (any(names(col_data) %in% call_cols)) {
     call_col_names <- names(col_data)[names(col_data) %in% call_cols]
     # Data can be entered as:
@@ -137,18 +145,18 @@ observeEvent(input$review_entries, {
   }
   
   # Check applicability domain
-  if (any(names(col_data) == "oecd_tb_ad")) {
-    ad_check <- col_data[, oecd_tb_ad]
+  if (any(names(col_data) == "insilico_ad")) {
+    ad_check <- col_data[, insilico_ad]
     # Can be 0, 1, in, or out
     ad_check <- !(grepl_ci("^1$|^0$|^in$|^out$", ad_check) | is.na(ad_check))
     
     if (any(ad_check)) {
-      col_flags$oecd_tb_ad <- 1
+      col_flags$insilico_ad <- 1
     }
     
-    dt_list$ad_col <- col_data[, .SD, .SDcols = "oecd_tb_ad"][, .(oecd_tb_ad = fcase(
-      grepl_ci("^1$|^in$", oecd_tb_ad), 1,
-      grepl_ci("^0$|^out$", oecd_tb_ad), 0
+    dt_list$ad_col <- col_data[, .SD, .SDcols = "insilico_ad"][, .(insilico_ad = fcase(
+      grepl_ci("^1$|^in$", insilico_ad), 1,
+      grepl_ci("^0$|^out$", insilico_ad), 0
     ))]
   }
   

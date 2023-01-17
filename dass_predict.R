@@ -40,12 +40,12 @@ grepl_ci <- function(str, x) grepl(pattern = str, x = x, ignore.case = T)
 #                      derived from % depletion values
 # Output: Returns a vector with the column labels for columns required
 #         to implement the selected defined approaches
-check_cols <- function(dass = c("da_2o3", "da_itsv2", "da_ke31"),
+check_cols <- function(dass = c("da_2o3", "da_its", "da_ke31"),
                        ks_call_method = NULL,
                        dpra_call_method = NULL) {
   # Create list to store column labels
   cols_to_check <- vector(mode = "list", length = 3)
-  names(cols_to_check) <- c("da_2o3", "da_itsv2", "da_ke31")
+  names(cols_to_check) <- c("da_2o3", "da_its", "da_ke31")
   # 2o3 requires KeratinoSens Call and DPRA Call
   if ("da_2o3" %in% dass) {
     cols_to_check[["da_2o3"]] <- "hclat_call"
@@ -63,8 +63,8 @@ check_cols <- function(dass = c("da_2o3", "da_itsv2", "da_ke31"),
   }
   # ITS requires h-CLAT MIT, dpra %C-depletion, DPRA %K-depletion,
   # in silico hazard identification and applicablity domain
-  if ("da_itsv2" %in% dass) {
-    cols_to_check[["da_itsv2"]] <- c("hclat_mit", "dpra_pC", "dpra_pK", "oecd_tb_call", "oecd_tb_ad")
+  if ("da_its" %in% dass) {
+    cols_to_check[["da_its"]] <- c("hclat_mit", "dpra_pC", "dpra_pK", "insilico_call", "insilico_ad")
   }
 
   # KE 3/1 STS requires h-CLAT MIT and DPRA Call
@@ -91,8 +91,8 @@ check_cols <- function(dass = c("da_2o3", "da_itsv2", "da_ke31"),
 #        'hclat_mit' = h-CLAT MIT (character)
 #        'ks_call' = KeratinoSens Hazard ID (0 or 1)
 #        'ks_imax' = KeratinoSens iMax (quantitative)
-#        'oecd_tb_call' = In silico Hazard ID (0 or 1) from OECD QSAR Toolbox or Derek Nexus
-#        'oecd_tb_ad' = In silico Applicability Domain (0 or 1) from OECD QSAR Toolbox or Derek Nexus
+#        'insilico_call' = In silico Hazard ID (0 or 1) from OECD QSAR Toolbox or Derek Nexus
+#        'insilico_ad' = In silico Applicability Domain (0 or 1) from OECD QSAR Toolbox or Derek Nexus
 # `dass` - a vector or character string to indicate which defined approaches
 #          will be calculated
 # `ks_call_method` - a character string that indicates if KeratinoSens Call
@@ -104,7 +104,7 @@ check_cols <- function(dass = c("da_2o3", "da_itsv2", "da_ke31"),
 # Output: Returns a data table with rows corresponding to rows in
 #         the original user data and `dt`. Data table contains DASS
 #         predictions
-dass_predict <- function(dt, dass = c("da_2o3", "da_itsv2", "da_ke31"),
+dass_predict <- function(dt, dass = c("da_2o3", "da_its", "da_ke31"),
                          ks_call_method = NULL,
                          dpra_call_method = NULL) {
   # Set KS Call based on user selection
@@ -118,7 +118,7 @@ dass_predict <- function(dt, dass = c("da_2o3", "da_itsv2", "da_ke31"),
   }
 
   # Calculate DPRA mean
-  if ("da_itsv2" %in% dass) {
+  if ("da_its" %in% dass) {
     dt[, id := 1:.N]
     dt[!is.na(dpra_pC) & !is.na(dpra_pK),
       dpra_mean_calculated := mean(c(max(0, dpra_pC), max(0, dpra_pK))),
@@ -133,7 +133,7 @@ dass_predict <- function(dt, dass = c("da_2o3", "da_itsv2", "da_ke31"),
       dpra_call <- dt[, dpra_call]
     } else if (dpra_call_method == "pdepl") {
       # Calculate dpra mean if not already calculated
-      if (!"da_itsv2" %in% dass) {
+      if (!"da_its" %in% dass) {
         dt[, id := 1:.N]
         dt[!is.na(dpra_pC) & !is.na(dpra_pK),
           dpra_mean_calculated := mean(c(max(0, dpra_pC), max(0, dpra_pK))),
@@ -166,19 +166,19 @@ dass_predict <- function(dt, dass = c("da_2o3", "da_itsv2", "da_ke31"),
     res_list$DA_2o3 <- data.table(DA_2o3_Call = temp)
   }
 
-  if ("da_itsv2" %in% dass) {
-    temp <- da_itsv2(
+  if ("da_its" %in% dass) {
+    temp <- da_its(
       hclat_mit = dt[, hclat_mit],
       dpra_pC = dt[, dpra_pC],
       dpra_pK = dt[, dpra_pK],
       dpra_mean = dt[, dpra_mean_calculated],
-      oecd_call = dt[, oecd_tb_call],
-      oecd_domain = dt[, oecd_tb_ad]
+      insilico_call = dt[, insilico_call],
+      insilico_domain = dt[, insilico_ad]
     )
-    res_list$DA_ITSv2 <- data.table(
+    res_list$DA_IT2 <- data.table(
       ITS_hCLAT_Score = temp$ITS_hCLAT_Score,
       ITS_DPRA_Score = temp$ITS_DPRA_Score,
-      ITS_OECDQSARTB_Score = temp$ITS_OECDQSARTB_Score,
+      ITS_inSilico_Score = temp$ITS_inSilico_Score,
       ITS_TotalScore = temp$ITS_TotalScore,
       DA_ITS_Call = temp$ITS_Call,
       DA_ITS_Potency = temp$ITS_Potency
@@ -232,18 +232,18 @@ da_2o3 <- function(ks_call, hclat_call, dpra_call) {
 # `hclat_mit` - numeric vector containing MIT values. Negative results are 'Inf'
 # `dpra_pC` - numeric vector for %C-depletion
 # `dpra_pK` - numeric vector for %K-depletion
-# `oecd_call` - a numeric vector for in silico call prediction from either oecd
+# `insilico_call` - a numeric vector for in silico call prediction from either oecd
 #               qsar toolbox or derek nexus. '0' indicates a
 #               negative call and '1' indicates a positive call
-# `oecd_domain` - a numeric vector for in silico applicability domain from either
+# `insilico_domain` - a numeric vector for in silico applicability domain from either
 #                 oecd qsar toolbox or derek nexus.
 #                 '0' indicates a prediction outside the
 #                 applicability domain and '1' indicates a prediction within
 #                 the applicability domain
 # Returns a Call and Potency prediction
 
-da_itsv2 <- function(hclat_mit, dpra_pC, dpra_pK, dpra_mean, oecd_call, oecd_domain) {
-  temp <- data.table(hclat_mit, dpra_pC, dpra_pK, dpra_mean, oecd_call, oecd_domain)
+da_its <- function(hclat_mit, dpra_pC, dpra_pK, dpra_mean, insilico_call, insilico_domain) {
+  temp <- data.table(hclat_mit, dpra_pC, dpra_pK, dpra_mean, insilico_call, insilico_domain)
   temp[, id := 1:nrow(temp)]
 
   # Calculate h-CLAT score
@@ -276,75 +276,75 @@ da_itsv2 <- function(hclat_mit, dpra_pC, dpra_pK, dpra_mean, oecd_call, oecd_dom
   ), by = id]
 
   # Calculate in silico tool SCORE
-  temp[, oecd_score := fcase(
+  temp[, insilico_score := fcase(
     # outside AD
-    oecd_domain == 0, as.numeric(NA),
+    insilico_domain == 0, as.numeric(NA),
     # no information provided
-    is.na(oecd_call) | is.na(oecd_domain), as.numeric(NA),
+    is.na(insilico_call) | is.na(insilico_domain), as.numeric(NA),
     # Positive
-    oecd_call == 1, 1,
+    insilico_call == 1, 1,
     # Negative
-    oecd_call == 0, 0
+    insilico_call == 0, 0
   ), by = id]
 
   # Different scoring schemes are used depending on available data sources
   # Label each row based on available data
   temp[, flow := fcase(
     # All 3
-    all(!is.na(c(hclat_score, dpra_score, oecd_score))), "all",
+    all(!is.na(c(hclat_score, dpra_score, insilico_score))), "all",
     # No in silico prediction
-    all(!is.na(hclat_score) & !is.na(dpra_score) & is.na(oecd_score)), "no_ins",
+    all(!is.na(hclat_score) & !is.na(dpra_score) & is.na(insilico_score)), "no_ins",
     # Only h-CLAT and in silico
-    all(!is.na(c(hclat_score, oecd_score))) & is.na(dpra_score), "ins",
+    all(!is.na(c(hclat_score, insilico_score))) & is.na(dpra_score), "ins",
     # Only DPRA and in silico
-    all(!is.na(c(dpra_score, oecd_score))) & is.na(hclat_score), "ins"
+    all(!is.na(c(dpra_score, insilico_score))) & is.na(hclat_score), "ins"
   ), by = id]
 
   # Calculate total ITS score if at least 2 of 3 assays have data
-  temp[(is.na(hclat_score) + is.na(dpra_score) + is.na(oecd_score)) < 2,
-    itsv2_score := sum(c(hclat_score, dpra_score, oecd_score), na.rm = T),
+  temp[(is.na(hclat_score) + is.na(dpra_score) + is.na(insilico_score)) < 2,
+    its_score := sum(c(hclat_score, dpra_score, insilico_score), na.rm = T),
     by = id
   ]
 
   # Get potency scores
   # All assays available
-  temp[flow == "all", itsv2_cat := fcase(
-    itsv2_score %in% 6:7, "1A",
-    itsv2_score %in% 2:5, "1B",
-    itsv2_score %in% 0:1, "NC"
+  temp[flow == "all", its_cat := fcase(
+    its_score %in% 6:7, "1A",
+    its_score %in% 2:5, "1B",
+    its_score %in% 0:1, "NC"
   )]
   # DPRA, h-CLAT, but no in silico
-  temp[flow == "no_ins", itsv2_cat := fcase(
-    itsv2_score == 6, "1A",
-    itsv2_score == 5, "1*",
-    itsv2_score %in% 2:4, "1B",
-    itsv2_score == 1, "Inconclusive",
-    itsv2_score == 0, "NC"
+  temp[flow == "no_ins", its_cat := fcase(
+    its_score == 6, "1A",
+    its_score == 5, "1*",
+    its_score %in% 2:4, "1B",
+    its_score == 1, "Inconclusive",
+    its_score == 0, "NC"
   )]
   # in silico and (DPRA or h-CLAT), with either (DPRA or h-CLAT) not available
-  temp[flow == "ins", itsv2_cat := fcase(
-    itsv2_score %in% 3:4, "1*",
-    itsv2_score == 2, "1B",
-    itsv2_score %in% 0:1, "Inconclusive"
+  temp[flow == "ins", its_cat := fcase(
+    its_score %in% 3:4, "1*",
+    its_score == 2, "1B",
+    its_score %in% 0:1, "Inconclusive"
   )]
 
   # Use potency scores to derive calls
-  temp[, itsv2_call := fcase(
-    itsv2_cat %in% c("1A", "1*", "1B"), "1",
-    itsv2_cat == "Inconclusive", "Inconclusive",
-    itsv2_cat == "NC", "0"
+  temp[, its_call := fcase(
+    its_cat %in% c("1A", "1*", "1B"), "1",
+    its_cat == "Inconclusive", "Inconclusive",
+    its_cat == "NC", "0"
   )]
 
   # Update potency score for 1*
-  temp[itsv2_cat == "1*", itsv2_cat := "Inconclusive"]
+  temp[its_cat == "1*", its_cat := "Inconclusive"]
 
   list(
     ITS_hCLAT_Score = temp$hclat_score,
     ITS_DPRA_Score = temp$dpra_score,
-    ITS_OECDQSARTB_Score = temp$oecd_score,
-    ITS_TotalScore = temp$itsv2_score,
-    ITS_Call = temp$itsv2_call,
-    ITS_Potency = temp$itsv2_cat
+    ITS_inSilico_Score = temp$insilico_score,
+    ITS_TotalScore = temp$its_score,
+    ITS_Call = temp$its_call,
+    ITS_Potency = temp$its_cat
   )
 }
 # Performs DASS KE 3/1 STS

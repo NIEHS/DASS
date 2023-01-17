@@ -12,12 +12,6 @@
 # - shiny shinyBS shinyjs                                                      #
 # =============================================================================#
 
-### for debugging
-# observeEvent(input$browser,{
-#   browser()
-# })
-###
-
 # Selection Names -----
 # IDs for column selection drop down menus
 si_ids <- c(
@@ -28,8 +22,8 @@ si_ids <- c(
   "hclat_mit_col",
   "ks_call_col",
   "ks_imax_col",
-  "oecd_call_col",
-  "oecd_ad_col"
+  "insilico_call_col",
+  "insilico_ad_col"
 )
 
 # Formatting -----
@@ -58,19 +52,6 @@ dass_res <- reactiveVal()
 # formatted data
 dat_for_anlz <- reactiveValues(col_data = NULL,
                                col_dict = NULL)
-
-# list with user data column names
-dt_col_select <- reactiveValues(
-  dpra_call = "",
-  dpra_pC = "",
-  dpra_pK = "",
-  hclat_call = "",
-  hclat_mit = "",
-  ks_call = "",
-  ks_imax = "",
-  oecd_tb_call = "",
-  oecd_tb_ad = ""
-)
 
 # table with selected columns for user to review
 dt_review <- reactiveVal()
@@ -105,15 +86,6 @@ observeEvent(input$button_upload, {
       }
       dat_for_anlz$col_data <- NULL
       dat_for_anlz$col_dict <- NULL
-      dt_col_select$dpra_call <- ""
-      dt_col_select$dpra_pC <- ""
-      dt_col_select$dpra_pK <- ""
-      dt_col_select$hclat_call <- ""
-      dt_col_select$hclat_mit <- ""
-      dt_col_select$ks_call <- ""
-      dt_col_select$ks_imax <- ""
-      dt_col_select$oecd_tb_call <- ""
-      dt_col_select$oecd_tb_ad <- ""
       dt_review(NULL)
       flagged(NULL)
       review_label(NULL)
@@ -132,6 +104,8 @@ observeEvent(input$button_upload, {
   }
 })
 
+# Tables -----
+# Table with data formatting requirements
 output$ae_req <- renderDataTable({
   tmp <- data.frame(
     `2o3` = c("X", "X", "X", "", "", "O", "O", "O"),
@@ -152,16 +126,22 @@ output$ae_req <- renderDataTable({
   datatable(tmp,
             class = "cell-border stripe hover compact",
             rownames = FALSE,
+            caption = tags$caption(
+              style = "caption-side: bottom; text.align:left;",
+              "X = Endpoint is required for the given DA",
+              br(),
+              "O = Endpoint can be used to derive a required Call endpoint."
+            ),
+            width = "auto",
             options = list(
               dom = "t",
               autoWidth = TRUE,
-              columnDefs = list(
-                list(width = "1%", padding = "100px", targets = 0)
-                )
+              scrollY = "50vh"
               ), 
             escape = F)
 })
 
+# User data
 output$usr_dt <- renderDataTable({
   req(usr_dt())
   datatable(usr_dt(),

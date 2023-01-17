@@ -100,15 +100,3 @@ bottom:calc(20%);
 #dt_results .dataTables_scrollBody{
   height: 50vh;
 }
-
-.nowrap {
-  white-space: nowrap;
-}
-#ae_req table.dataTable.compact thead th, table.dataTable.compact thead td {
-  padding-left:0;
-}
-
-#ae_req ul {
-  list-style-position: inside;
-  padding-left:0;
-}

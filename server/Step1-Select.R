@@ -4,7 +4,7 @@
 # Contact Information: comptox@ils-inc.com                                     #
 # Date Created: 2021-02-10                                                     #
 # License: MIT                                                                 #
-# Description: server object for Step 1 of  DASS app.                          #
+# Description: server object for module with da selection                      #
 # Required Packages:                                                           #
 # - data.table, DT                                                             #
 # - openxlsx                                                                   #
@@ -20,7 +20,7 @@ observeEvent(input$dass_all, {
     value = TRUE
   )
   updateCheckboxInput(
-    inputId = "do_da_itsv2",
+    inputId = "do_da_its",
     value = TRUE
   )
   updateCheckboxInput(
@@ -36,7 +36,7 @@ observeEvent(input$dass_none, {
     value = FALSE
   )
   updateCheckboxInput(
-    inputId = "do_da_itsv2",
+    inputId = "do_da_its",
     value = FALSE
   )
   updateCheckboxInput(
@@ -64,7 +64,7 @@ observeEvent(input$info_2o3, {
   ))
 })
 
-observeEvent(input$info_itsv2, {
+observeEvent(input$info_its, {
   showModal(modalDialog(
     title = "Integrated Testing Strategy",
     HTML(

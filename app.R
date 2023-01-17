@@ -12,20 +12,16 @@
 # - openxlsx                                                                  #
 # - readxl                                                                    #
 # - shiny shinyBS shinyjs                                                     #
-# Note: The app was first created using ITSv2, which uses OECD QSAR TB.       #
-# In silico results can come from either Derek Nexus or OECD QSAR TB,         #
-# however variable names throughout the code for this app will be named after #
-# OECD QSAR TB.                                                               #
 #=============================================================================#
 
 # Load packages
 require(data.table)
 require(DT)
+require(openxlsx)
+# readxl called in dass_predict.r
 require(shiny)
 require(shinyBS)
 require(shinyjs)
-require(openxlsx)
-require(shinyjqui)
 
 # Load functions
 source("dass_predict.R")
@@ -38,18 +34,26 @@ ui <- fluidPage(
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
   ),
-  #titlePanel(""),
+  ### for debugging
+  # actionButton("browser", "browser"),
+  ###
   ui_dass
 )
 
 # Read in server files
 server <- function(input, output, session) {
-  # source("server/Setup.R", local = TRUE)
   source("server/Step1-Select.R", local = TRUE)
   source("server/Step2-UploadData.R", local = TRUE)
   source("server/Step3-SelectColumns.R", local = TRUE)
   source("server/Step4-ReviewColumns.R", local = TRUE)
-  source("server/Step4.R", local = TRUE)
+  source("server/Step5-Results.R", local = TRUE)
+
+  ## for debugging
+  # observeEvent(input$browser,{
+  #   browser()
+  # })
+  ##
+
 }
 
 # Create App -----
