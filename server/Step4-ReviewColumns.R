@@ -85,7 +85,7 @@ observeEvent(input$review_entries, {
     # Negative: 0, Neg, Negative, N
     #  Count number of entries per column that have invalid values
     call_check <- col_data[, lapply(.SD, function(x) {
-      !(grepl_ci("^1$|^0$|^p$|^n$|^pos$|^neg$|^positive$|^negative$", x) | is.na(x))
+      !(grepl_ci("^1$|^0$|^p$|^n$|^pos$|^neg$|^positive$|^negative$|^a$|^i$|^active$|^inactive$", x) | is.na(x))
     }), .SDcols = call_col_names][, lapply(.SD, sum), .SDcols = call_col_names]
     call_check_id <- which(call_check > 0)
     if (length(call_check_id) > 0) {
@@ -94,8 +94,8 @@ observeEvent(input$review_entries, {
     # Replace positive with 1 and negative with 0
     dt_list$call_cols <- col_data[, lapply(.SD, function(x) {
       fcase(
-        grepl_ci("^1$|^p$|^pos$|^positive$", x), 1,
-        grepl_ci("^0$|^n$|^neg$|^negative$", x), 0
+        grepl_ci("^1$|^p$|^pos$|^positive$|^a$|^active$", x), 1,
+        grepl_ci("^0$|^n$|^neg$|^negative$|^i$|^inactive$", x), 0
       )
     }), .SDcols = call_col_names]
   }
@@ -128,7 +128,7 @@ observeEvent(input$review_entries, {
     # Can have numeric or 'negative'
     # Remove flags for valid values
     mit_check[is.na(hclat_mit), flag := F]
-    mit_check[grepl_ci("^n$|^neg$|^negative$|^Inf$", hclat_mit), flag := F]
+    mit_check[grepl_ci("^n$|^neg$|^negative$|^Inf$|^i$|^inactive$", hclat_mit), flag := F]
     mit_check[!is.na(hclat_mit_num), flag := F]
     
     if (any(mit_check[, flag])) {
@@ -137,7 +137,7 @@ observeEvent(input$review_entries, {
     
     mit_check <- mit_check[,.(hclat_mit = fcase(
       !is.na(hclat_mit_num), hclat_mit_num,
-      grepl_ci("^n$|^neg$|^negative$|^Inf$", hclat_mit), Inf,
+      grepl_ci("^n$|^neg$|^negative$|^Inf$|^i$|^inactive$", hclat_mit), Inf,
       is.na(hclat_mit_num), as.numeric(NA)
     ))]
     
