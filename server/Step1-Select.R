@@ -96,7 +96,7 @@ observeEvent(input$info_ke31, {
       "Approaches for Skin Sensitization as a Replacement for Laboratory Animal",
       "Testing Draft for Public Comment</em>[<a",
       "href='https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090'",
-      "target = '_blank'>3</a>]</p>"
+      "target = '_blank'>2</a>]</p>"
     ),
     easyClose = T
   ))

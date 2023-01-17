@@ -191,7 +191,8 @@ output$dt_review <- renderDataTable({
   dt_review <- dt_review()
   flag_row <- which(dt_review$Flag != "")
   dt_review <- datatable(dt_review,
-                         class = "table-bordered",
+                         class = "table-bordered stripe",
+                         callback = JS("$('table.dataTable.no-footer').css('border-bottom', 'none');"),
                          rownames = FALSE,
                          escape = FALSE,
                          selection = "none",

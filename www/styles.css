@@ -79,6 +79,7 @@ body {
 
 .panel-title>a {
   display:block;
+  font-weight: bold;
 }
 
 .control-label {
@@ -90,13 +91,20 @@ top:calc(5%);
 bottom:calc(20%);
 }
 
-#fpath_progress {
-  visibility:hidden !important;
+/* Tables */
+.dataTables_scrollBody {
+  height: 50vh;
 }
+
+thead {
+  background-color: #232b5f;
+  color: white;
+}
+
+.odd {
+  background-color: #f0f0f0;
+}
+
 #shiny-notification-panel {
   top:0;
-}
-#usr_dt .dataTables_scrollBody,
-#dt_results .dataTables_scrollBody{
-  height: 50vh;
 }

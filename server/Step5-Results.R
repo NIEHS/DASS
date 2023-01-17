@@ -116,11 +116,13 @@ output$dt_results <- renderDataTable({
     
     datatable(
       res,
-      class = "table-bordered",
+      class = "table-bordered stripe",
       rownames = FALSE,
+      callback = JS("$('.dataTables_scrollBody').css('border-bottom', 'none');"),
       selection = "none",
       options = list(
         scrollX = TRUE,
+        scrollY = TRUE,
         rowCallback = JS(rowCallback)
       )
     ) %>%

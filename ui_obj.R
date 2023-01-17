@@ -215,6 +215,7 @@ reviewselection_panel <- bsCollapsePanel_h2(
     br(),
     actionButton(
       inputId = "run_dass",
+      width = "100%",
       label = "Run"
     )
   )
@@ -246,7 +247,8 @@ results_panel <- bsCollapsePanel_h2(
     ),
     downloadButton("downloadres", "Download Results"),
     br(),
-    dataTableOutput("dt_results")
+    fluidRow(column(12, align = "center",
+    dataTableOutput("dt_results")))
   )
 )
 

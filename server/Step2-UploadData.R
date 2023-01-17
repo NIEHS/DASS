@@ -124,19 +124,20 @@ output$ae_req <- renderDataTable({
       "<td><ul><li>For active hCLAT calls, numeric values only. No symbols.</li><li>Indicate inactive hCLAT calls with 'Inf', 'n', 'neg', or 'negative'</li></ul>"),
     check.names = F)
   datatable(tmp,
-            class = "cell-border stripe hover compact",
+            class = "table-bordered stripe",
             rownames = FALSE,
+            callback = JS(c("$('.dataTables_scrollBody').css('border-bottom', 'none');", "$('table.no-footer').css('border-bottom', 'none');")),
             caption = tags$caption(
               style = "caption-side: bottom; text.align:left;",
               "X = Endpoint is required for the given DA",
               br(),
               "O = Endpoint can be used to derive a required Call endpoint."
             ),
-            width = "auto",
+            selection = "none",
             options = list(
               dom = "t",
-              autoWidth = TRUE,
-              scrollY = "50vh"
+              scrollY = TRUE,
+              scrollX = TRUE
               ), 
             escape = F)
 })
@@ -148,7 +149,8 @@ output$usr_dt <- renderDataTable({
             # selectize-input in step 2 won't work if filter argument
             # https://github.com/rstudio/shiny/issues/3125
             # filter = "top",
-            class = "cell-border stripe hover",
+            class = "table-bordered stripe",
+            callback = JS("$('.dataTables_scrollBody').css('border-bottom', 'none');"),
             options = list(
               scrollY = TRUE,
               scrollX = TRUE,
