@@ -66,12 +66,14 @@ observeEvent(input$review_entries, {
   
   # List of formatted data
   dt_list <- list()
-  
-  # Get data from selected columns
+  # Create named list mapping selected column to new variable name
   col_dict <- dat_for_anlz$col_dict <- col_summary[names(cols_to_check)]
   col_vec <- unlist(col_dict, use.names = F)
   col_data <- usr_dt()[, .SD, .SDcols = col_vec]
-  setnames(col_data, old = col_vec, new = names(col_dict))
+  
+  # setnames(col_data, old = col_vec, new = names(col_dict))
+  # setnames can't handle duplicate selections
+  names(col_data) <- names(col_dict)
   
   col_flags <- vector(mode = "list", length = ncol(col_data))
   names(col_flags) <- names(col_data)
@@ -224,32 +226,4 @@ output$dt_review <- renderDataTable({
 
 output$review_label <- renderText({
   review_label()
-})
-
-observeEvent(input$run_dass, {
-  req(flagged())
-  if (flagged() == 1) {
-    showModal(modalDialog(
-      title = NULL,
-      footer = NULL,
-      HTML(
-        "<p>The selected columns have been flagged for invalid values. Invalid",
-        "values will be considered missing (NA) and will <b>not</b> be used",
-        "to evaluate skin sensitization hazard identification or potency. Continue?</p>"
-      ),
-      actionButton(inputId = "run_with_flags", label = "Run"),
-      actionButton(inputId = "cancel_run", label = "Cancel")
-    ))
-  } else if (flagged() == 0) {
-    run_dass()
-  }
-})
-
-observeEvent(input$run_with_flags, {
-  run_dass()
-  removeModal()
-})
-
-observeEvent(input$cancel_run, {
-  removeModal()
 })

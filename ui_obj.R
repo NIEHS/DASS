@@ -140,7 +140,7 @@ uploaddata_panel <- bsCollapsePanel_h2(
   a(href="DASSApp-dataTemplate.xlsx", "Download Data Template (.xlsx)",
     download = NA, target = "_blank"),
   hr(style = "width:50%"),
-  p("Click 'Browse' below and select your file. Click 'Upload' to load your data."),
+  p("Click 'Browse' below and select your file. If uploading an Excel file, use the dropdown menu to select the worksheet to use. Click 'Upload' to load your data."),
   div(
     class="form-group shiny-input-container",
     style = "width:100%",
@@ -171,9 +171,19 @@ uploaddata_panel <- bsCollapsePanel_h2(
       tags$input(
         type = "text",
         class = "form-control",
-        style = "border-color:#232b5f",
+        style = "border-color:#232b5f; width:100%",
         placeholder = "No file selected.",
         readonly="readonly"
+      ),
+      tags$label(
+        class="input-group-btn input-group-append",
+        style = "display: none; width:25vw;",
+        id = "xlsheet-label",
+        tags$select(
+          id = "xlsheet",
+          class = "form-control",
+          style = "border-color:#232b5f;"
+        )
       ),
       tags$label(
         class="input-group-btn input-group-append",

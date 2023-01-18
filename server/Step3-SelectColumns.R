@@ -255,10 +255,10 @@ observeEvent(input$confirm_data, {
     
     # in silico
     if ("insilico" %in% dass_vars) {
-      dt_col_ui$oecd <- fluidRow(div(
+      dt_col_ui$insilico <- fluidRow(div(
         style = "margin-left:25px",
         HTML("<p><span style='font-size:16px; font-weight:bold; line-height:3;'>In Silico Hazard Call</span>"),
-        actionLink(inputId = "info_oecdtbcall", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon")),
+        actionLink(inputId = "info_insilico_call", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon")),
         HTML("</p>"),
         div(
           style = "margin-left:25px",
@@ -365,8 +365,8 @@ observeEvent(input$info_dpracall_1, {
       "Chemical hazard calls from the direct peptide reactivity assay (DPRA)",
       "are used in the 2o3 and KE3/1 STS defined approaches.<br><br>",
       "The column corresponding to DPRA hazard calls should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'p', 'pos', 'positive', or 1 to indicate positive outcomes (sensitizers)*</li>",
-      "<li>'n', 'neg', 'negative', or 0 to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>'a', 'active', 'p', 'pos', 'positive', or 1 to indicate active assay calls (sensitizers)*</li>",
+      "<li>'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate inactive assay calls (non-sensitizers)*</li>",
       "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
       "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br>",
       "<br>Alternatively, the %-Cysteine and %-Lysine depletion values can be evaluated",
@@ -386,8 +386,8 @@ observeEvent(input$info_dpracall_2, {
       "Chemical hazard calls from the direct peptide reactivity assay (DPRA)",
       "are used in the 2o3 and KE3/1 STS defined approaches.<br><br>",
       "The column corresponding to DPRA hazard calls should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'p', 'pos', 'positive', or 1 to indicate positive outcomes (sensitizers)*</li>",
-      "<li>'n', 'neg', 'negative', or 0 to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>'a', 'active', 'p', 'pos', 'positive', or 1 to indicate active assay calls (sensitizers)*</li>",
+      "<li>'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate inactive assay calls (non-sensitizers)*</li>",
       "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
       "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br>",
       "<br>Alternatively, the %-Cysteine and %-Lysine depletion values can be evaluated",
@@ -410,8 +410,8 @@ observeEvent(input$info_hclatcall, {
       "Chemical hazard calls from the human cell line activation test (h-CLAT)",
       "are used in the 2o3 defined approach.<br><br>",
       "The column corresponding to h-CLAT hzard call should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'p', 'pos', 'positive', or 1 to indicate positive outcomes (sensitizers)*</li>",
-      "<li>'n', 'neg', 'negative', or 0 to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>'a', 'active', 'p', 'pos', 'positive', or 1 to indicate active assay calls (sensitizers)*</li>",
+      "<li>'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate inactive assay calls (non-sensitizers)*</li>",
       "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
       "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br><br>",
       "For more details, see <em>OECD Test No. 442E: In Vitro Skin",
@@ -430,7 +430,7 @@ observeEvent(input$info_hclatmit, {
       "is used in the ITS and KE3/1 STS defined approaches.<br><br>",
       "The column corresponding to h-CLAT MIT should only contain:<ul style='margin-bottom:0px;'>",
       "<li>Numeric values</li>",
-      "<li>'n', 'neg', 'negative', or 'Inf' to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>'i', 'inactive', 'n', 'neg', 'negative', or 'Inf' to indicate negative outcomes (non-sensitizers)*</li>",
       "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
       "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br><br>",
       "For more details, see <em>OECD Test No. 442E: In Vitro Skin",
@@ -449,8 +449,8 @@ observeEvent(input$info_kscall, {
       "Chemical hazard calls from the KeratinoSens&trade; (KS) assay",
       "are used in the 2o3 defined approach.<br><br>",
       "The column corresponding to KS hazard calls should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'p', 'pos', 'positive', or 1 to indicate positive outcomes (sensitizers)*</li>",
-      "<li>'n', 'neg', 'negative', or 0 to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>'a', 'active', 'p', 'pos', 'positive', or 1 to indicate active assay calls (sensitizers)*</li>",
+      "<li>'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate inactive assay calls (non-sensitizers)*</li>",
       "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
       "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br><br>",
       "Alternatively, iMax values can be provided and evaluated for hazard call The",
@@ -467,7 +467,7 @@ observeEvent(input$info_kscall, {
 })
 
 ### In Silico -----
-observeEvent(input$info_oecdtbcall, {
+observeEvent(input$info_insilico_call, {
   showModal(modalDialog(
     title = "In Silico Hazard Call",
     HTML(
@@ -477,8 +477,8 @@ observeEvent(input$info_oecdtbcall, {
       "href='https://doi.org/10.1016/j.comtox.2019.01.006' target = '_blank'>7</a>].",
       "<br><br>",
       "The column corresponding to <em>in silico</em> hazard identification predictions should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'p', 'pos', 'positive', or 1 to indicate positive outcomes (sensitizers)*</li>",
-      "<li>'n', 'neg', 'negative', or 0 to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>'a', 'active', 'p', 'pos', 'positive', or 1 to indicate active assay calls (sensitizers)*</li>",
+      "<li>'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate inactive assay calls (non-sensitizers)*</li>",
       "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
       "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br><br>",
       "Additionally, a column corresponding to applicability domain (AD) should",

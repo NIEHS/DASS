@@ -12,8 +12,8 @@
 # - shiny shinyBS shinyjs                                                      #
 # =============================================================================#
 
-
 # Step 5: Results -----
+## run dass reactive -----
 run_dass <- reactive({
   ####
   # Workaround to give dass_predict the right ks and dpra methods
@@ -145,6 +145,35 @@ output$dt_results <- renderDataTable({
   }
   
   
+})
+
+## Confirm run -----
+observeEvent(input$run_dass, {
+  req(flagged())
+  if (flagged() == 1) {
+    showModal(modalDialog(
+      title = NULL,
+      footer = NULL,
+      HTML(
+        "<p>The selected columns have been flagged for invalid values. Invalid",
+        "values will be considered missing (NA) and will <b>not</b> be used",
+        "to evaluate skin sensitization hazard identification or potency. Continue?</p>"
+      ),
+      actionButton(inputId = "run_with_flags", label = "Run"),
+      actionButton(inputId = "cancel_run", label = "Cancel")
+    ))
+  } else if (flagged() == 0) {
+    run_dass()
+  }
+})
+
+observeEvent(input$run_with_flags, {
+  run_dass()
+  removeModal()
+})
+
+observeEvent(input$cancel_run, {
+  removeModal()
 })
 
 ## Save -----

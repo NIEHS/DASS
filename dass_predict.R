@@ -18,7 +18,7 @@ read_data <- function(fpath, sheet = 1) {
   if (grepl("txt$|tsv$|csv$", fpath)) {
     fread(fpath, colClasses = "character", na.strings = c("NA", ""))
   } else if (grepl("xls$|xlsx$", fpath)) {
-    data.table(readxl::read_excel(fpath, na = c("NA", "")))
+    data.table(readxl::read_excel(fpath, sheet = sheet, na = c("NA", "")))
   } else {
     stop("Incorrect file extension.")
   }

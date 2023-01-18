@@ -68,7 +68,8 @@ usr_dt <- reactiveVal()
 # Data Loading -----
 # Once the user selects a file, load the data onto the page and
 # show the defined approaches menu
-observeEvent(input$button_upload, {
+do_upload <- reactiveVal()
+observeEvent(input$fpath, {
   # Check file extension
   ext <- unlist(strsplit(input$fpath$name, "[.]"))
   ext <- ext[length(ext)]
@@ -79,24 +80,28 @@ observeEvent(input$button_upload, {
       duration = 10
     )
   } else {
-    # Reset reactive values
-    if (!is.null(usr_dt())) {
-      for (i in 1:length(si_ids)) {
-        updateSelectInput(inputId = si_ids[i], selected = "")
-      }
-      dat_for_anlz$col_data <- NULL
-      dat_for_anlz$col_dict <- NULL
-      dt_review(NULL)
-      flagged(NULL)
-      review_label(NULL)
-      dass_res(NULL)
-      output$step2ui <- renderUI({})
-      hide("review_contents")
-      hide("result_contents")
+    if (grepl("^xls$|^xlsx$", ext)) {
+      sheets <- readxl::excel_sheets(input$fpath$datapath)
+      updateSelectInput(inputId = "xlsheet", choices = sheets)
+      shinyjs::show("xlsheet-label")
     }
-    
+  }
+})
+
+observeEvent(input$button_upload, {
+  req(input$fpath)
+  # Check file extension
+  ext <- unlist(strsplit(input$fpath$name, "[.]"))
+  ext <- ext[length(ext)]
+  if (!grepl("^csv$|^tsv$|^txt$|^xls$|^xlsx$", ext)) {
+    showNotification(
+      type = "error",
+      "Incorrect file type. Accepted file extensions: csv, tsv, txt, xlsx",
+      duration = 10
+    )
+  } else {
     # Read in data
-    dt <- read_data(input$fpath$datapath)
+    dt <- read_data(input$fpath$datapath, sheet = input$xlsheet)
     usr_dt(dt)
     
     shinyjs::show("user_data_block")
@@ -116,12 +121,12 @@ output$ae_req <- renderDataTable({
     Endpoint = c(rep("Call", 4), "Applicability Domain", "%-Cystine Depletion",
                  "% Lysine Depletion", "Minimum Induction Threshold"),
     `Format Requirements` = c(
-      rep("<ul><li>Active assay calls should be indicated by '1', 'p', 'pos', or 'positive'.</li>
-      <li>Inactive assay calls should be indicated by '0', 'n', 'neg', or 'negative'.</li></ul>", 4),
+      rep("<ul><li>Active assay calls should be indicated by '1', 'a', 'active', 'p', 'pos', or 'positive'.</li>
+      <li>Inactive assay calls should be indicated by '0', 'i', 'inactive', 'n', 'neg', or 'negative'.</li></ul>", 4),
       "<ul><li>Predictions within the applicability domain should be indicated by '1' or 'In'.</li><li>Predictions outside the applicability domain should be indicated by '0' or 'Out'. These will be omitted from analysis.</li></ul>",
       "<ul><li>Numeric values only.</li><li>No symbols.</li></ul>",
       "<ul><li>Numeric values only.</li><li>No symbols.</li></ul>",
-      "<td><ul><li>For active hCLAT calls, numeric values only. No symbols.</li><li>Indicate inactive hCLAT calls with 'Inf', 'n', 'neg', or 'negative'</li></ul>"),
+      "<td><ul><li>For active hCLAT calls, numeric values only. No symbols.</li><li>Indicate inactive hCLAT calls with 'Inf', 'i', 'inactive', 'n', 'neg', or 'negative'</li></ul>"),
     check.names = F)
   datatable(tmp,
             class = "table-bordered stripe",
