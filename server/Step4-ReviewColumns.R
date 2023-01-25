@@ -1,18 +1,37 @@
 # =============================================================================#
-# File Name: Step4-ReviewColumns.R                                             #
-# Original Creator: ktto                                                       #
-# Contact Information: comptox@ils-inc.com                                     #
-# Date Created: 2021-02-10                                                     #
-# License: MIT                                                                 #
-# Description: server file for module with selection review                    #
-# Required Packages:                                                           #
-# - data.table, DT                                                             #
-# - openxlsx                                                                   #
-# - readxl                                                                     #
-# - shiny shinyBS shinyjs                                                      #
+# File Name: Step4-ReviewColumns.R
+# Original Creator: ktto
+# Contact Information: comptox@ils-inc.com
+# Date Created: 2021-02-10
+# License: MIT
+# Description: server file for module with selection review
+# Required Packages:
+# - data.table, DT
+# - shiny shinyBS shinyjs
 # =============================================================================#
 
 # Step 4: Review Selections -----
+## Reactive Values -----
+# tracks selected column names to prevent duplicate column selection
+# col_select_input <- reactiveValues()
+
+# formatted data
+dat_for_anlz <- reactiveValues(col_data = NULL,
+                               col_dict = NULL)
+
+# table with selected columns for user to review
+dt_review <- reactiveVal()
+
+# indicator to trigger popup warning if running with flagged columns
+flagged <- reactiveVal()
+
+# text shown during review of selected columns
+review_label <- reactiveVal()
+
+# text shown if duplicates selected
+dupe_label <- reactiveVal()
+
+## Globals -----
 # Labels for displayed table
 end_labels <- list(
   dpra_call = "DPRA Hazard Call",
@@ -28,17 +47,18 @@ end_labels <- list(
 
 # Flags for review
 end_flags <- list(
-  dpra_call = "Must be '0', 'n', 'neg', or 'negative' to indicate negative outcomes and '1', 'p', 'pos', or 'positive' to indicate positive outcomes.",
+  dpra_call = "Must be '0', 'i', 'inactive', 'n', 'neg', or 'negative' to indicate inactive calls and '1', 'a', 'active', 'p', 'pos', or 'positive' to indicate active calls.",
   dpra_pC = "Must be numeric",
   dpra_pK = "Must be numeric",
-  hclat_call = "Must be '0', 'n', 'neg', or 'negative' to indicate negative outcomes and '1', 'p', 'pos', or 'positive' to indicate positive outcomes.",
-  hclat_mit = "Must be 'n', 'neg', 'negative', or 'Inf' to indicate negative outcomes and numeric for positive outcomes.",
-  ks_call = "Must be '0', 'n', 'neg', or 'negative' to indicate negative outcomes and '1', 'p', 'pos', or 'positive' to indicate positive outcomes.",
+  hclat_call = "Must be '0', 'i', 'inactive', 'n', 'neg', or 'negative' to indicate inactive calls and '1', 'a', 'active', 'p', 'pos', or 'positive' to indicate active calls.",
+  hclat_mit = "Must be 'Inf', 'i', 'inactive', 'n', 'neg', or 'negative' to indicate inactive calls and numeric for active calls.",
+  ks_call = "Must be '0', 'i', 'inactive', 'n', 'neg', or 'negative' to indicate inactive calls and '1', 'a', 'active', 'p', 'pos', or 'positive' to indicate active calls.",
   ks_imax = "Must be numeric",
-  insilico_call = "Must be '0', 'n', 'neg', or 'negative' to indicate negative outcomes and '1', 'p', 'pos', or 'positive' to indicate positive outcomes.",
+  insilico_call = "Must be '0', 'i', 'inactive', 'n', 'neg', or 'negative' to indicate inactive calls and '1', 'a', 'active', 'p', 'pos', or 'positive' to indicate active calls.",
   insilico_ad = "Must be '0' or 'out' for chemicals outside the applicability domain and '1' or 'in' for chemicals in the applicability domain."
 )
 
+## Check columns -----
 observeEvent(input$review_entries, {
   # Get selected columns
   col_summary <- list(
@@ -52,13 +72,14 @@ observeEvent(input$review_entries, {
     insilico_call = input$insilico_call_col,
     insilico_ad = input$insilico_ad_col
   )
-  
   # Check that all variables have a column assigned
   cols_to_check <- check_cols(
     dass = dass_choice(),
     ks_call_method = input$ks_choice,
     dpra_call_method = input$dpra_call_choice
   )
+  # Maintain expected order. Depends on labels used in check_cols
+  cols_to_check <- as.character(sort(factor(cols_to_check, levels = names(col_summary))))
   cols_to_check <- unlist(col_summary[cols_to_check])
   col_blank <- any(cols_to_check == "")
   if (col_blank) showNotification(type = "error", ui = "Missing required columns.", duration = 10)
@@ -75,6 +96,15 @@ observeEvent(input$review_entries, {
   # setnames can't handle duplicate selections
   names(col_data) <- names(col_dict)
   
+  # Check for duplicate selections
+  if (any(duplicated(col_vec))) {
+    dupe_label(paste(
+      "<p style='color:#D55E00; font-weight:bold;'>Warning:",
+      "Single column assigned to more than one variable.",
+      "</p>"
+    ))
+  }
+
   col_flags <- vector(mode = "list", length = ncol(col_data))
   names(col_flags) <- names(col_data)
   
@@ -87,7 +117,7 @@ observeEvent(input$review_entries, {
     # Negative: 0, Neg, Negative, N
     #  Count number of entries per column that have invalid values
     call_check <- col_data[, lapply(.SD, function(x) {
-      !(grepl_ci("^1$|^0$|^p$|^n$|^pos$|^neg$|^positive$|^negative$|^a$|^i$|^active$|^inactive$", x) | is.na(x))
+      !(grepl_ci("^1$|^0$|^p$|^n$|^pos$|^neg$|^positive$|^negative$|^a$|^i$|^active$|^inactive$|^sensitizer$|^sensitiser$|^non-sensitizer$|^non-sensitiser$", x) | is.na(x))
     }), .SDcols = call_col_names][, lapply(.SD, sum), .SDcols = call_col_names]
     call_check_id <- which(call_check > 0)
     if (length(call_check_id) > 0) {
@@ -96,8 +126,8 @@ observeEvent(input$review_entries, {
     # Replace positive with 1 and negative with 0
     dt_list$call_cols <- col_data[, lapply(.SD, function(x) {
       fcase(
-        grepl_ci("^1$|^p$|^pos$|^positive$|^a$|^active$", x), 1,
-        grepl_ci("^0$|^n$|^neg$|^negative$|^i$|^inactive$", x), 0
+        grepl_ci("^1$|^p$|^pos$|^positive$|^a$|^active$|^sensitizer$|^sensitiser$", x), 1,
+        grepl_ci("^0$|^n$|^neg$|^negative$|^i$|^inactive$|^non-sensitizer$|^non-sensitiser$", x), 0
       )
     }), .SDcols = call_col_names]
   }
@@ -130,7 +160,7 @@ observeEvent(input$review_entries, {
     # Can have numeric or 'negative'
     # Remove flags for valid values
     mit_check[is.na(hclat_mit), flag := F]
-    mit_check[grepl_ci("^n$|^neg$|^negative$|^Inf$|^i$|^inactive$", hclat_mit), flag := F]
+    mit_check[grepl_ci("^n$|^neg$|^negative$|^Inf$|^i$|^inactive$|^non-sensitizer$|^non-sensitiser$", hclat_mit), flag := F]
     mit_check[!is.na(hclat_mit_num), flag := F]
     
     if (any(mit_check[, flag])) {
@@ -139,7 +169,7 @@ observeEvent(input$review_entries, {
     
     mit_check <- mit_check[,.(hclat_mit = fcase(
       !is.na(hclat_mit_num), hclat_mit_num,
-      grepl_ci("^n$|^neg$|^negative$|^Inf$|^i$|^inactive$", hclat_mit), Inf,
+      grepl_ci("^n$|^neg$|^negative$|^Inf$|^i$|^inactive$|^non-sensitizer$|^non-sensitiser$", hclat_mit), Inf,
       is.na(hclat_mit_num), as.numeric(NA)
     ))]
     
@@ -164,10 +194,6 @@ observeEvent(input$review_entries, {
   
   col_flags <- lapply(col_flags, function(x) fifelse(is.null(x), 0, 1))
   names(dt_list) <- NULL
-  updateCollapse(session,
-                 id = "panels",
-                 close = "panel_col_options"
-  )
   updateCollapse(session,
                  id = "panels",
                  open = "panel_review"
@@ -226,4 +252,8 @@ output$dt_review <- renderDataTable({
 
 output$review_label <- renderText({
   review_label()
+})
+
+output$dupe_label <- renderText({
+  dupe_label()
 })

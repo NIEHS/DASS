@@ -1,22 +1,36 @@
 # =============================================================================#
-# File Name: Step3-SelectColumns.R                                             #
-# Original Creator: ktto                                                       #
-# Contact Information: comptox@ils-inc.com                                     #
-# Date Created: 2021-02-10                                                     #
-# License: MIT                                                                 #
-# Description: server file for module with column selection                    #
-# Required Packages:                                                           #
-# - data.table, DT                                                             #
-# - openxlsx                                                                   #
-# - readxl                                                                     #
-# - shiny shinyBS shinyjs                                                      #
+# File Name: Step3-SelectColumns.R
+# Original Creator: ktto
+# Contact Information: comptox@ils-inc.com
+# Date Created: 2021-02-10
+# License: MIT
+# Description: server file for module with column selection
+# Required Packages:
+# - data.table, DT
+# - shiny, shinyBS, shinyjs
 # =============================================================================#
 
 # Step 3: Select Columns -----
-# Set Up Panel 3 and populate select values
+## Reactive Values -----
+# selected tests ordered as: 2o3, its, ke 3/1 sts
+dass_choice <- reactiveVal()
+
+# used to set selections based on template column names
+template_col_select <- reactiveValues(
+  dpra_call = "",
+  dpra_pC = "",
+  dpra_pK = "",
+  hclat_call = "",
+  hclat_mit = "",
+  ks_call = "",
+  ks_imax = "",
+  insilico_call = "",
+  insilico_ad = ""
+)
+
+## Set Up Panel 3 -----
 observeEvent(input$confirm_data, {
   req(usr_dt())
-  
   if (all(!input$do_da_2o3 &
           !input$do_da_its & !input$do_da_ke31)) {
     showNotification(
@@ -26,15 +40,22 @@ observeEvent(input$confirm_data, {
     )
   } else {
     # set up values for dropdown lists
-    col_select_input$selected <- NULL
-    col_select_input$deselected <- colnames(usr_dt())
-    
+    col_select_input <- c("", colnames(usr_dt()))
+    template_cols <- c("dpra_call","dpra_pC","dpra_pK","hclat_call","hclat_mit",
+                       "ks_call","ks_imax","insilico_call","insilico_ad")
+    for (i in template_cols) {
+      out <- col_select_input[grep_ci(paste0("^", i, "$"), trimws(col_select_input))]
+      if (length(out) > 0) {
+        template_col_select[[i]] <- out
+      }
+    }
+
     # Names of DASS options
     dass_opts <- c("da_2o3", "da_its", "da_ke31")
     # Variables needed for each DASS
     dass_vars <- list(
       da_2o3 = c("ks_call", "dpra_call", "hclat_call"),
-      da_itsv2 = c("hclat_mit", "dpra_pC", "dpra_pK", "insilico"),
+      da_its = c("hclat_mit", "dpra_pC", "dpra_pK", "insilico"),
       da_ke31 = c("hclat_mit", "dpra_call")
     )
     # Get user DASS selection as logical vector
@@ -54,16 +75,18 @@ observeEvent(input$confirm_data, {
     dt_col_ui <- list()
     
     dt_col_ui$intro <-  HTML(
-      "<p>The endpoint values required for the selected DAs are shown below.",
+      "<p>The assay endpoints that are required for the selected DAs are shown below.",
       "Use the drop down-menus to select the columns from your data",
-      "that correspond to the given endpoints. A column must be selected for each",
+      "that correspond to the given endpoints. Columns are auto-selected",
+      "if the column name matches the corresponding column in the data template.",
+      "A column must be selected for each",
       "endpoint shown. When you are finished, click 'Done'.<br><br>",
       "Click on the question circles for information about the column",
       "requirements. Values that are incorrectly formatted or invalid",
       "will not be evaluated and may affect the results. More details are given",
       "in the User Guide.</p>"
     )
-    
+
     # DPRA %C- and %K-depletion
     # For DPRA call, if %C- and %K depletion are provided, user may choose
     # how to determine call - as the DPRA call column, or evaluated from
@@ -79,12 +102,14 @@ observeEvent(input$confirm_data, {
           selectInput(
             inputId = "dpra_pC_col",
             label = "DPRA %-Cysteine Depletion Column",
-            choices = c("", col_select_input$deselected)
+            choices = col_select_input,
+            selected = template_col_select$dpra_pC
           ),
           selectInput(
             inputId = "dpra_pK_col",
             label = "DPRA %-Lysine Depletion Column",
-            choices = c("", col_select_input$deselected)
+            choices = col_select_input,
+            selected = template_col_select$dpra_pK
           )
         )
       ))
@@ -115,7 +140,8 @@ observeEvent(input$confirm_data, {
                 selectInput(
                   inputId = "dpra_call_col",
                   label = "DPRA Call Column",
-                  choices = c("", col_select_input$deselected)
+                  choices = col_select_input,
+                  selected = template_col_select$dpra_call
                 )
               )
             )
@@ -149,7 +175,8 @@ observeEvent(input$confirm_data, {
               selectInput(
                 inputId = "dpra_call_col",
                 label = "DPRA Call Column",
-                choices = c("", col_select_input$deselected)
+                choices = col_select_input,
+                selected = template_col_select$dpra_call
               )
             ),
             conditionalPanel(
@@ -157,19 +184,21 @@ observeEvent(input$confirm_data, {
               selectInput(
                 inputId = "dpra_pC_col",
                 label = "DPRA %-Cysteine Depletion Column",
-                choices = c("", col_select_input$deselected)
+                choices = col_select_input,
+                selected = template_col_select$dpra_pC
               ),
               selectInput(
                 inputId = "dpra_pK_col",
                 label = "DPRA %-Lysine Depletion Column",
-                choices = c("", col_select_input$deselected)
+                choices = col_select_input,
+                selected = template_col_select$dpra_pK
               )
             )
           )
         )
       ))
     }
-    
+
     # h-CLAT sens/nonsens
     if ("hclat_call" %in% dass_vars) {
       dt_col_ui$hclat_call <- fluidRow(div(
@@ -182,7 +211,8 @@ observeEvent(input$confirm_data, {
           selectInput(
             inputId = "hclat_call_col",
             label = "h-CLAT Call Column",
-            choices = c("", col_select_input$deselected)
+            choices = col_select_input,
+            selected = template_col_select$hclat_call
           )
         )
       ))
@@ -200,7 +230,8 @@ observeEvent(input$confirm_data, {
           selectInput(
             inputId = "hclat_mit_col",
             label = "h-CLAT Minimum Induction Threshold (MIT) Column",
-            choices = c("", col_select_input$deselected)
+            choices = col_select_input,
+            selected = template_col_select$hclat_mit
           )
         )
       ))
@@ -235,8 +266,9 @@ observeEvent(input$confirm_data, {
               selectInput(
                 inputId = "ks_call_col",
                 label = "KS Call Column",
-                choices = c("", col_select_input$deselected),
-                selected = FALSE
+                choices = col_select_input,
+                # selected = FALSE
+                selected = template_col_select$ks_call
               )
             ),
             conditionalPanel(
@@ -244,15 +276,15 @@ observeEvent(input$confirm_data, {
               selectInput(
                 inputId = "ks_imax_col",
                 label = "KS iMax Column",
-                choices = c("", col_select_input$deselected),
-                selected = FALSE
+                choices = col_select_input,
+                # selected = FALSE
+                selected = template_col_select$ks_imax
               )
             )
           )
         )
       ))
     }
-    
     # in silico
     if ("insilico" %in% dass_vars) {
       dt_col_ui$insilico <- fluidRow(div(
@@ -265,12 +297,14 @@ observeEvent(input$confirm_data, {
           selectInput(
             inputId = "insilico_call_col",
             label = "In Silico Call Column",
-            choices = c("", col_select_input$deselected)
+            choices = col_select_input,
+            selected = template_col_select$insilico_call
           ),
           selectInput(
             inputId = "insilico_ad_col",
             label = "In Silico Applicability Domain",
-            choices = c("", col_select_input$deselected)
+            choices = col_select_input,
+            selected = template_col_select$insilico_ad
           )
         )
       ))
@@ -292,8 +326,8 @@ observeEvent(input$confirm_data, {
     shinyjs::disable("do_da_ke31")
     shinyjs::disable("fpath")
     shinyjs::disable("button_upload")
-    shinyjs::hide("user_data_block")
-    shinyjs::show("reload_block")
+    shinyjs::hide("user_data_block_confirm")
+    shinyjs::show("user_data_block_reload")
   }
 })
 
@@ -319,26 +353,6 @@ observeEvent(input$cancel_reload, {
   removeModal()
 })
 
-## Calculated Options -----
-observeEvent(input$dpra_call_choice, {
-  if (input$dpra_call_choice == "call") {
-    if (!"da_its" %in% dass_choice()) {
-      updateSelectInput(inputId = "dpra_pC_col", selected = "")
-      updateSelectInput(inputId = "dpra_pK_col", selected = "")
-    }
-  } else if (input$dpra_call_choice == "pdepl") {
-    updateSelectInput(inputId = "dpra_call_col", selected = "")
-  }
-})
-
-observeEvent(input$ks_choice, {
-  if (input$ks_choice == "call") {
-    updateSelectInput(inputId = "ks_imax_col", selected = "")
-  } else if (input$ks_choice == "imax") {
-    updateSelectInput(inputId = "ks_call_col", selected = "")
-  }
-})
-
 ## Questions -----
 ### DPRA -----
 observeEvent(input$info_dpradep, {
@@ -350,9 +364,8 @@ observeEvent(input$info_dpradep, {
       "and %-Lysine depletion should only contain numeric values. Missing values",
       "should be blank or labeled as 'NA'.",
       "<br><br>For more details, see",
-      "<em>OECD Test No. 442C: In Chemico Skin Sensitisation</em>[<a",
-      "href='https://doi.org/10.1787/9789264229709-en'",
-      "target = '_blank'>4</a>].</p>"
+      "<a href='https://doi.org/10.1787/9789264229709-en'",
+      "target = '_blank'><em>OECD Test No. 442C: In Chemico Skin Sensitisation</em></a>.</p>"
     ),
     easyClose = T
   ))
@@ -360,20 +373,20 @@ observeEvent(input$info_dpradep, {
 
 observeEvent(input$info_dpracall_1, {
   showModal(modalDialog(
-    title = "DPRA Hazard Identification",
+    title = "DPRA Hazard",
     HTML(
-      "Chemical hazard calls from the direct peptide reactivity assay (DPRA)",
+      "Results from the direct peptide reactivity assay (DPRA)",
       "are used in the 2o3 and KE3/1 STS defined approaches.<br><br>",
-      "The column corresponding to DPRA hazard calls should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'a', 'active', 'p', 'pos', 'positive', or 1 to indicate active assay calls (sensitizers)*</li>",
-      "<li>'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate inactive assay calls (non-sensitizers)*</li>",
-      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "The column corresponding to DPRA hazard should only contain the values:<ul style='margin-bottom:0px;'>",
+      "<li>'sensitizer', 'a', 'active', 'p', 'pos', 'positive', or 1 to indicate positive assay outcomes.*</li>",
+      "<li>'non-sensitizer', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*</li>",
+      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
       "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br>",
       "<br>Alternatively, the %-Cysteine and %-Lysine depletion values can be evaluated",
-      "for hazard call Hazard calls are made using Tables 1 and 2 from <em>OECD Test No. 442C:",
-      "In Chemico Skin Sensitisation</em>[<a",
+      "to derive hazard.Hazard calls are made using Tables 1 and 2 from <a",
       "href='https://doi.org/10.1787/9789264229709-en'",
-      "target = '_blank'>4</a>]</p>"
+      "target = '_blank'><em>OECD Test No. 442C:",
+      "In Chemico Skin Sensitisation</em></a>.</p>"
     ),
     easyClose = T
   ))
@@ -381,22 +394,20 @@ observeEvent(input$info_dpracall_1, {
 
 observeEvent(input$info_dpracall_2, {
   showModal(modalDialog(
-    title = "DPRA Hazard Identification",
+    title = "DPRA Hazard",
     HTML(
-      "Chemical hazard calls from the direct peptide reactivity assay (DPRA)",
+      "Results from the direct peptide reactivity assay (DPRA)",
       "are used in the 2o3 and KE3/1 STS defined approaches.<br><br>",
-      "The column corresponding to DPRA hazard calls should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'a', 'active', 'p', 'pos', 'positive', or 1 to indicate active assay calls (sensitizers)*</li>",
-      "<li>'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate inactive assay calls (non-sensitizers)*</li>",
-      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "The column corresponding to DPRA hazard should only contain the values:<ul style='margin-bottom:0px;'>",
+      "<li>'sensitizer', 'a', 'active', 'p', 'pos', 'positive', or 1 to indicate positive assay outcomes.*</li>",
+      "<li>'non-sensitizer', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*</li>",
+      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
       "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br>",
       "<br>Alternatively, the %-Cysteine and %-Lysine depletion values can be evaluated",
-      "for hazard calls The columns corresponding to %-Cysteine",
-      "and %-Lysine depletion should only contain numeric values. Missing values",
-      "should be blank or labeled as 'NA'. Hazard calls are made using Tables 1 and 2 from",
-      "<em>OECD Test No. 442C: In Chemico Skin Sensitisation</em>[<a",
+      "to derive hazard.Hazard calls are made using Tables 1 and 2 from <a",
       "href='https://doi.org/10.1787/9789264229709-en'",
-      "target = '_blank'>4</a>]</p>"
+      "target = '_blank'><em>OECD Test No. 442C:",
+      "In Chemico Skin Sensitisation</em></a>.</p>"
     ),
     easyClose = T
   ))
@@ -405,18 +416,18 @@ observeEvent(input$info_dpracall_2, {
 ### h-CLAT -----
 observeEvent(input$info_hclatcall, {
   showModal(modalDialog(
-    title = "h-CLAT Hazard Call",
+    title = "h-CLAT Hazard",
     HTML(
-      "Chemical hazard calls from the human cell line activation test (h-CLAT)",
+      "Results from the human cell line activation test (h-CLAT)",
       "are used in the 2o3 defined approach.<br><br>",
-      "The column corresponding to h-CLAT hzard call should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'a', 'active', 'p', 'pos', 'positive', or 1 to indicate active assay calls (sensitizers)*</li>",
-      "<li>'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate inactive assay calls (non-sensitizers)*</li>",
-      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "The column corresponding to h-CLAT hzard should only contain the values:<ul style='margin-bottom:0px;'>",
+      "<li>'sensitizer', 'a', 'active', 'p', 'pos', 'positive', or 1 to indicate positive assay outcomes.*</li>",
+      "<li>'non-sensitizer', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*</li>",
+      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
       "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br><br>",
-      "For more details, see <em>OECD Test No. 442E: In Vitro Skin",
-      "Sensitisation</em>[<a href='https://doi.org/10.1787/9789264264359-en'",
-      "target = '_blank'>5</a>]</p>"
+      "For more details, see ",
+      "<a href='https://doi.org/10.1787/9789264264359-en'",
+      "target = '_blank'><em>OECD Test No. 442E: In Vitro Skin Sensitisation</em></a>.</p>"
     ),
     easyClose = T
   ))
@@ -429,13 +440,13 @@ observeEvent(input$info_hclatmit, {
       "Minimum induction threshold (MIT) from the human cell line activiation test (h-CLAT)",
       "is used in the ITS and KE3/1 STS defined approaches.<br><br>",
       "The column corresponding to h-CLAT MIT should only contain:<ul style='margin-bottom:0px;'>",
-      "<li>Numeric values</li>",
-      "<li>'i', 'inactive', 'n', 'neg', 'negative', or 'Inf' to indicate negative outcomes (non-sensitizers)*</li>",
-      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "<li>Numeric values.</li>",
+      "<li>'non-sensitizer', 'i', 'inactive', 'n', 'neg', 'negative', or 'Inf' to indicate negative outcomes (non-sensitizers)*</li>",
+      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
       "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br><br>",
-      "For more details, see <em>OECD Test No. 442E: In Vitro Skin",
-      "Sensitisation</em>[<a href='https://doi.org/10.1787/9789264264359-en'",
-      "target = '_blank'>5</a>]</p>"
+      "For more details, see <a href='https://doi.org/10.1787/9789264264359-en'",
+      "target = '_blank'><em>OECD Test No. 442E: In Vitro Skin",
+      "Sensitisation</em></a>.</p>"
     ),
     easyClose = T
   ))
@@ -446,21 +457,21 @@ observeEvent(input$info_kscall, {
   showModal(modalDialog(
     title = HTML("KeratinoSens&trade; Hazard Call"),
     HTML(
-      "Chemical hazard calls from the KeratinoSens&trade; (KS) assay",
+      "Results from the KeratinoSens&trade; (KS) assay",
       "are used in the 2o3 defined approach.<br><br>",
-      "The column corresponding to KS hazard calls should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'a', 'active', 'p', 'pos', 'positive', or 1 to indicate active assay calls (sensitizers)*</li>",
-      "<li>'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate inactive assay calls (non-sensitizers)*</li>",
-      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "The column corresponding to KS hazard should only contain the values:<ul style='margin-bottom:0px;'>",
+      "<li>'sensitizer', 'a', 'active', 'p', 'pos', 'positive', or 1 to indicate positive assay outcomes.*</li>",
+      "<li>'non-sensitizer', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*</li>",
+      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
       "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br><br>",
-      "Alternatively, iMax values can be provided and evaluated for hazard call The",
+      "Alternatively, iMax values can be provided and evaluated for hazard. The",
       "column corresponding to KS iMax should contain only numeric values. Missing",
       "values should be labeled 'NA'. KS iMax values &geq;1.5",
-      "are labeled as active and KS iMax values &lt;1.5 are",
-      "labeled as inactive.<br><br>",
-      "For more details, see <em>OECD Test No. 442D: In Vitro",
-      "Skin Sensitisation</em>[<a",
-      "href='https://doi.org/10.1787/9789264229822-en' target = '_blank'>6</a>]</p>"
+      "are labeled as positive and KS iMax values &lt;1.5 are",
+      "labeled as negative.<br><br>",
+      "For more details, see <a",
+      "href='https://doi.org/10.1787/9789264229822-en' target = '_blank'><em>OECD Test No. 442D: In Vitro",
+      "Skin Sensitisation</em></a>.</p>"
     ),
     easyClose = T
   ))
@@ -471,15 +482,15 @@ observeEvent(input$info_insilico_call, {
   showModal(modalDialog(
     title = "In Silico Hazard Call",
     HTML(
-      "The ITS defined approach uses <em>in silico</em> predictions of hazard call from either",
+      "The ITS defined approach uses <em>in silico</em> predictions of hazard from either",
       "<a href='https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm'",
-      "target = '_blank'>Derek Nexus</a> or the OECD QSAR Toolbox[<a",
-      "href='https://doi.org/10.1016/j.comtox.2019.01.006' target = '_blank'>7</a>].",
+      "target = '_blank'>Derek Nexus</a> or the <a",
+      "href='https://doi.org/10.1016/j.comtox.2019.01.006' target = '_blank'>OECD QSAR Toolbox</a>.",
       "<br><br>",
-      "The column corresponding to <em>in silico</em> hazard identification predictions should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'a', 'active', 'p', 'pos', 'positive', or 1 to indicate active assay calls (sensitizers)*</li>",
-      "<li>'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate inactive assay calls (non-sensitizers)*</li>",
-      "<li>Missing values should be blank or labeled as 'NA'</li></ul>",
+      "The column corresponding to <em>in silico</em> hazard predictions should only contain the values:<ul style='margin-bottom:0px;'>",
+      "<li>'sensitizer', 'a', 'active', 'p', 'pos', 'positive', or 1 to indicate positive assay outcomes.*</li>",
+      "<li>'non-sensitizer', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*</li>",
+      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
       "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br><br>",
       "Additionally, a column corresponding to applicability domain (AD) should",
       "be provided. This column should only contain the values:<ul style='margin-bottom:0px;>",

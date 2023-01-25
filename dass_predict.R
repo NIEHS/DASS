@@ -1,15 +1,13 @@
 # ============================================================================#
-# File Name: dass_predict.r                                                   #
-# Original Creator: ktto                                                      #
-# Contact Information: comptox@ils-inc.com                                    #
-# Date Created: 2021-12-03                                                    #
-# License: MIT                                                                #
-# Description: description                                                    #
-# Required Packages:                                                          #
-# - data.table, DT                                                            #
-# - openxlsx                                                                  #
-# - readxl                                                                    #
-# - shiny shinyBS shinyjs                                                     #
+# File Name: dass_predict.r
+# Original Creator: ktto
+# Contact Information: comptox@ils-inc.com
+# Date Created: 2021-12-03
+# License: MIT
+# Description: description
+# Required Packages:
+# - data.table
+# - readxl
 # ============================================================================#
 
 # Function to read in data
@@ -76,6 +74,7 @@ check_cols <- function(dass = c("da_2o3", "da_its", "da_ke31"),
       cols_to_check <- c(cols_to_check, "dpra_pC", "dpra_pK")
     }
   }
+  
   # Returns character vector
   sort(unique(unlist(cols_to_check)))
 }

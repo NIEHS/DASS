@@ -1,14 +1,13 @@
 # =============================================================================#
-# File Name: ui.R                                                             #
-# Original Creator: Kim To                                                    #
-# Contact Information: comptox@ils-inc.com                                    #
-# Date Created: 2021-12-03                                                    #
-# License: MIT                                                                #
-# Description: Builds UI                                                      #
-# - data.table, DT                                                            #
-# - openxlsx                                                                  #
-# - readxl                                                                    #
-# - shiny shinyBS shinyjs                                                     #
+# File Name: ui.R
+# Original Creator: Kim To
+# Contact Information: comptox@ils-inc.com
+# Date Created: 2021-12-03
+# License: MIT
+# Description: Builds UI
+# - data.table, DT
+# - htmltools
+# - shiny shinyBS shinyjs
 # =============================================================================#
 
 # Edit the bsCollapsePanel function to use h2 tag in title
@@ -45,26 +44,44 @@ environment(bsCollapsePanel_h2) <- asNamespace("shinyBS")
 
 # Create page
 # Welcome -----
-welcome_panel <- HTML(
-  "<div class='panel panel-default'>",
-  "<div class='panel-heading'>Welcome to the DASS App!</div>",
-  "<div class='panel-body'>",
-  "The DASS App predicts skin sensitization hazard and potency",
-  "by applying Defined Approaches on Skin Sensitisation (DASS)",
-  "that are outlined in <em>OECD Guideline No. 497</em>",
-  " [<a href='https://doi.org/https://doi.org/10.1787/b92879a4-en' target = '_blank'>1</a>]",
-  "and the U.S. EPA's <em>Interim Science Policy: Use of Alternative",
-  "Approaches for Skin Sensitization as a Replacement for Laboratory Animal",
-  "Testing</em> [<a href='https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090' target='_blank'>2</a>].",
-  "The defined approaches (DA) integrate data from in vitro assays and",
-  "in silico predictions that represent key events in the",
-  "<em>Adverse Outcome Pathway (AOP) for Skin Sensitization Initiated",
-  "by Covalaent Binding to Proteins</em>",
-  " [<a href='https://doi.org/https://doi.org/10.1787/9789264221444-en'",
-  "target = '_blank'>3</a>].",
-  "<br>More details are available in the <a target = '_blank' href='user_guide.pdf'>User Guide</a>.",
-  "</div></div>"
-)
+
+welcome_panel <- div(
+  class = "panel panel-default",
+  div(class = "panel-heading", "Welcome to the DASS App!"),
+  div(class = "panel-body",
+      p(
+        "The DASS App predicts skin sensitization hazard and potency by applying",
+        "Defined Approaches on Skin Sensitisation (DASS) that are outlined in",
+        a(
+          href="https://doi.org/https://doi.org/10.1787/b92879a4-en",
+          target = "_blank",
+          tags$em("OECD Guideline No. 497")
+        ), ". and the U.S. EPA's",
+        a(
+          href="https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090",
+          target="_blank",
+          tags$em(
+            "Interim Science Policy: Use of Alternative Approaches for Skin",
+            "Sensitization as a Replacement for Laboratory Animal Testing."
+          )
+        ), ". The defined approaches (DA) integrate data from in vitro assays and",
+        "in silico predictions that represent key events in the",
+        a(
+          href="https://doi.org/https://doi.org/10.1787/9789264221444-en",
+          target="_blank",
+          tags$em(
+            "Adverse Outcome Pathway (AOP) for Skin Sensitization Initiated",
+            "by Covalaent Binding to Proteins")
+        )
+      ),
+      p(
+        "More details are available in the",
+        a(
+          href="user_guide.pdf",
+          target = "_blank",
+          "User Guide")
+      ))
+  )
 
 # Step 1: Select DAs -----
 selectda_panel <-  bsCollapsePanel_h2(
@@ -130,14 +147,27 @@ selectda_panel <-  bsCollapsePanel_h2(
 uploaddata_panel <- bsCollapsePanel_h2(
   title = "Step 2: Upload Data",
   value = "panel_data_upload",
-  HTML("<p>Before uploading your file, ensure that the data meet the",
+  HTML(
+    "<div class='warn-block'>",
+    "<div>",
+    "<i class='fa fa-exclamation-circle' role='presentation' aria-label='exclamation-circle-icon'></i>",
+    "</div>",
+    "<div>",
+    "<p style='margin-bottom:0;'>Before uploading your file, ensure that the data meet the",
        "<a id='show_upload_req' href = '#' class = 'action-button'>",
-       "<b>data and formatting requirements</b></a>.</p>"),
-  HTML("<p>A table template is available for download. Columns are provided",
-       "for all possible assay endpoints and can be left blank if not used",
-       "with the selected DAs.",
+       "<b>data and formatting requirements</b></a>.</p>",
+    "</div>",
+    "</div>"),
+  br(),
+  HTML("<p>A table template is provided in tab-delimited or Excel format.",
+       "The template contains columns for every possible assay endpoint.",
+       "If an assay endpoint will not be used, the corresponding column can be",
+       "deleted but that is not required. Using the template is not required.",
        "</p>"),
   a(href="DASSApp-dataTemplate.xlsx", "Download Data Template (.xlsx)",
+    download = NA, target = "_blank"),
+  br(),
+  a(href="DASSApp-dataTemplate.txt", "Download Data Template (.txt)",
     download = NA, target = "_blank"),
   hr(style = "width:50%"),
   p("Click 'Browse' below and select your file. If uploading an Excel file, use the dropdown menu to select the worksheet to use. Click 'Upload' to load your data."),
@@ -199,21 +229,21 @@ uploaddata_panel <- bsCollapsePanel_h2(
     hr(style = "width:50%"),
     dataTableOutput("usr_dt"),
     hr(style = "width:50%"),
-    p("Once you have finished selecting the DAs and uploading your data, click 'Continue' to proceed to the next step."),
-    actionButton(inputId = "confirm_data",
-                 label = "Continue",
-                 width = "100%",
-                 style = "display:none;")
-  ),
-  div(
-    id = "reload_block",
-    style = "display:none;",
-    hr(style = "width:50%"),
-    p("To change the selected DAs or uploaded data file, click 'Reload App.'"),
-    actionButton(
-      inputId = "reload_button",
-      label = "Reload App",
-      width = "100%"
+    div(
+      id = "user_data_block_confirm",
+      p("Once you have finished selecting the DAs and uploading your data, click 'Continue' to proceed to the next step."),
+      actionButton(inputId = "confirm_data",
+                   label = "Continue",
+                   width = "100%")),
+    div(
+      id = "user_data_block_reload",
+      style = "display:none",
+      p("To change the selected DAs or uploaded data file, click 'Reload App.'"),
+      actionButton(
+        inputId = "reload_button",
+        label = "Reload App",
+        width = "100%"
+      )
     )
   )
   )
@@ -232,6 +262,7 @@ reviewselection_panel <- bsCollapsePanel_h2(
   div(
     id = "review_contents",
     style = "display:none;",
+    htmlOutput("dupe_label"),
     htmlOutput("review_label"),
     dataTableOutput("dt_review"),
     br(),
@@ -267,42 +298,25 @@ results_panel <- bsCollapsePanel_h2(
       "For more details about the appended columns, see the User Guide.",
       "</p>"
     ),
-    downloadButton("downloadres", "Download Results"),
+    div(
+      class = "dropdown",
+      tags$button(
+        class = "dropbtn",
+        style = "padding:1vh;",
+        "Download Results",
+        icon("caret-down")
+      ),
+      div(
+        class = "dropdown-content",
+        downloadButton(outputId = "downloadres_xl", "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
+        downloadButton("downloadres_txt", "Tab-Delimited (.txt)", icon = icon("file-alt"), class = "btn-dl"),
+      )
+    ),
     br(),
     fluidRow(column(12, align = "center",
     dataTableOutput("dt_results")))
   )
 )
-
-# References -----
-reference_panel <- bsCollapsePanel_h2(
-  title = "References",
-  value = "panel_ref",
-  HTML(
-    "<ol>",
-    "<li>OECD (2021), Guideline No. 497: Defined Approaches on Skin",
-    "Sensitisation, OECD Guidelines for the Testing of Chemicals, Section 4,",
-    "OECD Publishing, Paris, https://doi.org/10.1787/b92879a4-en.</li>",
-    "<li>Environmental Protection Agency (2018), Interim Science Policy:",
-    "Use of Alternative Approaches for Skin Sensitization as a Replacement for",
-    "Laboratory Animal Testing. Draft for Public Comment, Office of Chemical",
-    "Safety and Pollution Prevention, ",
-    "https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090</li>",
-    "<li>OECD. The adverse outcome pathway for skin sensitisation initiated by",
-    "covalent binding to proteins. 2014. p. 105.",
-    "doi:https://doi.org/https://doi.org/10.1787/9789264221444-en",
-    "<li>OECD. Test no. 442C: In chemico skin sensitisation. 2021. p. 40.",
-    "doi:https://doi.org/https://doi.org/10.1787/9789264229709-en</li>",
-    "<li>OECD. Test no. 442E: In vitro skin sensitisation. 2018. p. 65.",
-    "doi:https://doi.org/https://doi.org/10.1787/9789264264359-en</li>",
-    "<li>OECD. Test no. 442D: In vitro skin sensitisation. 2018. p. 51.",
-    "doi:https://doi.org/https://doi.org/10.1787/9789264229822-en</li>",
-    "<li>Yordanova D, Schultz TW, Kuseva C, Tankova K, Ivanova H, Dermen I, et al.",
-    "Automated and standardized workflows in the OECD QSAR toolbox.",
-    "Computational Toxicology. 2019;10: 89-104.",
-    "doi:https://doi.org/10.1016/j.comtox.2019.01.006</li>",
-    "</ol>"
-  ))
 
 # Modals -----
 datareq_modal <- bsModal(
@@ -314,7 +328,7 @@ datareq_modal <- bsModal(
   tags$ol(
     tags$li(
       "Data can be comma-delimited (.csv), tab-delimited (.tsv, .txt),",
-      "or in the first worksheet of a Microsoft Excel workbook (.xls, .xlsx)."
+      "or a Microsoft Excel workbook (.xls, .xlsx)."
     ),
     tags$li(
       "Data should be in a tabular format with each row corresponding to",
@@ -326,8 +340,10 @@ datareq_modal <- bsModal(
     tags$li("Missing values should be indicated by a blank cell or as 'NA' (without quotes).")
   ),
   h4("Assay Endpoints"),
-  p("Values that do not meet the assay endpoint requirements will be treated",
-    "as missing data and not used to derive predictions."),
+  p("Each assay endpoint that is required for implementing the DAs should have",
+    "a column that is formatted according to the formatting requirements shown in",
+    "the table. Values that do not meet the assay endpoint requirements will",
+    "be treated as missing data and will not be used to derive predictions."),
   dataTableOutput("ae_req")
 )
 
@@ -350,8 +366,7 @@ ui_dass <- fluidPage(
         uploaddata_panel,
         selectcolumns_panel,
         reviewselection_panel,
-        results_panel,
-        reference_panel)
+        results_panel)
       ),
     datareq_modal
 ))

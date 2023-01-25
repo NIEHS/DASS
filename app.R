@@ -1,17 +1,18 @@
 #=============================================================================#
-# File Name: app.R                                                            #
-# Original Creator: Kim To                                                    #
-# Contact Information: comptox@ils-inc.com                                    #
-# Date Created: 2021-12-03                                                    #s
-# License: MIT                                                                #
-# Version: 0.9.1                                                              #
-# Description: Loads required packages. Reads in functions. Loads UI and      #
-# server files to build app.                                                  #
-# Required Packages:                                                          #
-# - data.table, DT                                                            #
-# - openxlsx                                                                  #
-# - readxl                                                                    #
-# - shiny shinyBS shinyjs                                                     #
+# File Name: app.R
+# Original Creator: Kim To
+# Contact Information: comptox@ils-inc.com
+# Date Created: 2021-12-03
+# License: MIT
+# Version: 0.9.1
+# Description: Loads required packages. Reads in functions. Loads UI and
+# server files to build app.
+# Required Packages:
+# - data.table, DT
+# - htmltools
+# - openxlsx
+# - readxl
+# - shiny shinyBS shinyjs
 #=============================================================================#
 
 # Load packages
@@ -34,9 +35,9 @@ ui <- fluidPage(
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
   ),
-  ### for debugging
+  ## for debugging
   # actionButton("browser", "browser"),
-  ###
+  ##
   ui_dass
 )
 
@@ -48,11 +49,11 @@ server <- function(input, output, session) {
   source("server/Step4-ReviewColumns.R", local = TRUE)
   source("server/Step5-Results.R", local = TRUE)
 
-  ## for debugging
+  # for debugging
   # observeEvent(input$browser,{
   #   browser()
   # })
-  ##
+  #
 
 }
 

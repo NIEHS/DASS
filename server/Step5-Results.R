@@ -1,19 +1,22 @@
 # =============================================================================#
-# File Name: Step5-Results.R                                                   #
-# Original Creator: ktto                                                       #
-# Contact Information: comptox@ils-inc.com                                     #
-# Date Created: 2021-02-10                                                     #
-# License: MIT                                                                 #
-# Description: server file for module with dass results.                       #
-# Required Packages:                                                           #
-# - data.table, DT                                                             #
-# - openxlsx                                                                   #
-# - readxl                                                                     #
-# - shiny shinyBS shinyjs                                                      #
+# File Name: Step5-Results.R
+# Original Creator: ktto
+# Contact Information: comptox@ils-inc.com
+# Date Created: 2021-02-10
+# License: MIT
+# Description: server file for module with dass results.
+# Required Packages:
+# - data.table, DT
+# - openxlsx
+# - shiny shinyBS shinyjs
 # =============================================================================#
 
 # Step 5: Results -----
-## run dass reactive -----
+## Reactive Values -----
+# DASS results
+dass_res <- reactiveVal()
+
+### Run DASS -----
 run_dass <- reactive({
   ####
   # Workaround to give dass_predict the right ks and dpra methods
@@ -93,7 +96,8 @@ run_dass <- reactive({
   dass_res(da_out)
   updateCollapse(session,
                  id = "panels",
-                 close = "panel_review"
+                 close = c("panel_col_options",
+                           "panel_review")
   )
   updateCollapse(session,
                  id = "panels",
@@ -147,7 +151,7 @@ output$dt_results <- renderDataTable({
   
 })
 
-## Confirm run -----
+#### Confirm Run -----
 observeEvent(input$run_dass, {
   req(flagged())
   if (flagged() == 1) {
@@ -177,7 +181,8 @@ observeEvent(input$cancel_run, {
 })
 
 ## Save -----
-create_file <- reactive({
+create_xl_file <- reactive({
+
   # Create excel workbook
   wb <- createWorkbook()
   
@@ -205,14 +210,15 @@ create_file <- reactive({
   addStyle(wb, sheet = "Key", style = blue_bg, row = 2, col = 1)
   addStyle(wb, sheet = "Key", style = pink_bg, row = 3, col = 1)
   addStyle(wb, sheet = "Key", style = yellow_bg, row = 4, col = 1)
-  
+
   # Create column selection worksheet
   # Column review table
   col_select <- dt_review()
   # Replace html
   col_select[,Variable := gsub("&trade;", "(TM)", Variable)]
   writeData(wb, sheet = "Column Selection", x = col_select, headerStyle = bold_font)
-  setColWidths(wb, sheet = "Column Selection", cols = 1:ncol(col_select), widths = "auto")
+  # causes issues when downloading twice:
+  # setColWidths(wb, sheet = "Column Selection", cols = 1:ncol(col_select), widths = "auto")
   # Get row IDs to highlight
   flag_row <- col_select[,which(Flag != "")]
   if (length(flag_row) > 0) {
@@ -236,7 +242,7 @@ create_file <- reactive({
   }
   
   # Highlight columns with DA results
-  dass_res_cols <- grep("^DA.*Hazard|^DA.*Potency", colnames(dass_res), value = TRUE)
+  dass_res_cols <- grep("^DA.*Call|^DA.*Potency", colnames(dass_res), value = TRUE)
   dass_cols <- na.omit(match(dass_res_cols, colnames(res)))
   addStyle(wb, sheet = "Results", style = bold_blue,
            rows = 2:(nrow(res) + 1), cols = dass_cols, gridExpand = T)
@@ -257,14 +263,29 @@ create_file <- reactive({
   wb
 })
 
-output$downloadres <- downloadHandler(
+output$downloadres_xl <- downloadHandler(
   filename = function() {
     fname <- unlist(strsplit(input$fpath$name, "[.]"))
     fname <- paste(fname[-length(fname)], collapse = ".")
     paste0(fname, "_DASSResults_", Sys.Date(), ".xlsx")
   },
   content = function(con) {
-    saveWorkbook(wb = create_file(), file = con)
+    saveWorkbook(wb = create_xl_file(), file = con)
     # write.csv(x = dass_res(), file = con, quote = F, row.names = F)
   }
 )
+
+outputOptions(output, "downloadres_xl", suspendWhenHidden = FALSE)
+
+output$downloadres_txt <- downloadHandler(
+  filename = function() {
+    fname <- unlist(strsplit(input$fpath$name, "[.]"))
+    fname <- paste(fname[-length(fname)], collapse = ".")
+    paste0(fname, "_DASSResults_", Sys.Date(), ".txt")
+  },
+  content = function(con) {
+    write.table(x = cbind(usr_dt(), dass_res()), file = con, quote = F, row.names = F, sep = "\t")
+  }
+)
+
+outputOptions(output, "downloadres_txt", suspendWhenHidden = FALSE)

@@ -1,32 +1,18 @@
 # =============================================================================#
-# File Name: Step2-UploadData.R                                                #
-# Original Creator: ktto                                                       #
-# Contact Information: comptox@ils-inc.com                                     #
-# Date Created: 2021-02-10                                                     #
-# License: MIT                                                                 #
-# Description: server file that sets up reactive values and loads user data    #
-# Required Packages:                                                           #
-# - data.table, DT                                                             #
-# - openxlsx                                                                   #
-# - readxl                                                                     #
-# - shiny shinyBS shinyjs                                                      #
+# File Name: Step2-UploadData.R
+# Original Creator: ktto
+# Contact Information: comptox@ils-inc.com
+# Date Created: 2021-02-10
+# License: MIT
+# Description: server file that sets up reactive values and loads user data
+# Required Packages:
+# - data.table, DT
+# - readxl
+# - shiny shinyjs
 # =============================================================================#
 
-# Selection Names -----
-# IDs for column selection drop down menus
-si_ids <- c(
-  "dpra_call_col",
-  "dpra_pC_col",
-  "dpra_pK_col",
-  "hclat_call_col",
-  "hclat_mit_col",
-  "ks_call_col",
-  "ks_imax_col",
-  "insilico_call_col",
-  "insilico_ad_col"
-)
-
-# Formatting -----
+# Step 2: Upload Data -----
+## Formatting -----
 # output tables will show "NA" instead of blanks
 rowCallback <- c(
   "function(row, data) {",
@@ -39,36 +25,14 @@ rowCallback <- c(
   "}"
 )
 
-# Reactive Values -----
-# tracks selected column names to prevent duplicate column selection
-col_select_input <- reactiveValues()
-
-# selected tests ordered as: 2o3, its, ke 3/1 sts
-dass_choice <- reactiveVal()
-
-# DASS results
-dass_res <- reactiveVal()
-
-# formatted data
-dat_for_anlz <- reactiveValues(col_data = NULL,
-                               col_dict = NULL)
-
-# table with selected columns for user to review
-dt_review <- reactiveVal()
-
-# indicator to trigger popup warning if running with flagged columns
-flagged <- reactiveVal()
-
-# text shown during review of selected columns
-review_label <- reactiveVal()
-
+## Reactive Values -----
 # user's uploaded data
 usr_dt <- reactiveVal()
 
-# Data Loading -----
-# Once the user selects a file, load the data onto the page and
-# show the defined approaches menu
-do_upload <- reactiveVal()
+## Data Loading -----
+# When user selects file using the browse button, it checks the extension.
+# If the file is an excel workbook, the sheet names are loaded into a dropdown
+# menu for the user to select.
 observeEvent(input$fpath, {
   # Check file extension
   ext <- unlist(strsplit(input$fpath$name, "[.]"))
@@ -88,9 +52,10 @@ observeEvent(input$fpath, {
   }
 })
 
+# User confirms file selection, and worksheet if needed.
 observeEvent(input$button_upload, {
   req(input$fpath)
-  # Check file extension
+  # Check file extension. Same check run when user chooses file via 'browse'
   ext <- unlist(strsplit(input$fpath$name, "[.]"))
   ext <- ext[length(ext)]
   if (!grepl("^csv$|^tsv$|^txt$|^xls$|^xlsx$", ext)) {
@@ -103,40 +68,45 @@ observeEvent(input$button_upload, {
     # Read in data
     dt <- read_data(input$fpath$datapath, sheet = input$xlsheet)
     usr_dt(dt)
-    
+
     shinyjs::show("user_data_block")
     shinyjs::show("confirm_data")
   }
 })
 
-# Tables -----
+## Tables -----
 # Table with data formatting requirements
 output$ae_req <- renderDataTable({
+  # Create table
   tmp <- data.frame(
     `2o3` = c("X", "X", "X", "", "", "O", "O", "O"),
     ITS = c("", "", "", "X", "X", "X", "X", "X"),
     STS = c("X", "", "", "", "", "O", "O", "X"),
     Assay = c("DPRA", "hCLAT", "KeratinoSens", "In Silico Prediction",
               "In Silico Prediction", "DPRA", "DPRA", "hCLAT"),
-    Endpoint = c(rep("Call", 4), "Applicability Domain", "%-Cystine Depletion",
+    Endpoint = c(rep("Call", 4), "Applicability Domain", "%-Cysteine Depletion",
                  "% Lysine Depletion", "Minimum Induction Threshold"),
     `Format Requirements` = c(
-      rep("<ul><li>Active assay calls should be indicated by '1', 'a', 'active', 'p', 'pos', or 'positive'.</li>
-      <li>Inactive assay calls should be indicated by '0', 'i', 'inactive', 'n', 'neg', or 'negative'.</li></ul>", 4),
+      rep(
+        "<ul><li>Positive outcomes should be indicated by 'sensitizer', 'active', 'a', 'positive', 'pos', 'p', or '1'. </li><li>Negative outcomes should be indicated by 'non-sensitizer', 'inactive', 'i', 'negative', 'neg', 'n', or '0'.</li></ul>",
+        4),
       "<ul><li>Predictions within the applicability domain should be indicated by '1' or 'In'.</li><li>Predictions outside the applicability domain should be indicated by '0' or 'Out'. These will be omitted from analysis.</li></ul>",
       "<ul><li>Numeric values only.</li><li>No symbols.</li></ul>",
       "<ul><li>Numeric values only.</li><li>No symbols.</li></ul>",
-      "<td><ul><li>For active hCLAT calls, numeric values only. No symbols.</li><li>Indicate inactive hCLAT calls with 'Inf', 'i', 'inactive', 'n', 'neg', or 'negative'</li></ul>"),
+      "<td><ul><li>For positive h-CLAT outcomes, numeric values only. No symbols.</li><li>Indicate negative h-CLAT outcomes with 'non-sensitizer', 'Inf', 'i', 'inactive', 'n', 'neg', or 'negative'.</li></ul>"),
     check.names = F)
   datatable(tmp,
             class = "table-bordered stripe",
             rownames = FALSE,
+            # Callback to remove extra black lines DT prints at bottom of table.
             callback = JS(c("$('.dataTables_scrollBody').css('border-bottom', 'none');", "$('table.no-footer').css('border-bottom', 'none');")),
             caption = tags$caption(
               style = "caption-side: bottom; text.align:left;",
-              "X = Endpoint is required for the given DA",
+              "Columns 1-3 indicate the DAs that require a given endpoint",
               br(),
-              "O = Endpoint can be used to derive a required Call endpoint."
+              "X = the DA requires the endpoint.",
+              br(),
+              "O = This endpoint can be used to derive a required call endpoint."
             ),
             selection = "none",
             options = list(
@@ -155,6 +125,7 @@ output$usr_dt <- renderDataTable({
             # https://github.com/rstudio/shiny/issues/3125
             # filter = "top",
             class = "table-bordered stripe",
+            # Callback to remove bottom border printed by DT
             callback = JS("$('.dataTables_scrollBody').css('border-bottom', 'none');"),
             options = list(
               scrollY = TRUE,
