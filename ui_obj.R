@@ -50,13 +50,13 @@ welcome_panel <- div(
   div(class = "panel-heading", "Welcome to the DASS App!"),
   div(class = "panel-body",
       p(
-        "The DASS App predicts skin sensitization hazard and potency by applying",
+        "The DASS App predicts skin sensitization hazard (sensitizer or non-sensitizer) and potency by applying",
         "Defined Approaches on Skin Sensitisation (DASS) that are outlined in",
         a(
           href="https://doi.org/https://doi.org/10.1787/b92879a4-en",
           target = "_blank",
           tags$em("OECD Guideline No. 497")
-        ), ". and the U.S. EPA's",
+        ), " and the U.S. EPA's",
         a(
           href="https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090",
           target="_blank",
@@ -64,22 +64,24 @@ welcome_panel <- div(
             "Interim Science Policy: Use of Alternative Approaches for Skin",
             "Sensitization as a Replacement for Laboratory Animal Testing."
           )
-        ), ". The defined approaches (DA) integrate data from in vitro assays and",
-        "in silico predictions that represent key events in the",
+        ), 
+        "The defined approaches (DA) integrate data from in vitro assays",
+        "that represent key events in the",
         a(
           href="https://doi.org/https://doi.org/10.1787/9789264221444-en",
           target="_blank",
           tags$em(
-            "Adverse Outcome Pathway (AOP) for Skin Sensitization Initiated",
-            "by Covalaent Binding to Proteins")
-        )
+            "Adverse Outcome Pathway (AOP) for Skin Sensitisation Initiated",
+            "by Covalent Binding to Proteins")
+        ), 
+        "and in silico hazard predictions."
       ),
       p(
         "More details are available in the",
         a(
           href="user_guide.pdf",
           target = "_blank",
-          "User Guide")
+          "User Guide.")
       ))
   )
 
@@ -112,8 +114,8 @@ selectda_panel <-  bsCollapsePanel_h2(
       "<input id='do_da_2o3' type='checkbox' checked='checked'/>",
       "<span>2 out of 3 (2o3)</span>",
       "</label>",
-      "<button id='info_2o3' type='button' class='btn action-button btn-qs' title='hello'>",
-      "<i class='glyphicon glyphicon-question-sign' role='presentation' aria-label='question-circle icon'> </i>",
+      "<button id='info_2o3' type='button' class='btn action-button btn-qs' aria-label='2o3 info'>",
+      "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
       "</button>",
       "</div>",
       "</div>",
@@ -123,8 +125,8 @@ selectda_panel <-  bsCollapsePanel_h2(
       "<input id='do_da_its' type='checkbox' checked='checked'/>",
       "<span>Integrated Testing Strategy (ITS)</span>",
       "</label>",
-      "<button id='info_its' type='button' class='btn action-button btn-qs'>",
-      "<i class='glyphicon glyphicon-question-sign' role='presentation' aria-label='question-circle icon'> </i>",
+      "<button id='info_its' type='button' class='btn action-button btn-qs' aria-label='ITS info'>",
+      "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
       "</button>",
       "</div>",
       "</div>",
@@ -134,8 +136,8 @@ selectda_panel <-  bsCollapsePanel_h2(
       "<input id='do_da_ke31' type='checkbox' checked='checked'/>",
       "<span>Key Event 3/1 (KE 3/1) Sequential Testing Strategy (STS)</span>",
       "</label>",
-      "<button id='info_ke31' type='button' class='btn action-button btn-qs'>",
-      "<i class='glyphicon glyphicon-question-sign' role='presentation' aria-label='question-circle icon'> </i>",
+      "<button id='info_ke31' type='button' class='btn action-button btn-qs' aria-label='STS info'>",
+      "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
       "</a>",
       "</div>",
       "</div>"
@@ -150,11 +152,11 @@ uploaddata_panel <- bsCollapsePanel_h2(
   HTML(
     "<div class='warn-block'>",
     "<div>",
-    "<i class='fa fa-exclamation-circle' role='presentation' aria-label='exclamation-circle-icon'></i>",
+    "<i class='glyphicon glyphicon-exclamation-sign' role='presentation'></i>",
     "</div>",
     "<div>",
     "<p style='margin-bottom:0;'>Before uploading your file, ensure that the data meet the",
-       "<a id='show_upload_req' href = '#' class = 'action-button'>",
+       "<a id='show_upload_req' href = '#' class = 'action-link' aria-label='data and formatting requirements'>",
        "<b>data and formatting requirements</b></a>.</p>",
     "</div>",
     "</div>"),

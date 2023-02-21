@@ -22,6 +22,7 @@ require(openxlsx)
 # readxl called in dass_predict.r
 require(shiny)
 require(shinyBS)
+require(shinyjqui)
 require(shinyjs)
 
 # Load functions
