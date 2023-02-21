@@ -48,8 +48,8 @@ observeEvent(input$info_2o3, {
   showModal(modalDialog(
     title = "2 out of 3",
     HTML(
-      "<p>The 2 out of 3 (2o3) Defined Approach is a sequential testing strategy",
-      "that predicts hazard (sensitizers or non-sensitizers) based on at",
+      "<p>The 2 out of 3 (2o3) DA predicts skin sensitization hazard",
+      "based on at",
       "least 2 concordant results among the direct peptide reactivity assay (DPRA),",
       "KeratinoSens&trade;, and human cell-line activiation test (h-CLAT).",
       "<br><br>",
@@ -65,10 +65,11 @@ observeEvent(input$info_its, {
   showModal(modalDialog(
     title = "Integrated Testing Strategy",
     HTML(
-      "The Integrated Testing Strategy (ITS) Defined Approach predicts ",
-      "hazard (sensitizers or non-sensitizers) and GHS potency category by",
-      "scoring results from the the direct peptide reactivity assay (DPRA),",
-      "human cell-line activiation test (h-CLAT), and <em>in silico</em> predictions",
+      "The Integrated Testing Strategy (ITS) DA predicts ",
+      "skin sensitization hazard and GHS potency category by",
+      "scoring the mean percent depletion for both Cysteine and Lysine",
+      "from the the direct peptide reactivity assay (DPRA),",
+      "the minimum induction threshold from the human cell-line activation test (h-CLAT), and <em>in silico</em> predictions",
       "from either <a href='https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm'",
       "target = '_blank'>Derek Nexus</a> or the <a href='https://doi.org/10.1016/j.comtox.2019.01.006'",
       "target = '_blank'>OECD QSAR Toolbox</a>.<br><br>",
@@ -85,9 +86,9 @@ observeEvent(input$info_ke31, {
     title = "Key Event 3/1 (KE 3/1) Sequential Testing Strategy (STS)",
     HTML(
       "<p>The Key Event 3/1 Sequential Testing Strategy is a sequential testing strategy",
-      "that predicts hazard (sensitizers or non-sensitizers) and",
-      "GHS potency category based on results from the the direct",
-      "peptide reactivity assay (DPRA) and human cell-line activiation test (h-CLAT).",
+      "predicts skin sensitization hazard and GHS potency category",
+      "based on the minimum induction threshold from the human cell-line activation test (h-CLAT) and",
+      "hazard results from the direct peptide reactivity assay (DPRA).",
       "<br><br>",
       "For more details, see EPA's <a href='https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090'",
       "target = '_blank'><em>Interim Science Policy: Use of Alternative",

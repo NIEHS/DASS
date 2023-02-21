@@ -78,14 +78,14 @@ observeEvent(input$button_upload, {
 # Table with data formatting requirements
 output$ae_req <- renderDataTable({
   # Create table
-  tmp <- data.frame(
-    `2o3` = c("X", "X", "X", "", "", "O", "O", "O"),
-    ITS = c("", "", "", "X", "X", "X", "X", "X"),
-    STS = c("X", "", "", "", "", "O", "O", "X"),
-    Assay = c("DPRA", "hCLAT", "KeratinoSens", "In Silico Prediction",
-              "In Silico Prediction", "DPRA", "DPRA", "hCLAT"),
-    Endpoint = c(rep("Call", 4), "Applicability Domain", "%-Cysteine Depletion",
-                 "% Lysine Depletion", "Minimum Induction Threshold"),
+  tmp <- data.table(
+    `2o3` = c("X", "X", "X", " ", " ", "O", "O", "O", "O"),
+    ITS = c(" ", " ", " ", "X", "X", "X", "X", "X", " "),
+    STS = c("X", " ", " ", " ", " ", "O", "O", "X", " "),
+    Assay = c("DPRA", "hCLAT", "KeratinoSens&trade;", "In Silico Prediction",
+              "In Silico Prediction", "DPRA", "DPRA", "hCLAT", "KeratinoSens&trade;"),
+    Endpoint = c(rep("Binary Call", 4), "Applicability Domain", "%-Cysteine Depletion",
+                 "% Lysine Depletion", "Minimum Induction Threshold", "Imax"),
     `Format Requirements` = c(
       rep(
         "<ul><li>Positive outcomes should be indicated by 'sensitizer', 'active', 'a', 'positive', 'pos', 'p', or '1'. </li><li>Negative outcomes should be indicated by 'non-sensitizer', 'inactive', 'i', 'negative', 'neg', 'n', or '0'.</li></ul>",
@@ -93,10 +93,16 @@ output$ae_req <- renderDataTable({
       "<ul><li>Predictions within the applicability domain should be indicated by '1' or 'In'.</li><li>Predictions outside the applicability domain should be indicated by '0' or 'Out'. These will be omitted from analysis.</li></ul>",
       "<ul><li>Numeric values only.</li><li>No symbols.</li></ul>",
       "<ul><li>Numeric values only.</li><li>No symbols.</li></ul>",
-      "<td><ul><li>For positive h-CLAT outcomes, numeric values only. No symbols.</li><li>Indicate negative h-CLAT outcomes with 'non-sensitizer', 'Inf', 'i', 'inactive', 'n', 'neg', or 'negative'.</li></ul>"),
+      "<td><ul><li>For positive h-CLAT outcomes, numeric values only. No symbols.</li><li>Indicate negative h-CLAT outcomes with 'non-sensitizer', 'Inf', 'i', 'inactive', 'n', 'neg', or 'negative'.</li></ul>",
+      "<ul><li>Numeric values only.</li><li>No symbols.</li></ul>"),
     check.names = F)
+  tmp <- tmp[order(Assay, Endpoint)]
+  coltmp <- c("2o3", "ITS", "STS", "Assay", "Endpoint")
+  tmp[,(coltmp) := lapply(.SD, as.factor),.SDcols = coltmp]
+  
   datatable(tmp,
             class = "table-bordered stripe",
+            filter = "top",
             rownames = FALSE,
             # Callback to remove extra black lines DT prints at bottom of table.
             callback = JS(c("$('.dataTables_scrollBody').css('border-bottom', 'none');", "$('table.no-footer').css('border-bottom', 'none');")),
@@ -116,6 +122,9 @@ output$ae_req <- renderDataTable({
               ), 
             escape = F)
 })
+
+jqui_resizable("#data_req_modal .modal-content")
+jqui_draggable("#data_req_modal .modal-content")
 
 # User data
 output$usr_dt <- renderDataTable({

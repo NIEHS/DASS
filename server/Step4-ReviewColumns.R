@@ -11,6 +11,10 @@
 # =============================================================================#
 
 # Step 4: Review Selections -----
+call0_str <- c("0", "i", "inactive", "n", "neg", "negative", "non-sensitizer", "non-sensitiser", "nonsensitizer", "nonsensitiser")
+call1_str <- c("1", "a", "active", "p", "pos", "positive", "sensitizer", "sensitiser")
+mit_str <- c("Inf", "i", "inactive", "n", "neg", "negative", "non-sensitizer", "non-sensitiser", "nonsensitizer", "nonsensitiser")
+
 ## Reactive Values -----
 # tracks selected column names to prevent duplicate column selection
 # col_select_input <- reactiveValues()
@@ -46,15 +50,23 @@ end_labels <- list(
 )
 
 # Flags for review
+collapse_flag <- function(vec) {
+  vec <- paste0("'", vec, "'")
+  paste(c(vec[-length(vec)], paste("or", vec[length(vec)])), collapse = ", ")
+}
+
+call_flag <- sprintf("Must be %s to indicate negative results and %s to indicate positive results.", collapse_flag(call0_str), collapse_flag(call1_str))
+mit_flag <- sprintf("Must be %s to indicate negative results or numeric for positive results", collapse_flag(mit_str))
+
 end_flags <- list(
-  dpra_call = "Must be '0', 'i', 'inactive', 'n', 'neg', or 'negative' to indicate inactive calls and '1', 'a', 'active', 'p', 'pos', or 'positive' to indicate active calls.",
+  dpra_call = call_flag,
   dpra_pC = "Must be numeric",
   dpra_pK = "Must be numeric",
-  hclat_call = "Must be '0', 'i', 'inactive', 'n', 'neg', or 'negative' to indicate inactive calls and '1', 'a', 'active', 'p', 'pos', or 'positive' to indicate active calls.",
-  hclat_mit = "Must be 'Inf', 'i', 'inactive', 'n', 'neg', or 'negative' to indicate inactive calls and numeric for active calls.",
-  ks_call = "Must be '0', 'i', 'inactive', 'n', 'neg', or 'negative' to indicate inactive calls and '1', 'a', 'active', 'p', 'pos', or 'positive' to indicate active calls.",
+  hclat_call = call_flag,
+  hclat_mit = mit_flag,
+  ks_call = call_flag,
   ks_imax = "Must be numeric",
-  insilico_call = "Must be '0', 'i', 'inactive', 'n', 'neg', or 'negative' to indicate inactive calls and '1', 'a', 'active', 'p', 'pos', or 'positive' to indicate active calls.",
+  insilico_call = call_flag,
   insilico_ad = "Must be '0' or 'out' for chemicals outside the applicability domain and '1' or 'in' for chemicals in the applicability domain."
 )
 
@@ -160,7 +172,7 @@ observeEvent(input$review_entries, {
     # Can have numeric or 'negative'
     # Remove flags for valid values
     mit_check[is.na(hclat_mit), flag := F]
-    mit_check[grepl_ci("^n$|^neg$|^negative$|^Inf$|^i$|^inactive$|^non-sensitizer$|^non-sensitiser$", hclat_mit), flag := F]
+    mit_check[grepl_ci("^n$|^neg$|^negative$|^Inf$|^i$|^inactive$|^non-sensitizer$|^non-sensitiser$|^NI$", hclat_mit), flag := F]
     mit_check[!is.na(hclat_mit_num), flag := F]
     
     if (any(mit_check[, flag])) {
@@ -169,7 +181,7 @@ observeEvent(input$review_entries, {
     
     mit_check <- mit_check[,.(hclat_mit = fcase(
       !is.na(hclat_mit_num), hclat_mit_num,
-      grepl_ci("^n$|^neg$|^negative$|^Inf$|^i$|^inactive$|^non-sensitizer$|^non-sensitiser$", hclat_mit), Inf,
+      grepl_ci("^n$|^neg$|^negative$|^Inf$|^i$|^inactive$|^non-sensitizer$|^non-sensitiser$|^NI$", hclat_mit), Inf,
       is.na(hclat_mit_num), as.numeric(NA)
     ))]
     

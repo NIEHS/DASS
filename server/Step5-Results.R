@@ -114,7 +114,7 @@ output$dt_results <- renderDataTable({
     res <- cbind(usr_dt(), dass_res)
     # Set up columns to color
     da_sty <- grep("^DA .*", names(dass_res), value = T)
-    da_font <- grep("Hazard|Potency", da_sty, value = T)
+    da_font <- grep("Call|Potency", da_sty, value = T)
     in_sty <- grep("^DA .*", names(dass_res), value = T, invert = T)
     col_sty <- dt_review()[,`Selected Column`]
     
