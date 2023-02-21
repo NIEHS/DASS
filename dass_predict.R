@@ -4,7 +4,7 @@
 # Contact Information: ICE-support@niehs.nih.gov
 # Date Created: 2021-12-03
 # License: MIT
-# Description: description
+# Description: Functions used within the DASS app
 # Required Packages:
 # - data.table
 # - readxl
@@ -17,7 +17,7 @@ read_data <- function(fpath, sheet = 1) {
     fread(fpath, colClasses = "character", na.strings = c("NA", ""))
   } else if (grepl("xls$|xlsx$", fpath)) {
     # Read columns in as list to prevent displaying converted floats
-    tmp <- data.table(readxl::read_excel(fpath, sheet = sheet, na = c("NA", ""), col_types = "list"))
+    tmp <- data.table(read_excel(fpath, sheet = sheet, na = c("NA", ""), col_types = "list"))
     tmp[,lapply(.SD, function(x) as.character(unlist(x)))]
   } else {
     stop("Incorrect file extension.")

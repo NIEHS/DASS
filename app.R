@@ -19,7 +19,7 @@
 require(data.table)
 require(DT)
 require(openxlsx)
-# readxl called in dass_predict.r
+require(readxl)
 require(shiny)
 require(shinyBS)
 require(shinyjqui)
