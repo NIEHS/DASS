@@ -1,7 +1,7 @@
 # ============================================================================#
 # File Name: dass_predict.r
 # Original Creator: ktto
-# Contact Information: comptox@ils-inc.com
+# Contact Information: ICE-support@niehs.nih.gov
 # Date Created: 2021-12-03
 # License: MIT
 # Description: description
@@ -233,6 +233,7 @@ da_2o3 <- function(ks_call, hclat_call, dpra_call) {
 # `hclat_mit` - numeric vector containing MIT values. Negative results are 'Inf'
 # `dpra_pC` - numeric vector for %C-depletion
 # `dpra_pK` - numeric vector for %K-depletion
+# `dpra_mean` - numeric vector with the average of `dpra_pc` and `dpra_pk`
 # `insilico_call` - a numeric vector for in silico call prediction from either oecd
 #               qsar toolbox or derek nexus. '0' indicates a
 #               negative call and '1' indicates a positive call

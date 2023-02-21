@@ -1,7 +1,7 @@
 # =============================================================================#
 # File Name: Step2-UploadData.R
 # Original Creator: ktto
-# Contact Information: comptox@ils-inc.com
+# Contact Information: ICE-support@niehs.nih.gov
 # Date Created: 2021-02-10
 # License: MIT
 # Description: server file that sets up reactive values and loads user data

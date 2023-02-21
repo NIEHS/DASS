@@ -1,7 +1,7 @@
 # =============================================================================#
 # File Name: Step4-ReviewColumns.R
 # Original Creator: ktto
-# Contact Information: comptox@ils-inc.com
+# Contact Information: ICE-support@niehs.nih.gov
 # Date Created: 2021-02-10
 # License: MIT
 # Description: server file for module with selection review

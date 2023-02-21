@@ -1,7 +1,7 @@
 # =============================================================================#
 # File Name: ui.R
 # Original Creator: Kim To
-# Contact Information: comptox@ils-inc.com
+# Contact Information: ICE-support@niehs.nih.gov
 # Date Created: 2021-12-03
 # License: MIT
 # Description: Builds UI
