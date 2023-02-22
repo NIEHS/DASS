@@ -103,13 +103,15 @@ observeEvent(input$confirm_data, {
             inputId = "dpra_pC_col",
             label = "DPRA %-Cysteine Depletion Column",
             choices = col_select_input,
-            selected = template_col_select$dpra_pC
+            selected = template_col_select$dpra_pC,
+            selectize = FALSE
           ),
           selectInput(
             inputId = "dpra_pK_col",
             label = "DPRA %-Lysine Depletion Column",
             choices = col_select_input,
-            selected = template_col_select$dpra_pK
+            selected = template_col_select$dpra_pK,
+            selectize = FALSE
           )
         )
       ))
@@ -141,7 +143,8 @@ observeEvent(input$confirm_data, {
                   inputId = "dpra_call_col",
                   label = "DPRA Binary Call Column",
                   choices = col_select_input,
-                  selected = template_col_select$dpra_call
+                  selected = template_col_select$dpra_call,
+                  selectize = FALSE
                 )
               )
             )
@@ -176,7 +179,8 @@ observeEvent(input$confirm_data, {
                 inputId = "dpra_call_col",
                 label = "DPRA Binary Call Column",
                 choices = col_select_input,
-                selected = template_col_select$dpra_call
+                selected = template_col_select$dpra_call,
+                selectize = FALSE
               )
             ),
             conditionalPanel(
@@ -185,13 +189,15 @@ observeEvent(input$confirm_data, {
                 inputId = "dpra_pC_col",
                 label = "DPRA %-Cysteine Depletion Column",
                 choices = col_select_input,
-                selected = template_col_select$dpra_pC
+                selected = template_col_select$dpra_pC,
+                selectize = FALSE
               ),
               selectInput(
                 inputId = "dpra_pK_col",
                 label = "DPRA %-Lysine Depletion Column",
                 choices = col_select_input,
-                selected = template_col_select$dpra_pK
+                selected = template_col_select$dpra_pK,
+                selectize = FALSE
               )
             )
           )
@@ -212,7 +218,8 @@ observeEvent(input$confirm_data, {
             inputId = "hclat_call_col",
             label = "h-CLAT Binary Call Column",
             choices = col_select_input,
-            selected = template_col_select$hclat_call
+            selected = template_col_select$hclat_call,
+            selectize = FALSE
           )
         )
       ))
@@ -231,7 +238,8 @@ observeEvent(input$confirm_data, {
             inputId = "hclat_mit_col",
             label = "h-CLAT Minimum Induction Threshold (MIT) Column",
             choices = col_select_input,
-            selected = template_col_select$hclat_mit
+            selected = template_col_select$hclat_mit,
+            selectize = FALSE
           )
         )
       ))
@@ -268,7 +276,8 @@ observeEvent(input$confirm_data, {
                 label = "KS Binary Call Column",
                 choices = col_select_input,
                 # selected = FALSE
-                selected = template_col_select$ks_call
+                selected = template_col_select$ks_call,
+                selectize = FALSE
               )
             ),
             conditionalPanel(
@@ -278,7 +287,8 @@ observeEvent(input$confirm_data, {
                 label = "KS iMax Column",
                 choices = col_select_input,
                 # selected = FALSE
-                selected = template_col_select$ks_imax
+                selected = template_col_select$ks_imax,
+                selectize = FALSE
               )
             )
           )
@@ -298,13 +308,15 @@ observeEvent(input$confirm_data, {
             inputId = "insilico_call_col",
             label = "In Silico Binary Call Column",
             choices = col_select_input,
-            selected = template_col_select$insilico_call
+            selected = template_col_select$insilico_call,
+            selectize = FALSE
           ),
           selectInput(
             inputId = "insilico_ad_col",
             label = "In Silico Applicability Domain",
             choices = col_select_input,
-            selected = template_col_select$insilico_ad
+            selected = template_col_select$insilico_ad,
+            selectize = FALSE
           )
         )
       ))
