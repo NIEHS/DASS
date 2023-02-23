@@ -123,8 +123,8 @@ output$ae_req <- renderDataTable({
             escape = F)
 })
 
-jqui_resizable("#data_req_modal .modal-content")
-jqui_draggable("#data_req_modal .modal-content")
+# jqui_resizable("#data_req_modal .modal-content")
+# jqui_draggable("#data_req_modal .modal-content")
 
 # User data
 output$usr_dt <- renderDataTable({

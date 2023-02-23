@@ -50,6 +50,8 @@ server <- function(input, output, session) {
   source("server/Step4-ReviewColumns.R", local = TRUE)
   source("server/Step5-Results.R", local = TRUE)
 
+  jqui_resizable(".modal-content")
+  jqui_draggable(".modal-content")
   # for debugging
   # observeEvent(input$browser,{
   #   browser()

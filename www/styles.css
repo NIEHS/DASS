@@ -10,7 +10,7 @@ Description: custom style sheet
 
 /* GENERAL */
 body {
-  background-color: #DDDFF3;
+  background-color: transparent;
 }
 
 /* BUTTONS */
@@ -169,3 +169,8 @@ thead {
 /* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {display: block;}
 
+.da-diagram {
+  max-width: 100%;
+  padding-top: 2vh;
+  padding-bottom: 2vh;
+}

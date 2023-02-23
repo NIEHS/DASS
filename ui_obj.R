@@ -47,7 +47,7 @@ environment(bsCollapsePanel_h2) <- asNamespace("shinyBS")
 
 welcome_panel <- div(
   class = "panel panel-default",
-  div(class = "panel-heading", "Welcome to the DASS App!"),
+  div(class = "panel-heading", "Welcome to the DASS App (Beta)!"),
   div(class = "panel-body",
       p(
         "The DASS App predicts skin sensitization hazard (sensitizer or non-sensitizer) and potency by applying",
@@ -114,7 +114,7 @@ selectda_panel <-  bsCollapsePanel_h2(
       "<input id='do_da_2o3' type='checkbox' checked='checked'/>",
       "<span>2 out of 3 (2o3)</span>",
       "</label>",
-      "<button id='info_2o3' type='button' class='btn action-button btn-qs' aria-label='2o3 info'>",
+      "<button id='info_2o3' type='button' class='btn action-link btn-qs' aria-label='2o3 info'>",
       "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
       "</button>",
       "</div>",
@@ -321,6 +321,93 @@ results_panel <- bsCollapsePanel_h2(
 )
 
 # Modals -----
+info2o3_modal <- bsModal(
+  id = "info_2o3_modal",
+  title = "2 out of 3",
+  trigger = "info_2o3",
+  p(
+    "The 2 out of 3 (2o3) DA predicts skin sensitization hazard based on at",
+    "least 2 concordant results among the direct peptide reactivity assay (DPRA),",
+    "KeratinoSens\u2122, and human cell-line activiation test (h-CLAT)."
+  ),
+  img(
+    class = "da-diagram",
+    src="diagrams/2o3_diagram-v1.png", 
+    alt = "Diagram of 2o3 data interpretation procedure"),
+  p(
+    "For more details, see",
+    a(href="https://doi.org/https://doi.org/10.1787/b92879a4-en",
+      target = "_blank",
+      em(
+        "OECD Guideline No. 497: Defined Approaches on Skin Sensitisation"
+      ))
+  )
+)
+
+infoits_modal <- bsModal(
+  id = "info_its_modal",
+  title = "Integrated Testing Strategy",
+  trigger = "info_its",
+  p(
+    "The Integrated Testing Strategy (ITS) DA predicts skin sensitization",
+    "hazard and GHS potency category by scoring the mean percent depletion",
+    "for both Cysteine and Lysine from the the direct peptide reactivity assay (DPRA)",
+    "the minimum induction threshold from the human cell-line activation test (h-CLAT), and",
+    em("in silico"),
+    "predictions from either",
+    a(
+      href = "https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm",
+      target = "_blank",
+      "Derek Nexus"
+    ),
+    "or the",
+    a(
+      href = "https://doi.org/https://doi.org/10.1787/b92879a4-en",
+      target = "_blank",
+      "OECD QSAR Toolbox."
+    )
+  ),
+  img(
+    class = "da-diagram",
+    src = "diagrams/its_diagram-v1.png",
+    alt = "Diagram of ITS data interpretation procedure"
+  ),
+  p(
+    "For more details, see",
+    a(
+      href = "https://doi.org/https://doi.org/10.1787/b92879a4-en",
+      target = "_blank",
+      em("OECD Guideline No. 497: Defined Approaches on Skin Sensitisation.")
+    )
+  )
+)
+
+infoke31_modal <- bsModal(
+  id = "info_ke31_modal",
+  title = "Key Event 3/1 (KE 3/1) Sequential Testing Strategy (STS)",
+  trigger = "info_ke31",
+  p(
+    "The Key Event 3/1 Sequential Testing Strategy is a sequential testing strategy",
+    "predicts skin sensitization hazard and GHS potency category",
+    "based on the minimum induction threshold from the human cell-line activation test (h-CLAT) and",
+    "hazard results from the direct peptide reactivity assay (DPRA).",
+  ),
+  img(
+    class = "da-diagram",
+    src="diagrams/KE31STS_diagram-v1.png", 
+    alt = "Diagram of KE 3/1 STS data interpretation procedure"),
+  p(
+    "For more details, see EPA's",
+    a(
+      href="https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090",
+      target = "_blank",
+      em(
+        "Interim Science Policy: Use of Alternative Approaches for Skin Sensitization",
+        "as a Replacement for Laboratory Animal Testing Draft for Public Comment."
+      ))
+  )
+)
+
 datareq_modal <- bsModal(
   id = "data_req_modal",
   title = "DASS App Data Requirements", 
@@ -370,5 +457,8 @@ ui_dass <- fluidPage(
         reviewselection_panel,
         results_panel)
       ),
+    info2o3_modal,
+    infoits_modal,
+    infoke31_modal,
     datareq_modal
 ))
