@@ -321,6 +321,7 @@ results_panel <- bsCollapsePanel_h2(
 )
 
 # Modals -----
+# DA info boxes
 info2o3_modal <- bsModal(
   id = "info_2o3_modal",
   title = "2 out of 3",
@@ -334,6 +335,12 @@ info2o3_modal <- bsModal(
     class = "da-diagram",
     src="diagrams/2o3_diagram-v1.png", 
     alt = "Diagram of 2o3 data interpretation procedure"),
+  HTML(
+    "<p><a href = 'diagrams/2o3_diagram-v1.png' target='blank' style='font-size:90%;'>",
+    "View full-size image",
+    "<i class='glyphicon glyphicon-new-window'></i>",
+    "</a></p>"
+  ), 
   p(
     "For more details, see",
     a(href="https://doi.org/https://doi.org/10.1787/b92879a4-en",
@@ -372,6 +379,12 @@ infoits_modal <- bsModal(
     src = "diagrams/its_diagram-v1.png",
     alt = "Diagram of ITS data interpretation procedure"
   ),
+  HTML(
+    "<p><a href = 'diagrams/its_diagram-v1.png' target='blank' style='font-size:90%;'>",
+    "View full-size image",
+    "<i class='glyphicon glyphicon-new-window'></i>",
+    "</a></p>"
+  ), 
   p(
     "For more details, see",
     a(
@@ -396,6 +409,12 @@ infoke31_modal <- bsModal(
     class = "da-diagram",
     src="diagrams/KE31STS_diagram-v1.png", 
     alt = "Diagram of KE 3/1 STS data interpretation procedure"),
+  HTML(
+    "<p><a href = 'diagrams/KE31STS_diagram-v1.png' target='blank' style='font-size:90%;'>",
+    "View full-size image",
+    "<i class='glyphicon glyphicon-new-window'></i>",
+    "</a></p>"
+  ), 
   p(
     "For more details, see EPA's",
     a(

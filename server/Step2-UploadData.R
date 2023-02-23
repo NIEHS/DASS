@@ -79,9 +79,6 @@ observeEvent(input$button_upload, {
 output$ae_req <- renderDataTable({
   # Create table
   tmp <- data.table(
-    `2o3` = c("X", "X", "X", " ", " ", "O", "O", "O", "O"),
-    ITS = c(" ", " ", " ", "X", "X", "X", "X", "X", " "),
-    STS = c("X", " ", " ", " ", " ", "O", "O", "X", " "),
     Assay = c("DPRA", "hCLAT", "KeratinoSens&trade;", "In Silico Prediction",
               "In Silico Prediction", "DPRA", "DPRA", "hCLAT", "KeratinoSens&trade;"),
     Endpoint = c(rep("Binary Call", 4), "Applicability Domain", "%-Cysteine Depletion",
@@ -95,6 +92,9 @@ output$ae_req <- renderDataTable({
       "<ul><li>Numeric values only.</li><li>No symbols.</li></ul>",
       "<td><ul><li>For positive h-CLAT outcomes, numeric values only. No symbols.</li><li>Indicate negative h-CLAT outcomes with 'non-sensitizer', 'Inf', 'i', 'inactive', 'n', 'neg', or 'negative'.</li></ul>",
       "<ul><li>Numeric values only.</li><li>No symbols.</li></ul>"),
+    `2o3` = c("X", "X", "X", " ", " ", "O", "O", "O", "O"),
+    ITS = c(" ", " ", " ", "X", "X", "X", "X", "X", " "),
+    STS = c("X", " ", " ", " ", " ", "O", "O", "X", " "),
     check.names = F)
   tmp <- tmp[order(Assay, Endpoint)]
   coltmp <- c("2o3", "ITS", "STS", "Assay", "Endpoint")
@@ -108,7 +108,7 @@ output$ae_req <- renderDataTable({
             callback = JS(c("$('.dataTables_scrollBody').css('border-bottom', 'none');", "$('table.no-footer').css('border-bottom', 'none');")),
             caption = tags$caption(
               style = "caption-side: bottom; text.align:left;",
-              "Columns 1-3 indicate the DAs that require a given endpoint",
+              "Columns 4-6 indicate the DAs that require a given endpoint",
               br(),
               "X = the DA requires the endpoint.",
               br(),
@@ -123,8 +123,8 @@ output$ae_req <- renderDataTable({
             escape = F)
 })
 
-# jqui_resizable("#data_req_modal .modal-content")
-# jqui_draggable("#data_req_modal .modal-content")
+jqui_resizable("#data_req_modal .modal-content")
+jqui_draggable("#data_req_modal .modal-content")
 
 # User data
 output$usr_dt <- renderDataTable({
