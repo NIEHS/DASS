@@ -76,3 +76,4 @@ plos-one.csl
 renv/library
 rsconnect/
 packrat/
+packrat/lib*/
