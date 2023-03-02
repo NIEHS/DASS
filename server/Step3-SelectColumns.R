@@ -70,13 +70,13 @@ observeEvent(input$confirm_data, {
     dass_vars <- dass_vars[dass_selected]
     dass_vars <- sort(unique(unlist(dass_vars)))
     
-    # Set up UI for Panel 2
+    # Set up UI for Panel 3
     # List of ui objects
     dt_col_ui <- list()
     
     dt_col_ui$intro <-  HTML(
       "<p>The assay endpoints that are required for the selected DAs are shown below.",
-      "Use the drop down-menus to select the columns from your data",
+      "Use the dropdown lists to select the columns from your data",
       "that correspond to the given endpoints. Columns are auto-selected",
       "if the column name matches the corresponding column in the data template.",
       "A column must be selected for each",
@@ -368,151 +368,32 @@ observeEvent(input$cancel_reload, {
 ## Questions -----
 ### DPRA -----
 observeEvent(input$info_dpradep, {
-  showModal(modalDialog(
-    title = "DPRA % Depletion",
-    HTML(
-      "%-Cysteine and %-Lysine depletion values from the direct peptide reactivity",
-      "assay (DPRA) are used in ITS.<br><br>The columns corresponding to %-Cysteine",
-      "and %-Lysine depletion should only contain numeric values. Missing values",
-      "should be blank or labeled as 'NA'.",
-      "<br><br>For more details, see",
-      "<a href='https://doi.org/10.1787/9789264229709-en'",
-      "target = '_blank'><em>OECD Test No. 442C: In Chemico Skin Sensitisation</em></a>.</p>"
-    ),
-    easyClose = T
-  ))
+  toggleModal(session, "dpra_dep_modal", toggle = "open")
 })
 
 observeEvent(input$info_dpracall_1, {
-  showModal(modalDialog(
-    title = "DPRA Binary Call",
-    HTML(
-      "Results from the direct peptide reactivity assay (DPRA)",
-      "are used in the 2o3 and KE3/1 STS defined approaches.<br><br>",
-      "The column corresponding to DPRA Binary Call should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'sensitizer', 'sensitiser', 'a', 'active', 'p', 'pos', 'positive', or 1 to indicate positive assay outcomes.*</li>",
-      "<li>'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*</li>",
-      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
-      "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br>",
-      "<br>Alternatively, the %-Cysteine and %-Lysine depletion values can be evaluated",
-      "to derive the binary call. Binary calls are made using Tables 1 and 2 from <a",
-      "href='https://doi.org/10.1787/9789264229709-en'",
-      "target = '_blank'><em>OECD Test No. 442C:",
-      "In Chemico Skin Sensitisation</em></a>.</p>"
-    ),
-    easyClose = T
-  ))
+  toggleModal(session, "dpra_call_modal", toggle = "open")
 })
 
 observeEvent(input$info_dpracall_2, {
-  showModal(modalDialog(
-    title = "DPRA Binary Call",
-    HTML(
-      "Results from the direct peptide reactivity assay (DPRA)",
-      "are used in the 2o3 and KE3/1 STS defined approaches.<br><br>",
-      "The column corresponding to DPRA Binary Call should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'sensitizer', 'sensitiser', 'a', 'active', 'p', 'pos', 'positive', or 1 to indicate positive assay outcomes.*</li>",
-      "<li>'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*</li>",
-      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
-      "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br>",
-      "<br>Alternatively, the %-Cysteine and %-Lysine depletion values can be evaluated",
-      "to derive the binary call. Binary calls are made using Tables 1 and 2 from <a",
-      "href='https://doi.org/10.1787/9789264229709-en'",
-      "target = '_blank'><em>OECD Test No. 442C:",
-      "In Chemico Skin Sensitisation</em></a>.</p>"
-    ),
-    easyClose = T
-  ))
+  toggleModal(session, "dpra_call_modal", toggle = "open")
 })
 
 ### h-CLAT -----
 observeEvent(input$info_hclatcall, {
-  showModal(modalDialog(
-    title = "h-CLAT Binary Call",
-    HTML(
-      "Results from the human cell line activation test (h-CLAT)",
-      "are used in the 2o3 defined approach.<br><br>",
-      "The column corresponding to h-CLAT binary call should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'sensitizer', 'sensitiser', 'a', 'active', 'p', 'pos', 'positive', or 1 to indicate positive assay outcomes.*</li>",
-      "<li>'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*</li>",
-      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
-      "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br><br>",
-      "For more details, see ",
-      "<a href='https://doi.org/10.1787/9789264264359-en'",
-      "target = '_blank'><em>OECD Test No. 442E: In Vitro Skin Sensitisation</em></a>.</p>"
-    ),
-    easyClose = T
-  ))
+  toggleModal(session, "hclat_call_modal", toggle = "open")
 })
 
 observeEvent(input$info_hclatmit, {
-  showModal(modalDialog(
-    title = "h-CLAT MIT",
-    HTML(
-      "Minimum induction threshold (MIT) from the human cell line activiation test (h-CLAT)",
-      "is used in the ITS and KE3/1 STS defined approaches.<br><br>",
-      "The column corresponding to h-CLAT MIT should only contain:<ul style='margin-bottom:0px;'>",
-      "<li>Numeric values.</li>",
-      "<li>'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 'Inf' to indicate negative assay outcomes*</li>",
-      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
-      "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br><br>",
-      "For more details, see <a href='https://doi.org/10.1787/9789264264359-en'",
-      "target = '_blank'><em>OECD Test No. 442E: In Vitro Skin",
-      "Sensitisation</em></a>.</p>"
-    ),
-    easyClose = T
-  ))
+  toggleModal(session, "hclat_mit_modal", toggle = "open")
 })
 
 ### KeratinoSens -----
 observeEvent(input$info_kscall, {
-  showModal(modalDialog(
-    title = HTML("KeratinoSens&trade; Binary Call"),
-    HTML(
-      "Results from the KeratinoSens&trade; (KS) assay",
-      "are used in the 2o3 defined approach.<br><br>",
-      "The column corresponding to KS hazard should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'sensitizer', 'sensitiser', 'a', 'active', 'p', 'pos', 'positive', or 1 to indicate positive assay outcomes.*</li>",
-      "<li>'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*</li>",
-      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
-      "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br><br>",
-      "Alternatively, Imax values can be provided and evaluated for binary call The",
-      "column corresponding to KS Imax should contain only numeric values. Missing",
-      "values should be labeled 'NA'. KS Imax values &geq;1.5",
-      "are labeled as positive and KS Imax values &lt;1.5 are",
-      "labeled as negative.<br><br>",
-      "For more details, see <a",
-      "href='https://doi.org/10.1787/9789264229822-en' target = '_blank'><em>OECD Test No. 442D: In Vitro",
-      "Skin Sensitisation</em></a>.</p>"
-    ),
-    easyClose = T
-  ))
+  toggleModal(session, "ks_call_modal", toggle = "open")
 })
 
 ### In Silico -----
 observeEvent(input$info_insilico_call, {
-  showModal(modalDialog(
-    title = "In Silico Binary Call Prediction",
-    HTML(
-      "The ITS defined approach uses <em>in silico</em> predictions of binary call from either",
-      "<a href='https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm'",
-      "target = '_blank'>Derek Nexus</a> or the <a",
-      "href='https://doi.org/10.1016/j.comtox.2019.01.006' target = '_blank'>OECD QSAR Toolbox</a>.",
-      "<br><br>",
-      "The column corresponding to <em>in silico</em> binary call predictions should only contain the values:<ul style='margin-bottom:0px;'>",
-      "<li>'sensitizer', 'sensitiser', 'a', 'active', 'p', 'pos', 'positive', or 1 to indicate positive assay outcomes.*</li>",
-      "<li>'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*</li>",
-      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
-      "<span style='font-size: 90%;'><em>* Case insensitive</em></span><br><br>",
-      "Additionally, a column corresponding to applicability domain (AD) should",
-      "be provided. This column should only contain the values:<ul style='margin-bottom:0px;>",
-      "<li>'in' or 1 to indicate the chemical is within the AD*</li>",
-      "<li>'out' or 0 to indicate the chemical is outside the AD*. Values for",
-      "chemicals outside the AD will not be evaluated</li>",
-      "<li>Missing values should be blank or labeled as 'NA'.</li></ul>",
-      "<span style='font-size: 90%;'><em>* Case insensitive</em></span>",
-      "</p>"
-    ),
-    easyClose = T
-  ))
+  toggleModal(session, "insilico_modal", toggle = "open")
 })

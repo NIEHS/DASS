@@ -9,6 +9,10 @@ Description: custom style sheet
 */
 
 /* GENERAL */
+* {
+  font-family: 'Source Sans Pro',Arial,Helvetica,sans-serif;
+}
+
 body {
   background-color: transparent;
 }
@@ -92,16 +96,7 @@ body {
   font-weight: bold;
 }
 
-.control-label {
-white-space:nowrap;
-}
-.modal-dialog {
-position:relative; 
-top:calc(5%); 
-bottom:calc(20%);
-}
-
-/* Tables */
+/* TABLES */
 .dataTables_scrollBody {
   height: 50vh;
 }
@@ -123,6 +118,7 @@ thead {
   top:0;
 }
 
+/* BORDERED CLASSES */
 .warn-block {
   border:3px solid #232b5f;
   border-radius:10px;
@@ -132,13 +128,16 @@ thead {
   align-items:center;
 }
 
-.glyphicon-exclamation-sign {
-  color:#232b5f;
-  font-size:3vh;
-  padding:1vh;
+.key-block {
+  border:3px solid #232b5f;
+  border-radius:10px;
+  background-color:#FFFFFF;
+  align-items:center;
+  padding:1rem;
+  margin:1rem;
 }
 
-
+/* DROPDOWNS */
 /* The container <div> - needed to position the dropdown content */
 .dropdown {
   position: relative;
@@ -169,8 +168,43 @@ thead {
 /* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {display: block;}
 
+/* OTHER */
 .da-diagram {
   max-width: 100%;
   padding-top: 2vh;
   padding-bottom: 2vh;
+}
+
+
+.control-label {
+white-space:nowrap;
+}
+
+.modal-dialog {
+position:relative; 
+top:calc(5%); 
+bottom:calc(20%);
+}
+
+
+.glyphicon-exclamation-sign {
+  color:#232b5f;
+  font-size:3vh;
+  padding:1vh;
+}
+
+.external-link {
+  color: #23527c;
+  text-decoration: underline;
+}
+
+.external-link:focus, .external-link:hover {
+  color: #337ab7;
+  text-decoration: underline;
+}
+
+.external-link::after {
+  font-family: FontAwesome;
+  content: "\f08e";
+  font-size: x-small;
 }
