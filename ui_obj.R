@@ -277,7 +277,7 @@ uploaddata_panel <- bsCollapsePanel_h2(
   a(href="DASSApp-dataTemplate.txt", "Download Data Template (.txt)",
     download = NA, target = "_blank"),
   hr(style = "width:50%"),
-  p("Click 'Browse' below and select your file. If uploading an Excel file, use the dropdown menu to select the worksheet to use. Click 'Upload' to load your data."),
+  p("Click 'Browse' below and select your file."),
   div(
     class="form-group shiny-input-container",
     style = "width:100%",
@@ -291,7 +291,7 @@ uploaddata_panel <- bsCollapsePanel_h2(
       tags$label(
         class="input-group-btn input-group-prepend",
         span(
-          class="btn btn-browse btn-file",
+          class="btn btn-default btn-file",
           "Browse...",
           tags$input(
             id = "fpath",
@@ -311,25 +311,10 @@ uploaddata_panel <- bsCollapsePanel_h2(
         style = "border-color:#232b5f; width:100%",
         placeholder = "No file selected.",
         readonly="readonly"
-      ),
-      tags$label(
-        class="input-group-btn input-group-append",
-        style = "display: none; width:25vw;",
-        id = "xlsheet-label",
-        tags$select(
-          id = "xlsheet",
-          class = "form-control",
-          style = "border-color:#232b5f;"
-        )
-      ),
-      tags$label(
-        class="input-group-btn input-group-append",
-        actionButton(
-          inputId = "button_upload", 
-          label = "Upload")
       )
     )
   ),
+  uiOutput("xlsheet_text_ui"),
   div(
     id = "user_data_block",
     style = "display:none;", 
@@ -369,11 +354,8 @@ datareq_modal <- bsModal(
     ),
     tags$li(
       "Data should be in a tabular format with each row corresponding to",
-      "a single substance and a column for each required assay endpoint.",
-      tags$ul(
-        tags$li("The first row should contain column names.")
-      ),
-    ),
+      "a single substance and a column for each required assay endpoint."),
+    tags$li("The first row should contain column names. Column names must be unique."),
     tags$li("Missing values should be indicated by a blank cell or as 'NA' (without quotes).")
   ),
   h4("Assay Endpoints"),
@@ -382,6 +364,20 @@ datareq_modal <- bsModal(
     "the table. Values that do not meet the assay endpoint requirements will",
     "be treated as missing data and will not be used to derive predictions."),
   dataTableOutput("ae_req")
+)
+
+xl_sheet_modal <- bsModal(
+  id = "xl_select_modal",
+  title = "Excel sheet selection dialog box",
+  trigger = "select_sheet",
+  selectInput(
+    inputId = "xl_sheet_list",
+    label = "Select the Excel worksheet to upload", 
+    choices = NULL,
+    selectize = FALSE
+  ),
+  actionButton(inputId = "confirm_xl_sheet", label = "Upload Data"),
+  actionButton(inputId = "cancel_xl_sheet", label = "Cancel")
 )
 
 # Step 3: Select Columns -----
@@ -738,6 +734,7 @@ ui_dass <- fluidPage(
     infoits_modal,
     infoke31_modal,
     datareq_modal,
+    xl_sheet_modal,
     info_dpra_dep_modal,
     info_dpra_call_modal,
     info_hclat_call_modal,

@@ -28,12 +28,16 @@ rowCallback <- c(
 ## Reactive Values -----
 # user's uploaded data
 usr_dt <- reactiveVal()
+xlsheet <- reactiveVal()
 
 ## Data Loading -----
-# When user selects file using the browse button, it checks the extension.
-# If the file is an excel workbook, the sheet names are loaded into a dropdown
-# menu for the user to select.
 observeEvent(input$fpath, {
+  # Clear and hide UI objects in case data were previously uploaded.
+  usr_dt(NULL)
+  shinyjs::hide("user_data_block")
+  shinyjs::hide("confirm_data")
+  shinyjs::hide("xlsheet_text_ui")
+  
   # Check file extension
   ext <- unlist(strsplit(input$fpath$name, "[.]"))
   ext <- ext[length(ext)]
@@ -43,35 +47,77 @@ observeEvent(input$fpath, {
       "Incorrect file type. Accepted file extensions: csv, tsv, txt, xlsx",
       duration = 10
     )
-  } else {
-    if (grepl("^xls$|^xlsx$", ext)) {
-      sheets <- readxl::excel_sheets(input$fpath$datapath)
-      updateSelectInput(inputId = "xlsheet", choices = sheets)
-      shinyjs::show("xlsheet-label")
+  } else if (grepl("^xls$|^xlsx$", ext)) {
+    sheets <- readxl::excel_sheets(input$fpath$datapath)
+    if (length(sheets) == 1) {
+      # Excel workbooks with only 1 sheet are automatically read in
+      dt <- read_data(input$fpath$datapath, sheet = 1)
+      usr_dt(dt)
+      shinyjs::show("user_data_block")
+      shinyjs::show("confirm_data")
+    } else if (length(sheets) > 1) {
+      # Render error (workaround to show error with easyclose)
+      sheet_text_ui <- span(
+        span(style = "font-weight:bold;", "Error: No Excel worksheet selected!"),
+        actionLink(inputId = "button_choose_xlsheet", 
+                   label = "Open worksheet selector"),
+      )
+      output$xlsheet_text_ui <- renderUI({
+        sheet_text_ui
+      })
+      
+      shinyjs::show("xlsheet_text_ui")
+      
+      # Show excel worksheet selector
+      updateSelectInput(session, "xl_sheet_list", choices = sheets)
+      toggleModal(session, "xl_select_modal", toggle = "open")
     }
-  }
-})
-
-# User confirms file selection, and worksheet if needed.
-observeEvent(input$button_upload, {
-  req(input$fpath)
-  # Check file extension. Same check run when user chooses file via 'browse'
-  ext <- unlist(strsplit(input$fpath$name, "[.]"))
-  ext <- ext[length(ext)]
-  if (!grepl("^csv$|^tsv$|^txt$|^xls$|^xlsx$", ext)) {
-    showNotification(
-      type = "error",
-      "Incorrect file type. Accepted file extensions: csv, tsv, txt, xlsx",
-      duration = 10
-    )
-  } else {
-    # Read in data
+  } else if (grepl("^csv$|^tsv$|^txt$", ext)) {
+    # Data are automatically read in
     dt <- read_data(input$fpath$datapath, sheet = input$xlsheet)
     usr_dt(dt)
-
     shinyjs::show("user_data_block")
     shinyjs::show("confirm_data")
   }
+})
+
+# User confirms a worksheet in the modal
+observeEvent(input$confirm_xl_sheet, {
+  # Update UI to show selected worksheet
+  sheet_text_ui <- span(
+    span(style = "font-weight:bold;", "Selected Worksheet:"),
+    input$xl_sheet_list,
+    "(",
+    actionLink(inputId = "button_change_xlsheet", 
+                 label = "Change Selected Worksheet"),
+    ")"
+  )
+  output$xlsheet_text_ui <- renderUI({
+    sheet_text_ui
+  })
+  
+  # Read in data and show
+  dt <- read_data(input$fpath$datapath, sheet = input$xl_sheet_list)
+  usr_dt(dt)
+  shinyjs::show("user_data_block")
+  shinyjs::show("confirm_data")
+  shinyjs::show("xlsheet_text_ui")
+  toggleModal(session, "xl_select_modal", toggle = "close")
+})
+
+# User selected a worksheet, but changes it.
+observeEvent(input$button_change_xlsheet, {
+  toggleModal(session, "xl_select_modal", toggle = "open")
+})
+
+# User does not select a worksheet
+observeEvent(input$cancel_xl_sheet, {
+  toggleModal(session, "xl_select_modal", toggle = "close")
+})
+
+# For case when user initially uploads xl file but doesn't select sheet.
+observeEvent(input$button_choose_xlsheet, {
+  toggleModal(session, "xl_select_modal", toggle = "open")
 })
 
 ## Tables -----

@@ -39,7 +39,7 @@ body {
   color:#ffffff;
   font-weight:700;
 }
-
+/*
 .btn-browse {
   color:#232b5f;
   font-weight:700;
@@ -49,6 +49,7 @@ body {
 .btn-browse:hover {
   background-color:#ACADBF;
 }
+*/
 
 /* New button class */
 .btn-qs {
@@ -186,7 +187,6 @@ top:calc(5%);
 bottom:calc(20%);
 }
 
-
 .glyphicon-exclamation-sign {
   color:#232b5f;
   font-size:3vh;
@@ -207,4 +207,8 @@ bottom:calc(20%);
   font-family: FontAwesome;
   content: "\f08e";
   font-size: x-small;
+}
+
+#xl_select_modal .modal-header, #xl_select_modal .modal-footer{
+  display:none;
 }
