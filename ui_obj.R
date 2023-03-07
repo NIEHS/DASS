@@ -439,7 +439,7 @@ info_dpra_call_modal <- bsModal(
       href = 'https://doi.org/10.1787/9789264229709-en',
       target = "_blank",
       class = "external-link",
-      "In Chemico Skin Sensitisation"
+      "OECD Test No. 442C: In Chemico Skin Sensitisation"
     ), "."
   )
 )
