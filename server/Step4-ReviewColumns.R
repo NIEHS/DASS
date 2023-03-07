@@ -44,7 +44,7 @@ end_labels <- list(
   hclat_call = "h-CLAT Hazard Call",
   hclat_mit = "h-CLAT MIT",
   ks_call = "KeratinoSens&trade; Hazard Call",
-  ks_imax = "KeratinoSens&trade; iMax",
+  # ks_imax = "KeratinoSens&trade; iMax",
   insilico_call = "In Silico Hazard Call",
   insilico_ad = "In Silico Applicability Domain"
 )
@@ -65,7 +65,7 @@ end_flags <- list(
   hclat_call = call_flag,
   hclat_mit = mit_flag,
   ks_call = call_flag,
-  ks_imax = "Must be numeric",
+  # ks_imax = "Must be numeric",
   insilico_call = call_flag,
   insilico_ad = "Must be '0' or 'out' for chemicals outside the applicability domain and '1' or 'in' for chemicals in the applicability domain."
 )
@@ -80,14 +80,16 @@ observeEvent(input$review_entries, {
     hclat_call = input$hclat_call_col,
     hclat_mit = input$hclat_mit_col,
     ks_call = input$ks_call_col,
-    ks_imax = input$ks_imax_col,
+    # ks_imax = input$ks_imax_col,
     insilico_call = input$insilico_call_col,
     insilico_ad = input$insilico_ad_col
   )
   # Check that all variables have a column assigned
   cols_to_check <- check_cols(
     dass = dass_choice(),
-    ks_call_method = input$ks_choice,
+    # ks_call_method = input$ks_choice,
+    # 23/03/07 - manual change to remove KS Imax. Need to update code.
+    ks_call_method = "call",
     dpra_call_method = input$dpra_call_choice
   )
   # Maintain expected order. Depends on labels used in check_cols
@@ -145,7 +147,7 @@ observeEvent(input$review_entries, {
   }
   
   # Check numeric columns
-  num_cols <- c("dpra_pC", "dpra_pK", "ks_imax")
+  num_cols <- c("dpra_pC", "dpra_pK")
   if (any(names(col_data) %in% num_cols)) {
     num_col_names <- names(col_data)[names(col_data) %in% num_cols]
     # Values must be numeric

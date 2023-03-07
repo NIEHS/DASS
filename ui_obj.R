@@ -49,13 +49,12 @@ welcome_panel <- div(
   div(class = "panel-heading", "Welcome to the DASS App (Beta)!"),
   div(class = "panel-body",
       p(
-        "The DASS App predicts skin sensitization hazard (sensitizer or non-sensitizer) and potency by applying",
-        "Defined Approaches on Skin Sensitisation (DASS) that are described in",
+        "The DASS App applies defined approaches on skin sensitization (DASS) that are described in",
         a(
           href="https://doi.org/https://doi.org/10.1787/b92879a4-en",
           target = "_blank",
           class = "external-link",
-          "OECD Guideline No. 497",
+          "OECD Guideline No. 497 ",
         ), " and the U.S. EPA's",
         a(
           href="https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090",
@@ -64,8 +63,9 @@ welcome_panel <- div(
           "Interim Science Policy: Use of Alternative Approaches for Skin",
           "Sensitization as a Replacement for Laboratory Animal Testing"
         ), 
-        ". The defined approaches (DAs) integrate data from in vitro assays",
-        "that represent key events in the",
+        ". The defined approaches (DAs) predict skin sensitization hazard",
+        "(either a sensitizer or non-sensitizer) and potency by integrating data",
+        "from in vitro assays that represent key events in the",
         a(
           href="https://doi.org/https://doi.org/10.1787/9789264221444-en",
           target="_blank",
@@ -81,7 +81,14 @@ welcome_panel <- div(
           href="user_guide.pdf",
           target = "_blank",
           class = "external-link",
-          "User Guide"), "."
+          "User Guide "), "."
+      ),
+      p(
+        "For more information or to report a problem with the app, please contact NICEATM at",
+        a(
+          href="mailto:ICE-support@niehs.nih.gov",
+          "ICE-support@niehs.nih.gov."
+        )
       ))
   )
 
@@ -90,8 +97,8 @@ selectda_panel <-  bsCollapsePanel_h2(
   title = "Step 1: Select the Defined Approaches to Apply",
   value = "panel_dass_options",
   p(
-    "To begin, select the DAs to be implemented. Click on the question",
-    "circles for more information about the DA."
+    "To begin, select the DAs to be implemented. Click on the green information",
+    "buttons to view a description of the DA and the test mehods required to implement the DA."
   ),
   div(
     style = "margin-left:25px",
@@ -635,33 +642,29 @@ results_panel <- bsCollapsePanel_h2(
     ),
     div(
       class = "key-block",
-      h1("Table Key", style = "font-size:1em; font-weight:bold; margin:10px"),
-      tags$ul(
-        tags$li(
-          tags$span(
-            style="background-color: #F0E442;",
-            "Yellow columns"
-          ),
-          "- The data columns that you selected in Step 3. The column names are annotated with an asterisk."
+      h1("Table Key", style = "font-size:1.2em; font-weight:bold; margin-top:10px; text-align:center;"),
+      tags$dl(
+        tags$dt(
+          "Yellow columns"
         ),
-        tags$li(
-          tags$span(
-            style="background-color: #CC79A7;",
-            "Pink columns"
-          ),
-          "- Appended columns showing how your data inputs were interpreted.",
-          "The corresponding column names begin with ‘Input’. For values that",
-          "were calculated by the app, the column name will also end with 'Calculated'.",
+        tags$dd(
+          "The data columns that you selected in Step 3. The column names are annotated with an asterisk."
+        ),
+        tags$dt(
+          "Pink columns",
           actionLink(inputId = "info_pink", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))
         ),
-        tags$li(
-          tags$span(
-            style="background-color: #56B4E9;",
-            "Blue columns"
-          ),
-          "Appended columns with the DASS predictions. The corresponding column",
-          "names begin with ‘DA’ and the name of the DA.",
+        tags$dd(
+          "Appended columns showing how your data inputs were interpreted.",
+          "were calculated by the app, the column name will also end with 'Calculated'."
+        ),
+        tags$dt(
+          "Blue columns",
           actionLink(inputId = "info_blue", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))
+        ),
+        tags$dd(
+          "Appended columns with the DASS predictions. The corresponding column",
+          "names begin with ‘DA’ and the name of the DA."
         )
       ),
       "For more details about the appended columns, see the User Guide.",

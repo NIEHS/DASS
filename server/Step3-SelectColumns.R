@@ -73,17 +73,18 @@ observeEvent(input$confirm_data, {
     # Set up UI for Panel 3
     # List of ui objects
     dt_col_ui <- list()
-    
+
     dt_col_ui$intro <-  HTML(
       "<p>The assay endpoints that are required for the selected DAs are shown below.",
       "Use the dropdown lists to select the columns from your data",
-      "that correspond to the given endpoints. Columns are auto-selected",
-      "if the column name matches the corresponding column in the data template.",
+      "that correspond to the given endpoints. Columns are automatically selected for an endpoint",
+      "if the column name matches the corresponding column name in the data template.",
       "A column must be selected for each",
       "endpoint shown. When you are finished, click 'Done'.<br><br>",
-      "Click on the question circles for information about the column",
-      "requirements. Values that are incorrectly formatted or invalid",
-      "will not be evaluated and may affect the results. More details are given",
+      "Click on the in information buttons next to the assay endpoint names to view",
+      "information about the endpoints and data formatting requirements.",
+      "Values that are incorrectly formatted or invalid",
+      "will be treated as missing data and may affect the results. More details are given",
       "in the User Guide.</p>"
     )
 
@@ -255,42 +256,12 @@ observeEvent(input$confirm_data, {
         HTML("</p>"),
         div(
           style = "margin-left:25px",
-          radioButtons(
-            inputId = "ks_choice",
-            label = NULL,
-            choiceNames = c(
-              "Use KS Binary Call",
-              "Use KS iMax"
-            ),
-            choiceValues = c(
-              "call",
-              "imax"
-            )
-          ),
-          div(
-            style = "margin-left:25px",
-            conditionalPanel(
-              condition = "input.ks_choice=='call'",
-              selectInput(
-                inputId = "ks_call_col",
-                label = "KS Binary Call Column",
-                choices = col_select_input,
-                # selected = FALSE
-                selected = template_col_select$ks_call,
-                selectize = FALSE
-              )
-            ),
-            conditionalPanel(
-              condition = "input.ks_choice=='imax'",
-              selectInput(
-                inputId = "ks_imax_col",
-                label = "KS iMax Column",
-                choices = col_select_input,
-                # selected = FALSE
-                selected = template_col_select$ks_imax,
-                selectize = FALSE
-              )
-            )
+          selectInput(
+            inputId = "ks_call_col",
+            label = "KS Binary Call Column",
+            choices = col_select_input,
+            selected = template_col_select$ks_call,
+            selectize = FALSE
           )
         )
       ))

@@ -42,7 +42,10 @@ run_dass <- reactive({
   da_out <- dass_predict(
     dt = dat_for_anlz$col_data,
     dass = dass_choice(),
-    ks_call_method = ks_method,
+    # 23/03/07 - Removed KS Imax option. Code needs to be cleaned
+    # to remove imax from any evaluation
+    # ks_call_method = ks_method,
+    ks_call_method = "call",
     dpra_call_method = dpra_method
   )
   

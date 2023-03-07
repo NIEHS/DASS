@@ -121,21 +121,21 @@ thead {
 
 /* BORDERED CLASSES */
 .warn-block {
-  border:3px solid #232b5f;
+  border:1px solid #e0d2b5;
   border-radius:10px;
-  background-color:#dae6ee;
+  background-color:#fff1d4;
   padding:1vh;
   display:flex;
   align-items:center;
 }
 
 .key-block {
-  border:3px solid #232b5f;
+  border:1px solid #c8d7e3;
   border-radius:10px;
-  background-color:#FFFFFF;
+  background-color:#dae6ee;
   align-items:center;
   padding:1rem;
-  margin:1rem;
+  margin:1em;
 }
 
 /* DROPDOWNS */
@@ -193,13 +193,7 @@ bottom:calc(20%);
   padding:1vh;
 }
 
-.external-link {
-  color: #23527c;
-  text-decoration: underline;
-}
-
 .external-link:focus, .external-link:hover {
-  color: #337ab7;
   text-decoration: underline;
 }
 
@@ -211,4 +205,13 @@ bottom:calc(20%);
 
 #xl_select_modal .modal-header, #xl_select_modal .modal-footer{
   display:none;
+}
+
+/* descriptions */
+dd {
+  margin-left: 5%;
+}
+
+dt{
+  margin-left: 2%;
 }
