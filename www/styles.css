@@ -15,6 +15,7 @@ Description: custom style sheet
 
 body {
   background-color: transparent;
+  color:black;
 }
 
 /* BUTTONS */
@@ -75,7 +76,7 @@ body {
 /* PANEL */
 .panel-default>.panel-heading {
   background-color: #232b5f;
-  font-size: 2vw;
+  font-size: 2rem;
   text-align: center;
   color: white;
   font-weight: bold;
@@ -90,6 +91,10 @@ body {
   margin-top:20px;
   border-style:solid;
   border-width:1px;
+}
+
+.panel-title {
+  font-size: 2rem;
 }
 
 .panel-title>a {
@@ -169,16 +174,26 @@ thead {
 /* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {display: block;}
 
+/* INPUT */
+.control-label {
+white-space:nowrap;
+}
+
+label[for="fpath"] {
+  height:0;
+  display:block;
+  visibility:hidden;
+}
+
+.progress-bar {
+  background-color:#234510;
+}
+
 /* OTHER */
 .da-diagram {
   max-width: 100%;
   padding-top: 2vh;
   padding-bottom: 2vh;
-}
-
-
-.control-label {
-white-space:nowrap;
 }
 
 .modal-dialog {
@@ -193,7 +208,13 @@ bottom:calc(20%);
   padding:1vh;
 }
 
-.external-link:focus, .external-link:hover {
+
+a {
+  color:#3E5A8E;
+}
+
+a:focus, a:hover {
+  color:#3E5A8E;
   text-decoration: underline;
 }
 
@@ -214,4 +235,8 @@ dd {
 
 dt{
   margin-left: 2%;
+}
+
+.modal-title {
+  font-size:2rem;
 }

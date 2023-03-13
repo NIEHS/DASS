@@ -119,7 +119,9 @@ output$dt_results <- renderDataTable({
     da_sty <- grep("^DA .*", names(dass_res), value = T)
     da_font <- grep("Call|Potency", da_sty, value = T)
     in_sty <- grep("^DA .*", names(dass_res), value = T, invert = T)
-    col_sty <- dt_review()[,`Selected Column`]
+    col_sty_old <- dt_review()[,`Selected Column`]
+    col_sty <- paste0(col_sty_old, "*")
+    setnames(res, old = col_sty_old, new = col_sty)
     
     datatable(
       res,
@@ -204,15 +206,24 @@ create_xl_file <- reactive({
   
   # Create key worksheet
   key_df <- data.frame(
-    Color = c("Blue", "Pink", "Yellow"),
-    Label = c("Defined approach result",
-              "Transformed versions of user-selected columns. These are the values used as input in the DASS",
-              "User-selected columns")
+    Color = c("Yellow", "Pink", "Blue"),
+    `Column Annotation` = c(
+      "Ends with an asterisk.",
+      "Ends with '_Input'. If calculated by the app, ends with 'calculated'.",
+      "Begins with 'DA' and the name of the DA."
+    ),
+    Label = c(
+      "User-selected columns",
+      "Transformed versions of user-selected columns. These are the values used as input in the DASS",
+      "Defined approach result"
+    ),
+    check.names = FALSE
   )
+  
   writeData(wb, sheet = "Key", key_df, headerStyle = bold_font)
-  addStyle(wb, sheet = "Key", style = blue_bg, row = 2, col = 1)
+  addStyle(wb, sheet = "Key", style = blue_bg, row = 4, col = 1)
   addStyle(wb, sheet = "Key", style = pink_bg, row = 3, col = 1)
-  addStyle(wb, sheet = "Key", style = yellow_bg, row = 4, col = 1)
+  addStyle(wb, sheet = "Key", style = yellow_bg, row = 2, col = 1)
 
   # Create column selection worksheet
   # Column review table
@@ -233,6 +244,12 @@ create_xl_file <- reactive({
   # Create results worksheet
   dass_res <- dass_res()
   res <- cbind(usr_dt(), dass_res)
+  
+  old_usr_col <- col_select$`Selected Column`
+  usr_cols <- paste0(old_usr_col, "*")
+  
+  setnames(res, old = old_usr_col, new = usr_cols)
+  
   writeData(wb, sheet = "Results", x = res, headerStyle = bold_font, keepNA = TRUE, na.string = "NA")
   # setColWidths(wb, sheet = "Results", cols = 1:ncol(res), widths = "auto")
   
@@ -258,7 +275,7 @@ create_xl_file <- reactive({
            rows = 2:(nrow(res) + 1), cols = in_cols, gridExpand = T)
   
   # Highlight columns that user selected
-  usr_cols <- dt_review()[,`Selected Column`]
+  # usr_cols <- dt_review()[,`Selected Column`]
   usr_cols <- na.omit(match(usr_cols, colnames(res)))
   addStyle(wb, sheet = "Results", style = yellow_bg,
            rows = 2:(nrow(res) + 1), cols = usr_cols, gridExpand = T)
@@ -287,7 +304,12 @@ output$downloadres_txt <- downloadHandler(
     paste0(fname, "_DASSResults_", Sys.Date(), ".txt")
   },
   content = function(con) {
-    write.table(x = cbind(usr_dt(), dass_res()), file = con, quote = F, row.names = F, sep = "\t")
+    res <- cbind(usr_dt(), dass_res())
+    col_select <- dt_review()
+    usr_col_old <- col_select$`Selected Column`
+    usr_cols <- paste0(usr_col_old, "*")
+    setnames(res, old = usr_col_old, new = usr_cols)
+    write.table(x = res, file = con, quote = F, row.names = F, sep = "\t")
   }
 )
 

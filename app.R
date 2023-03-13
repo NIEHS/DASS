@@ -34,13 +34,17 @@ ui <- fluidPage(
   useShinyjs(),
   # Set CSS styles
   tags$head(
+    HTML("<title>NICEATM DASS App</title>"),
     tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
   ),
   ## for debugging
   # actionButton("browser", "browser"),
   ##
+  
   ui_dass
 )
+
+attr(ui, "lang") <- "en"
 
 # Read in server files
 server <- function(input, output, session) {

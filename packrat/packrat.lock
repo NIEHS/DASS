@@ -285,7 +285,7 @@ Package: rsconnect
 Source: CRAN
 Version: 0.8.29
 Hash: 90ac2d5ac8a8ae616948e49617358d99
-Requires: curl, openssl, rstudioapi, digest, jsonlite, packrat, yaml
+Requires: curl, digest, jsonlite, openssl, packrat, yaml, rstudioapi
 
 Package: rstudioapi
 Source: CRAN
