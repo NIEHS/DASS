@@ -332,12 +332,13 @@ uploaddata_panel <- bsCollapsePanel_h1(
       class="control-label",
       `for`="fpath",
       id="fpath-label",
-      "File input group"
+      "File input "
     ),
     div(
       class = "input-group",
       tags$label(
         class="input-group-btn input-group-prepend",
+        `for` = "filename_display",
         span(
           class="btn btn-default btn-file",
           "Browse...",
@@ -354,6 +355,7 @@ uploaddata_panel <- bsCollapsePanel_h1(
         )
       ),
       tags$input(
+        id = "filename_display",
         type = "text",
         class = "form-control",
         title = "Form control for file input",
