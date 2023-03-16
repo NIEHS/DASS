@@ -75,7 +75,7 @@ environment(bsModal_h2) <- asNamespace("shinyBS")
 # Welcome -----
 welcome_panel <- div(
   class = "panel panel-default",
-  div(class = "panel-heading", "Welcome to the DASS App (Beta)!"),
+  div(class = "panel-heading", "Welcome to the DASS App!"),
   div(
     class = "panel-body",
     p(

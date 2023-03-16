@@ -4,7 +4,7 @@
 # Contact Information: ICE-support@niehs.nih.gov
 # Date Created: 2021-12-03
 # License: MIT
-# Version: 0.9.1
+# Version: 1.0
 # Description: Loads required packages. Reads in functions. Loads UI and
 # server files to build app.
 # Required Packages:
