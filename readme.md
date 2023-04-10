@@ -1,17 +1,18 @@
 # NICEATM DASS App
 ## Authors
 - Lead author: Kim To 
-- Contact Information: ICE-support@niehs.nih.gov
+- Contact information: ICE-support@niehs.nih.gov
 
 ## Version
 - Version 1.0 (April 2023)  
+
 ## About
 
-Shiny app to implement Defined Approaches for Skin Sensitisation. App is pushed to NIH Sandbox via RStudio Connect.
+Shiny app to implement Defined Approaches for Skin Sensitisation. The app is hosted on the NIEHS Posit Connect instance.
 
 ## Dependencies
 > Developed using Rshiny <br>
-Tested on R v.xxx<br>
+Tested on R v.4.2.2<br>
 
 ><b>R packages</b><br>
 -- data.table<br>
@@ -23,5 +24,5 @@ Tested on R v.xxx<br>
 -- shinyjqui<br>
 -- shinyjs<br>
 
-### LICENCE
+### LICENSE
 MIT
