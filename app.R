@@ -35,7 +35,8 @@ ui <- fluidPage(
   # Set CSS styles
   tags$head(
     HTML("<title>NICEATM DASS App</title>"),
-    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
+    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
+    tags$script(src = "sendHeight.js")
   ),
   ## for debugging
   # actionButton("browser", "browser"),
