@@ -76,6 +76,7 @@ observeEvent(input$fpath, {
     # Data are automatically read in
     dt <- read_data(input$fpath$datapath, sheet = input$xlsheet)
     usr_dt(dt)
+    
     shinyjs::show("user_data_block")
     shinyjs::show("confirm_data")
   }

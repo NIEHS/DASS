@@ -299,11 +299,8 @@ observeEvent(input$confirm_data, {
     output$selectcol_ui <- renderUI({
       dt_col_ui
     })
+    
     show("selectcol_ui")
-    updateCollapse(session,
-                   id = "panels",
-                   open = "panel_col_options"
-    )
     shinyjs::disable("do_da_2o3")
     shinyjs::disable("do_da_its")
     shinyjs::disable("do_da_ke31")
