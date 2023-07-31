@@ -97,15 +97,6 @@ run_dass <- reactive({
            new = new_col_names)
   
   dass_res(da_out)
-  updateCollapse(session,
-                 id = "panels",
-                 close = c("panel_col_options",
-                           "panel_review")
-  )
-  updateCollapse(session,
-                 id = "panels",
-                 open = "panel_results"
-  )
   show("result_contents")
 })
 

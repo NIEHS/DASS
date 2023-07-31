@@ -82,6 +82,13 @@ observeEvent(input$fpath, {
   }
 })
 
+observeEvent(usr_dt(), {
+  dass_res(NULL)
+  shinyjs::hide("result_contents")
+  shinyjs::hide("review_contents")
+  shinyjs::hide("selectcol_ui")
+})
+
 # User confirms a worksheet in the modal
 observeEvent(input$confirm_xl_sheet, {
   # Update UI to show selected worksheet

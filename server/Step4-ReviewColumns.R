@@ -208,10 +208,7 @@ observeEvent(input$review_entries, {
   
   col_flags <- lapply(col_flags, function(x) fifelse(is.null(x), 0, 1))
   names(dt_list) <- NULL
-  updateCollapse(session,
-                 id = "panels",
-                 open = "panel_review"
-  )
+
   show("review_contents")
   dt_anlz <- do.call("cbind", dt_list)
   dat_for_anlz$col_data <- dt_anlz

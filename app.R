@@ -38,9 +38,9 @@ ui <- fluidPage(
     tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
     tags$script(src = "sendHeight.js")
   ),
-  ## for debugging
+  # for debugging
   # actionButton("browser", "browser"),
-  ##
+  #
   
   ui_dass
 )
@@ -61,8 +61,6 @@ server <- function(input, output, session) {
   # observeEvent(input$browser,{
   #   browser()
   # })
-  #
-
 }
 
 # Create App -----
