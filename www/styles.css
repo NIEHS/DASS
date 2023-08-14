@@ -108,7 +108,7 @@ body {
   height: 50vh;
 }
 
-thead {
+.datatables thead {
   background-color: #232b5f;
   color: white;
 }
@@ -117,12 +117,50 @@ thead {
   background-color: #f0f0f0;
 }
 
+caption {
+caption-side: bottom;
+}
+
 #ae_req ul {
   padding-left: 1em;
 }
 
 #shiny-notification-panel {
   top:0;
+}
+
+.compTable {
+  margin: 2em auto;
+}
+
+.compTable .cmBlank {
+  background-color: white;
+}
+
+.compTable .cmHead {
+  background-color: #dae6ee;
+  font-weight: bold;
+    border: 1px solid black;
+}
+
+.compTable .cmCell {
+  border: 1px solid black;
+}
+
+.compTable .cmCell,
+.compTable .cmHead {
+  padding: 3px;
+  text-align: center;
+}
+
+.cmVert {
+  writing-mode: vertical-rl;
+  min-width: calc(1em + 6px + 2px);
+  transform: rotate(-180deg);
+  -ms-transform:rotate(-180deg); /* IE 9 */
+  -moz-transform:rotate(-180deg); /* Firefox */
+  -webkit-transform:rotate(-180deg); /* Safari and Chrome */
+  -o-transform:rotate(-180deg); /* Opera */
 }
 
 /* BORDERED CLASSES */
@@ -225,7 +263,8 @@ a:focus, a:hover {
   font-size: x-small;
 }
 
-#xl_select_modal .modal-header, #xl_select_modal .modal-footer{
+#xl_select_modal .modal-header, #xl_select_modal .modal-footer,
+#confirm_run_with_flag .modal-header, #confirm_run_with_flag .modal-footer{
   display:none;
 }
 
@@ -242,3 +281,37 @@ dt{
   font-size:2rem;
 }
 
+.multi .item {
+  background-color:#dae6ee;
+}
+
+#suppCompare_ui {
+  margin: 1em 0;
+}
+
+.warningText {
+  font-weight: bold;
+  color: #D55E00;
+}
+
+h2 {
+  font-size: 1.75rem;
+  font-weight: bold;
+}
+
+#selectcol_ui,
+.col_assay_endpoint {
+  margin-left: 25px;
+}
+
+.user_data_highlight {
+  background-color: #F0E442;
+}
+
+.input_highlight {
+  background-color: #CC79A7;
+}
+
+.result_highlight {
+  background-color: #56B4E9;
+}

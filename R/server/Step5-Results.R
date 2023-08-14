@@ -14,7 +14,12 @@
 # Step 5: Results -----
 ## Reactive Values -----
 # DASS results
-dass_res <- reactiveVal()
+dass_res <- reactiveValues(
+  results = NULL,
+  user_select = NULL,
+  da_input = NULL,
+  da_output = NULL
+)
 
 ### Run DASS -----
 run_dass <- reactive({
@@ -48,7 +53,6 @@ run_dass <- reactive({
     ks_call_method = "call",
     dpra_call_method = dpra_method
   )
-  
   # Reorder columns
   col_order <- c("dpra_call", "dpra_pC", "dpra_pK",
                  "dpra_mean_calculated", "dpra_call_calculated",
@@ -96,72 +100,73 @@ run_dass <- reactive({
            old = colnames(da_out),
            new = new_col_names)
   
-  dass_res(da_out)
-  show("result_contents")
+  res_merged <- cbind(usr_dt(), da_out)
+  # Set up columns to style
+  da_sty <- grep("^DA .*", names(da_out), value = T)
+  da_font <- grep("Call|Potency", da_sty, value = T)
+  in_sty <- grep("^DA .*", names(da_out), value = T, invert = T)
+  col_sty_old <- dt_review()[,`Selected Column`]
+  col_sty <- paste0(col_sty_old, "*")
+  setnames(res_merged, old = col_sty_old, new = col_sty)
+
+  dass_res$results <- res_merged
+  dass_res$user_select <- col_sty
+  dass_res$da_input <- in_sty
+  dass_res$da_output <- da_sty
+  fill_supplemental()
+  shinyjs::runjs(sprintf("showScroll('%s', '%s', '%s', '%s')", "result_contents", "div", "value", "panel_results"))
+  shinyjs::runjs("$('#performanceUI').show()")
+  updateCollapse(session, id = "panelGroup", open = c("panel_results", "panel_performance"), close = "panel_review")
 })
 
 output$dt_results <- renderDataTable({
-  dass_res <- dass_res()
-  if (is.null(dass_res)) {
-    datatable(NULL)
-  } else {
-    res <- cbind(usr_dt(), dass_res)
-    # Set up columns to color
-    da_sty <- grep("^DA .*", names(dass_res), value = T)
-    da_font <- grep("Call|Potency", da_sty, value = T)
-    in_sty <- grep("^DA .*", names(dass_res), value = T, invert = T)
-    col_sty_old <- dt_review()[,`Selected Column`]
-    col_sty <- paste0(col_sty_old, "*")
-    setnames(res, old = col_sty_old, new = col_sty)
-    
-    datatable(
-      res,
-      class = "table-bordered stripe",
-      rownames = FALSE,
-      callback = JS("$('.dataTables_scrollBody').css('border-bottom', 'none');"),
-      selection = "none",
-      options = list(
-        scrollX = TRUE,
-        scrollY = TRUE,
-        rowCallback = JS(rowCallback)
-      )
+  dt_results <- datatable(
+    dass_res$results,
+    class = "table-bordered stripe",
+    rownames = FALSE,
+    selection = "none",
+    options = list(
+      scrollX = TRUE,
+      scrollY = TRUE
+    )) %>%
+    formatStyle(
+      columns = dass_res$da_output,
+      backgroundColor = "#56B4E9"
     ) %>%
-      formatStyle(
-        columns = da_sty,
-        backgroundColor = "#56B4E9"
-      ) %>% 
-      formatStyle(
-        columns = da_font,
-        fontWeight = "bold"
-      ) %>% 
-      formatStyle(
-        columns = in_sty,
-        backgroundColor = "#CC79A7"
-      ) %>% 
-      formatStyle(
-        columns = col_sty,
-        backgroundColor = "#F0E442"
-      )
-  }
+    formatStyle(
+      columns = dass_res$da_input,
+      backgroundColor = "#CC79A7"
+    ) %>%
+    formatStyle(
+      columns = dass_res$user_select,
+      backgroundColor = "#F0E442"
+    )
   
-  
+  rc <- dt_results$x$options$rowCallback
+  rc <- unlist(strsplit(as.character(rc), '\n'))
+  dt_results$x$options$rowCallback <- JS(append(rc, after = length(rc) - 1, "showNA(row, data);"))
+  dt_results
+  })
+
+### Step 6: Supplemental -----
+fill_supplemental <- reactive({
+  result_cols <- c("DA ITS Call",
+                   "DA ITS Potency",
+                   "DA 2o3 Call",
+                   "DA KE 3/1 STS Call",
+                   "DA KE 3/1 STS Potency")
+  dass_res_dt <- dass_res$results
+  result_cols <- result_cols[result_cols %in% names(dass_res_dt)]
+  updateSelectInput(inputId = "perfPredCol", choices = result_cols, selected = "")
+  updateSelectInput(inputId = "perfRefRes", choices = c(names(usr_dt()), grep("^DA", names(dass_res_dt), value = T)), selected = "")
+  updateSelectInput(inputId = "idColumnsRes", choices = names(usr_dt()))
 })
 
-#### Confirm Run -----
+## Confirm Run -----
 observeEvent(input$run_dass, {
   req(flagged())
   if (flagged() == 1) {
-    showModal(modalDialog(
-      title = NULL,
-      footer = NULL,
-      HTML(
-        "<p>The selected columns have been flagged for invalid values. Invalid",
-        "values will be considered missing (NA) and will <b>not</b> be used",
-        "to evaluate skin sensitization hazard identification or potency. Continue?</p>"
-      ),
-      actionButton(inputId = "run_with_flags", label = "Run"),
-      actionButton(inputId = "cancel_run", label = "Cancel")
-    ))
+    toggleModal(session = session, modalId = "confirm_run_with_flag", toggle = "open")
   } else if (flagged() == 0) {
     run_dass()
   }
@@ -169,11 +174,11 @@ observeEvent(input$run_dass, {
 
 observeEvent(input$run_with_flags, {
   run_dass()
-  removeModal()
+  toggleModal(session = session, modalId = "confirm_run_with_flag", toggle = "close")
 })
 
 observeEvent(input$cancel_run, {
-  removeModal()
+  toggleModal(session = session, modalId = "confirm_run_with_flag", toggle = "close")
 })
 
 ## Save -----
@@ -181,12 +186,12 @@ create_xl_file <- reactive({
 
   # Create excel workbook
   wb <- createWorkbook()
-  
+
   # Add worksheets
   addWorksheet(wb, sheetName = "Key")
   addWorksheet(wb, sheetName = "Column Selection")
   addWorksheet(wb, sheetName = "Results")
-  
+
   # Styles
   orange_font <- createStyle(fontColour = "#D55E00")
   bold_font <- createStyle(textDecoration = "bold")
@@ -194,7 +199,7 @@ create_xl_file <- reactive({
   pink_bg <- createStyle(fgFill = "#CC79A7", halign = "right")
   yellow_bg <- createStyle(fgFill = "#F0E442")
   bold_blue <- createStyle(textDecoration = "bold", fgFill = "#56B4E9", halign = "right")
-  
+
   # Create key worksheet
   key_df <- data.frame(
     Color = c("Yellow", "Pink", "Blue"),
@@ -210,7 +215,7 @@ create_xl_file <- reactive({
     ),
     check.names = FALSE
   )
-  
+
   writeData(wb, sheet = "Key", key_df, headerStyle = bold_font)
   addStyle(wb, sheet = "Key", style = blue_bg, row = 4, col = 1)
   addStyle(wb, sheet = "Key", style = pink_bg, row = 3, col = 1)
@@ -231,45 +236,23 @@ create_xl_file <- reactive({
     addStyle(wb, sheet = "Column Selection", style = orange_font,
              rows = flag_row, cols = 1:ncol(col_select), gridExpand = T)
   }
-  
+
   # Create results worksheet
-  dass_res <- dass_res()
-  res <- cbind(usr_dt(), dass_res)
-  
-  old_usr_col <- col_select$`Selected Column`
-  usr_cols <- paste0(old_usr_col, "*")
-  
-  setnames(res, old = old_usr_col, new = usr_cols)
-  
+  res <- dass_res$results
   writeData(wb, sheet = "Results", x = res, headerStyle = bold_font, keepNA = TRUE, na.string = "NA")
-  # setColWidths(wb, sheet = "Results", cols = 1:ncol(res), widths = "auto")
+
+  usr_cols <- na.omit(match(dass_res$user_select, colnames(res)))
+  addStyle(wb, sheet = "Results", style = yellow_bg,
+           rows = 2:(nrow(res) + 1), cols = usr_cols, gridExpand = T)
   
-  # Highlight any ITS scores
-  score_col <- grep("^DA.*Score$", colnames(dass_res), value = T)
-  if (length(score_col) > 0) {
-    score_col <- na.omit(match(score_col, colnames(res)))
-    addStyle(wb, sheet = "Results", style = blue_bg,
-             rows = 2:(nrow(res) + 1), cols = score_col, gridExpand = T)
-  }
-  
-  # Highlight columns with DA results
-  dass_res_cols <- grep("^DA.*Call|^DA.*Potency", colnames(dass_res), value = TRUE)
-  dass_cols <- na.omit(match(dass_res_cols, colnames(res)))
-  addStyle(wb, sheet = "Results", style = bold_blue,
-           rows = 2:(nrow(res) + 1), cols = dass_cols, gridExpand = T)
-  
-  # Highlight columns used as input
-  in_cols <- grep("^DA ", colnames(dass_res), value = TRUE, invert = T)
-  in_cols <- na.omit(match(in_cols, colnames(res)))
-  
+  in_cols <- na.omit(match(dass_res$da_input, colnames(res)))
   addStyle(wb, sheet = "Results", style = pink_bg,
            rows = 2:(nrow(res) + 1), cols = in_cols, gridExpand = T)
   
-  # Highlight columns that user selected
-  # usr_cols <- dt_review()[,`Selected Column`]
-  usr_cols <- na.omit(match(usr_cols, colnames(res)))
-  addStyle(wb, sheet = "Results", style = yellow_bg,
-           rows = 2:(nrow(res) + 1), cols = usr_cols, gridExpand = T)
+  dass_cols <- na.omit(match(dass_res$da_output, colnames(res)))
+  addStyle(wb, sheet = "Results", style = blue_bg,
+           rows = 2:(nrow(res) + 1), cols = dass_cols, gridExpand = T)
+
   activeSheet(wb) <- "Results"
   wb
 })
@@ -282,7 +265,6 @@ output$downloadres_xl <- downloadHandler(
   },
   content = function(con) {
     saveWorkbook(wb = create_xl_file(), file = con)
-    # write.csv(x = dass_res(), file = con, quote = F, row.names = F)
   }
 )
 
@@ -295,12 +277,7 @@ output$downloadres_txt <- downloadHandler(
     paste0(fname, "_DASSResults_", Sys.Date(), ".txt")
   },
   content = function(con) {
-    res <- cbind(usr_dt(), dass_res())
-    col_select <- dt_review()
-    usr_col_old <- col_select$`Selected Column`
-    usr_cols <- paste0(usr_col_old, "*")
-    setnames(res, old = usr_col_old, new = usr_cols)
-    write.table(x = res, file = con, quote = F, row.names = F, sep = "\t")
+    write.table(x = dass_res$results, file = con, quote = F, row.names = F, sep = "\t")
   }
 )
 

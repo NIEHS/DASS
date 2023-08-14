@@ -68,11 +68,8 @@ misc/
 renv/.gitignore
 /tests
 www/user_guide.Rmd
-www/user_guide.md
-www/user_guide.out
-www/user_guide.aux
-www/user_guide.bib
-plos-one.csl
+www/dassApp-dataRequirements.Rmd
+www/htmlHeader.html
 renv/library
 rsconnect/
 packrat/

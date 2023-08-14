@@ -379,3 +379,94 @@ da_ke31 <- function(hclat_mit, dpra_call) {
     KE31STS_Potency = temp$KE31STS_Potency
   )
 }
+
+# Creates exact match for multiple strings for grepping
+# `vector` - character vector
+# Returns a query string for mattching multiple patterns
+concatOrString <- function(vector) {
+  paste(sprintf("^%s$", vector), collapse = "|")
+}
+
+# 
+# `pred` - factor vector with 0/1
+# `ref` - factor vector with 0/1. reference for comparing against pred
+# Calculates binary performance metrics
+compareBinary <- function(pred, ref) {
+  if (!all(na.omit(pred) %in% c(0,1))) {
+    stop("`pred` should be a factor with levels = c(0,1)")
+  }
+  if (!all(na.omit(ref) %in% c(0,1))) {
+    stop("`ref` should be a factor with levels = c(0,1)")
+  }
+  if (length(pred) != length(ref)) {
+    stop("`pred` and `ref` should be the same length")
+  }
+  naIdx <- is.na(pred)|is.na(ref)
+  pred <- pred[!naIdx]
+  n <- length(pred)
+  if (n <= 5) {
+    stop("Fewer than 5 non-missing pairs")
+  }
+  ref <- ref[!naIdx]
+  
+  pred <- relevel(pred, "1")
+  ref <- relevel(ref, "1")
+  
+  cm <- table(pred, ref)
+  tp <- cm[1,1]
+  fp <- cm[1,2]
+  tn <- cm[2,2]
+  fn <- cm[2,1]
+  
+  acc <- (tp + tn)/n
+  tpr <- tp/(tp + fn)
+  fpr <- fp/(fp + tn)
+  tnr <- tn/(fp + tn)
+  fnr <- fn/(tp + fn)
+  balAcc <- (tpr + tnr)/2
+  f1 <- (2*tp)/((2*tp) + fp + fn)
+  
+  out <- list(
+    confusionMatrix = cm,
+    truePositive = tp,
+    falsePositive = fp,
+    trueNegative = tn,
+    falseNegative = fn,
+    accuracy = acc,
+    balancedAccuracy = balAcc,
+    f1Score = f1,
+    truePositiveRate = tpr,
+    falsePositiveRate = fpr,
+    trueNegativeRate = tnr,
+    falseNegativeRate = fnr
+  )
+  return(out)
+}
+
+drawTable <- function(tp, fp, fn, tn) {
+  tmp <- expand.grid(
+    Predicted = c("Positive", "Negative"),
+    Reference = c("Positive", "Negative")
+  )
+  setDT(tmp)
+  tmp[Reference == "Positive" & Predicted == "Positive", N := tp]
+  tmp[Reference == "Negative" & Predicted == "Positive", N := fp]
+  tmp[Reference == "Positive" & Predicted == "Negative", N := fn]
+  tmp[Reference == "Negative" & Predicted == "Negative", N := tn]
+  
+  ggplot(tmp, aes(x = "A", y = "B")) + 
+    geom_tile(color = "black", fill = "white") + 
+    geom_text(aes(label = N)) +
+    facet_grid(Reference ~ Predicted, switch = "y") +
+    scale_x_discrete(name = "Reference", position = "top", expand = c(0,0)) + 
+    scale_y_discrete(name = "Predicted", expand = c(0,0)) + 
+    coord_equal() +
+    theme(axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          panel.spacing = unit(0, "lines"),
+          strip.text.y.left = element_text(angle = 0),
+          strip.background = element_rect(fill = "#dae6ee", color = "black"),
+          strip.text = element_text(hjust = 0.5, face = "bold", margin = margin(6, 6, 6, 6)),
+          axis.title = element_text(face = "bold", margin = margin(0,0,6,0)))
+  
+}

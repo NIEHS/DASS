@@ -16,9 +16,6 @@ call1_str <- c("1", "a", "active", "p", "pos", "positive", "sensitizer", "sensit
 mit_str <- c("Inf", "i", "inactive", "n", "neg", "negative", "non-sensitizer", "non-sensitiser", "nonsensitizer", "nonsensitiser")
 
 ## Reactive Values -----
-# tracks selected column names to prevent duplicate column selection
-# col_select_input <- reactiveValues()
-
 # formatted data
 dat_for_anlz <- reactiveValues(col_data = NULL,
                                col_dict = NULL)
@@ -29,12 +26,6 @@ dt_review <- reactiveVal()
 # indicator to trigger popup warning if running with flagged columns
 flagged <- reactiveVal()
 
-# text shown during review of selected columns
-review_label <- reactiveVal()
-
-# text shown if duplicates selected
-dupe_label <- reactiveVal()
-
 ## Globals -----
 # Labels for displayed table
 end_labels <- list(
@@ -44,7 +35,6 @@ end_labels <- list(
   hclat_call = "h-CLAT Hazard Call",
   hclat_mit = "h-CLAT MIT",
   ks_call = "KeratinoSens&trade; Hazard Call",
-  # ks_imax = "KeratinoSens&trade; iMax",
   insilico_call = "In Silico Hazard Call",
   insilico_ad = "In Silico Applicability Domain"
 )
@@ -65,7 +55,6 @@ end_flags <- list(
   hclat_call = call_flag,
   hclat_mit = mit_flag,
   ks_call = call_flag,
-  # ks_imax = "Must be numeric",
   insilico_call = call_flag,
   insilico_ad = "Must be '0' or 'out' for chemicals outside the applicability domain and '1' or 'in' for chemicals in the applicability domain."
 )
@@ -80,7 +69,6 @@ observeEvent(input$review_entries, {
     hclat_call = input$hclat_call_col,
     hclat_mit = input$hclat_mit_col,
     ks_call = input$ks_call_col,
-    # ks_imax = input$ks_imax_col,
     insilico_call = input$insilico_call_col,
     insilico_ad = input$insilico_ad_col
   )
@@ -112,11 +100,7 @@ observeEvent(input$review_entries, {
   
   # Check for duplicate selections
   if (any(duplicated(col_vec))) {
-    dupe_label(paste(
-      "<p style='color:#D55E00; font-weight:bold;'>Warning:",
-      "Single column assigned to more than one variable.",
-      "</p>"
-    ))
+    showElement("dupe_col_warning")
   }
 
   col_flags <- vector(mode = "list", length = ncol(col_data))
@@ -131,7 +115,7 @@ observeEvent(input$review_entries, {
     # Negative: 0, Neg, Negative, N
     #  Count number of entries per column that have invalid values
     call_check <- col_data[, lapply(.SD, function(x) {
-      !(grepl_ci("^1$|^0$|^p$|^n$|^pos$|^neg$|^positive$|^negative$|^a$|^i$|^active$|^inactive$|^sensitizer$|^sensitiser$|^non-sensitizer$|^non-sensitiser$", x) | is.na(x))
+      !(grepl_ci(concatOrString(c(call0_str, call1_str)), x) | is.na(x))
     }), .SDcols = call_col_names][, lapply(.SD, sum), .SDcols = call_col_names]
     call_check_id <- which(call_check > 0)
     if (length(call_check_id) > 0) {
@@ -140,8 +124,8 @@ observeEvent(input$review_entries, {
     # Replace positive with 1 and negative with 0
     dt_list$call_cols <- col_data[, lapply(.SD, function(x) {
       fcase(
-        grepl_ci("^1$|^p$|^pos$|^positive$|^a$|^active$|^sensitizer$|^sensitiser$", x), 1,
-        grepl_ci("^0$|^n$|^neg$|^negative$|^i$|^inactive$|^non-sensitizer$|^non-sensitiser$", x), 0
+        grepl_ci(concatOrString(call1_str), x), 1,
+        grepl_ci(concatOrString(call0_str), x), 0
       )
     }), .SDcols = call_col_names]
   }
@@ -174,7 +158,7 @@ observeEvent(input$review_entries, {
     # Can have numeric or 'negative'
     # Remove flags for valid values
     mit_check[is.na(hclat_mit), flag := F]
-    mit_check[grepl_ci("^n$|^neg$|^negative$|^Inf$|^i$|^inactive$|^non-sensitizer$|^non-sensitiser$|^NI$", hclat_mit), flag := F]
+    mit_check[grepl_ci(concatOrString(mit_str), hclat_mit), flag := F]
     mit_check[!is.na(hclat_mit_num), flag := F]
     
     if (any(mit_check[, flag])) {
@@ -183,7 +167,7 @@ observeEvent(input$review_entries, {
     
     mit_check <- mit_check[,.(hclat_mit = fcase(
       !is.na(hclat_mit_num), hclat_mit_num,
-      grepl_ci("^n$|^neg$|^negative$|^Inf$|^i$|^inactive$|^non-sensitizer$|^non-sensitiser$|^NI$", hclat_mit), Inf,
+      grepl_ci(concatOrString(mit_str), hclat_mit), Inf,
       is.na(hclat_mit_num), as.numeric(NA)
     ))]
     
@@ -209,7 +193,6 @@ observeEvent(input$review_entries, {
   col_flags <- lapply(col_flags, function(x) fifelse(is.null(x), 0, 1))
   names(dt_list) <- NULL
 
-  show("review_contents")
   dt_anlz <- do.call("cbind", dt_list)
   dat_for_anlz$col_data <- dt_anlz
   dt_review <- data.table(
@@ -223,48 +206,38 @@ observeEvent(input$review_entries, {
     Flag == 1, unlist(end_flags[Variable])
   )]
   dt_review[, Variable := unlist(end_labels[Variable], use.names = F)]
+  
+  flag_row <- which(dt_review$Flag != "")
+  if(length(flag_row) > 0) {
+    showElement("panel4_warn")
+    flagged(1)
+  } else {
+    showElement("panel4_nowarn")
+    flagged(0)
+  }
+  
   dt_review(dt_review)
-})
+  showElement("run_dass")
+  shinyjs::runjs(sprintf("showScroll('%s', '%s', '%s', '%s')", "review_contents", "div", "value", "panel_review"))
+  updateCollapse(session, id = "panelGroup", open = "panel_review", close = "panel_col_options")
+}, ignoreInit = T)
 
-output$dt_review <- renderDataTable({
+output$dt_review <- DT::renderDataTable({
+  req(dt_review())
   dt_review <- dt_review()
   flag_row <- which(dt_review$Flag != "")
   dt_review <- datatable(dt_review,
                          class = "table-bordered stripe",
-                         callback = JS("$('table.dataTable.no-footer').css('border-bottom', 'none');"),
                          rownames = FALSE,
                          escape = FALSE,
                          selection = "none",
                          options = list(
                            dom = "t",
                            ordering = F
-                         )
-  )
-  
+                         ))
+
   if (length(flag_row) > 0) {
     dt_review <- formatStyle(dt_review, 0, target = "row", color = styleRow(flag_row, rep("#D55E00", length = length(flag_row))))
-    review_label(paste(
-      "<p style='color:#D55E00; font-weight:bold;'>Warning:",
-      "Selected data columns have been flagged for invalid values.</p>",
-      "<p>Review the selected columns and flags in the table below.",
-      "Upload an updated dataset or select new columns.<br><br>",
-      "Click 'Run' to run DASS anyway. Invalid values will be",
-      "considered missing (NA) and will <b>not</b> be used to evaluate",
-      "skin sensitization hazard identification or potency.</p><br>"
-    ))
-    flagged(1)
-  } else {
-    review_label("<p>Review the selected columns and click 'Run' to run DASS.</p><br>")
-    flagged(0)
   }
-  
   dt_review
-})
-
-output$review_label <- renderText({
-  review_label()
-})
-
-output$dupe_label <- renderText({
-  dupe_label()
 })
