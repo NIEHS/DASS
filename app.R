@@ -26,43 +26,42 @@ require(shinyjqui)
 require(shinyjs)
 
 # Load functions
-source("dass_predict.R")
+source("R/dass_predict.R")
 
 # Load ui from file
-source("ui_obj.R")
+source("R/ui_obj.R")
 ui <- fluidPage(
   useShinyjs(),
   # Set CSS styles
   tags$head(
     HTML("<title>NICEATM DASS App</title>"),
-    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
-    # tags$script(src = "sendHeight.js")
-  ),
-  ## for debugging
-  # actionButton("browser", "browser"),
-  ##
-  
-  ui_dass
+    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
+
+  htmltools::findDependencies(selectizeInput("foo", "bar", choices = "a")),
+  # for debugging
+  actionButton("browser", "browser"),
+
+  ui_dass,
+  tags$footer(
+    tags$script(src = "js.js")
+  )
 )
 
 attr(ui, "lang") <- "en"
 
 # Read in server files
 server <- function(input, output, session) {
-  source("server/Step1-Select.R", local = TRUE)
-  source("server/Step2-UploadData.R", local = TRUE)
-  source("server/Step3-SelectColumns.R", local = TRUE)
-  source("server/Step4-ReviewColumns.R", local = TRUE)
-  source("server/Step5-Results.R", local = TRUE)
-
-  # jqui_resizable(".modal-content")
-  # jqui_draggable(".modal-content")
+  source("R/server/Step1-Select.R", local = TRUE)
+  source("R/server/Step2-UploadData.R", local = TRUE)
+  source("R/server/Step3-SelectColumns.R", local = TRUE)
+  source("R/server/Step4-ReviewColumns.R", local = TRUE)
+  source("R/server/Step5-Results.R", local = TRUE)
+  source("R/server/Step6-Performance.R", local = TRUE)
+  
   # for debugging
-  # observeEvent(input$browser,{
-  #   browser()
-  # })
-  #
-
+  observeEvent(input$browser,{
+    browser()
+  })
 }
 
 # Create App -----

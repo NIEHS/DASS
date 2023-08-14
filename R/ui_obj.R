@@ -5,70 +5,19 @@
 # Date Created: 2021-12-03
 # License: MIT
 # Description: Builds UI
+# Required Packages:
 # - data.table, DT
 # - htmltools
 # - shiny shinyBS shinyjs
 # =============================================================================#
 
-panel_step <- function(title, ..., id = title, style = NULL) {
-  if (is.null(id)) {
-    id <- title
-  }
-  if (is.null(style)) {
-    style <- "default"
-  }
-
-  div(
-    class = sprintf("panel panel-%s", style),
-    id = id,
-    div(class = "panel-heading", title),
-    div(
-      class = "panel-body",
-      ...
-    )
-  )
-}
-
-# Edit the bsModal_h2 function to use h2 tag in title
-bsModal_h2 <- function(id, title, trigger, ..., size) {
-  if (!missing(size)) {
-    if (size == "large") {
-      size <- "modal-lg"
-    } else if (size == "small") {
-      size <- "modal-sm"
-    }
-    size <- paste("modal-dialog", size)
-  } else {
-    size <- "modal-dialog"
-  }
-  bsTag <- shiny::tags$div(
-    class = "modal sbs-modal fade",
-    id = id, tabindex = "-1", `data-sbs-trigger` = trigger,
-    shiny::tags$div(class = size, shiny::tags$div(
-      class = "modal-content",
-      shiny::tags$div(
-        class = "modal-header", shiny::tags$button(
-          type = "button",
-          class = "close", `data-dismiss` = "modal", shiny::tags$span(shiny::HTML("&times;"))
-        ),
-        shiny::tags$h2(class = "modal-title", title)
-      ),
-      shiny::tags$div(class = "modal-body", list(...)),
-      shiny::tags$div(class = "modal-footer", shiny::tags$button(
-        type = "button",
-        class = "btn btn-default", `data-dismiss` = "modal",
-        "Close"
-      ))
-    ))
-  )
-  htmltools::attachDependencies(bsTag, shinyBSDep)
-}
-environment(bsModal_h2) <- asNamespace("shinyBS")
+source("r/modifyCollapses.R")
 
 # Create page
 # Welcome -----
-welcome_panel <- panel_step(
+welcome_panel <- bsCollapsePanel_dass(
   title = "Welcome to the DASS App!",
+  value = "panel_welcome",
   p(
     "The DASS App applies defined approaches on skin sensitization (DASS) that are described in",
     a(
@@ -115,9 +64,9 @@ welcome_panel <- panel_step(
 )
 
 # Step 1: Select DAs -----
-selectda_panel <- panel_step(
+selectda_panel <- bsCollapsePanel_dass(
   title = "Step 1: Select the Defined Approaches to Apply",
-  id = "panel_dass_options",
+  value = "panel_dass_options",
   p(
     "To begin, select the DAs to be implemented. Click on the green information",
     "buttons to view a description of the DA and the test mehods required to implement the DA."
@@ -174,7 +123,7 @@ selectda_panel <- panel_step(
     )
   ),
   ## Modals -----
-  bsModal_h2(
+  bsModal(
     id = "info_2o3_modal",
     title = "2 out of 3",
     trigger = "info_2o3",
@@ -203,7 +152,7 @@ selectda_panel <- panel_step(
       ), "."
     )
   ),
-  bsModal_h2(
+  bsModal(
     id = "info_its_modal",
     title = "Integrated Testing Strategy",
     trigger = "info_its",
@@ -247,7 +196,7 @@ selectda_panel <- panel_step(
       ), "."
     )
   ),
-  bsModal_h2(
+  bsModal(
     id = "info_ke31_modal",
     title = "Key Event 3/1 (KE 3/1) Sequential Testing Strategy (STS)",
     trigger = "info_ke31",
@@ -281,9 +230,9 @@ selectda_panel <- panel_step(
 )
 
 # Step 2: Upload Data -----
-uploaddata_panel <- panel_step(
+uploaddata_panel <- bsCollapsePanel_dass(
   title = "Step 2: Upload Data",
-  id = "panel_data_upload",
+  value = "panel_data_upload",
   HTML(
     "<div class='warn-block'>",
     "<div>",
@@ -291,7 +240,7 @@ uploaddata_panel <- panel_step(
     "</div>",
     "<div>",
     "<p style='margin-bottom:0;'>Before uploading your file, ensure that the data meet the",
-    "<a id='show_upload_req' href = '#' class = 'action-link' aria-label='data and formatting requirements'>",
+    "<a id='show_upload_req' href = 'dassApp-dataRequirements.html' target = '_blank' class = 'action-link' aria-label='data and formatting requirements'>",
     "<b>data and formatting requirements</b></a>.</p>",
     "</div>",
     "</div>"
@@ -322,13 +271,12 @@ uploaddata_panel <- panel_step(
       class = "control-label",
       `for` = "fpath",
       id = "fpath-label",
-      "File input "
+      value = "File input"
     ),
     div(
       class = "input-group",
       tags$label(
         class = "input-group-btn input-group-prepend",
-        # `for` = "filename_display",
         span(
           class = "btn btn-default btn-file",
           "Browse...",
@@ -345,7 +293,6 @@ uploaddata_panel <- panel_step(
         )
       ),
       tags$input(
-        # id = "filename_display",
         type = "text",
         class = "form-control",
         title = "Form control for file input",
@@ -356,60 +303,23 @@ uploaddata_panel <- panel_step(
     ),
   ),
   uiOutput("xlsheet_text_ui"),
-  div(
-    id = "user_data_block",
-    style = "display:none;",
-    hr(style = "width:50%"),
-    dataTableOutput("usr_dt"),
-    hr(style = "width:50%"),
+  hr(style = "width:50%"),
+  DT::dataTableOutput("usr_dt"),
+
     div(
       id = "user_data_block_confirm",
+      class = "hiddenBlock",
+      hr(style = "width:50%"),
       p("Once you have finished selecting the DAs and uploading your data, click 'Continue' to proceed to the next step."),
       actionButton(
         inputId = "confirm_data",
         label = "Continue",
         width = "100%"
       )
-    ),
-    div(
-      id = "user_data_block_reload",
-      style = "display:none",
-      p("To change the selected DAs or uploaded data file, click 'Reload App.'"),
-      actionButton(
-        inputId = "reload_button",
-        label = "Reload App",
-        width = "100%"
-      )
     )
-  ),
+  ,
   ## Modals -----
-  bsModal_h2(
-    id = "data_req_modal",
-    title = "DASS App Data Requirements",
-    size = "large",
-    trigger = "show_upload_req",
-    h3("General"),
-    tags$ol(
-      tags$li(
-        "Data can be comma-delimited (.csv), tab-delimited (.tsv, .txt),",
-        "or a Microsoft Excel workbook (.xls, .xlsx)."
-      ),
-      tags$li(
-        "Data should be in a tabular format with each row corresponding to",
-        "a single substance and a column for each required assay endpoint."
-      ),
-      tags$li("The first row should contain column names. Column names must be unique."),
-      tags$li("Missing values should be indicated by a blank cell or as 'NA' (without quotes).")
-    ),
-    h3("Assay Endpoints"),
-    p(
-      "Each assay endpoint that is required for implementing the DAs should have",
-      "a column that is formatted according to the formatting requirements shown in",
-      "the table. Values that do not meet the assay endpoint requirements will",
-      "be treated as missing data and will not be used to derive predictions."
-    ),
-    dataTableOutput("ae_req")
-  ), bsModal_h2(
+bsModal(
     id = "xl_select_modal",
     title = "Excel sheet selection dialog box",
     trigger = "select_sheet",
@@ -425,14 +335,143 @@ uploaddata_panel <- panel_step(
 )
 
 # Step 3: Select Columns -----
-selectcolumns_panel <- panel_step(
+selectcolumns_panel <- bsCollapsePanel_dass(
   title = "Step 3: Select Data Columns for Predictions",
-  id = "panel_col_options",
-  uiOutput("selectcol_ui"),
-
+  value = "panel_col_options",
+    div(
+      id = "selectcol_ui",
+      class = "hiddenBlock",
+      p("The assay endpoints that are required for the selected DAs are shown below.",
+        "Use the dropdown lists to select the columns from your data",
+        "that correspond to the given endpoints. Columns are automatically selected for an endpoint",
+        "if the column name matches the corresponding column name in the data template.",
+        "A column must be selected for each",
+        "endpoint shown. When you are finished, click 'Done'."),
+      p(
+        "Click on the in information buttons next to the assay endpoint names to view",
+        "information about the endpoints and data formatting requirements.",
+        "Values that are incorrectly formatted or invalid",
+        "will be treated as missing data and may affect the results. More details are given",
+        "in the User Guide."),
+      div(
+        id = "dpraCallSelect",
+        class = "hiddenBlock",
+        tags$h2("DPRA Call",
+                actionLink(inputId = "info_dpracall", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
+        div(
+          class = "col_assay_endpoint",
+          radioButtons(
+            inputId = "dpra_call_choice",
+            label = "Data Source",
+            choiceNames = c(
+              "Use DPRA Binary Call",
+              "Use %-Depletion Values"
+            ),
+            choiceValues = c(
+              "call",
+              "pdepl"
+            )
+          )),
+        
+        div(
+          class = "col_assay_endpoint",
+          conditionalPanel(
+            condition = "input.dpra_call_choice=='call'",
+            selectInput(
+              inputId = "dpra_call_col",
+              label = "DPRA Binary Call Column",
+              choices = NULL
+            )
+          ))
+        
+      ),
+      div(
+        id = "dpraDepSelect",
+        class = "hiddenBlock",
+        tags$h2("DPRA % Depletion",
+                actionLink(inputId = "info_dpradep", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
+        div(
+          class = "col_assay_endpoint",
+          selectInput(
+            inputId = "dpra_pC_col",
+            label = "DPRA %-Cysteine Depletion Column",
+            choices = NULL
+          ),
+          selectInput(
+            inputId = "dpra_pK_col",
+            label = "DPRA %-Lysine Depletion Column",
+            choices = NULL
+          )
+        )
+      ),
+      div(
+        id = "hclatCallSelect",
+        class = "hiddenBlock",
+        tags$h2("h-CLAT Binary Call",
+                actionLink(inputId = "info_hclatcall", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
+        div(
+          class = "col_assay_endpoint",
+          selectInput(
+            inputId = "hclat_call_col",
+            label = "h-CLAT Binary Call Column",
+            choices = NULL
+          )
+        )
+      ),
+      div(
+        id = "hclatMitSelect",
+        class = "hiddenBlock",
+        tags$h2("h-CLAT MIT",
+                actionLink(inputId = "info_hclatmit", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
+        div(
+          class = "col_assay_endpoint",
+          selectInput(
+            inputId = "hclat_mit_col",
+            label = "h-CLAT Minimum Induction Threshold (MIT) Column",
+            choices = NULL
+          )
+        )
+      ),
+      div(
+        id = "ksCallSelect",
+        class = "hiddenBlock",
+        tags$h2("KeratinoSens(TM) Binary Call",
+                actionLink(inputId = "info_kscall", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
+        div(
+          class = "col_assay_endpoint",
+          selectInput(
+            inputId = "ks_call_col",
+            label = "KS Binary Call Column",
+            choices = NULL
+          )
+        )
+      ),
+      div(
+        id = "inSilicoSelect",
+        class = "hiddenBlock",
+        tags$h2("In Silico Binary Call",
+                actionLink(inputId = "info_insilico_call", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
+        div(
+          class = "col_assay_endpoint",
+          selectInput(
+            inputId = "insilico_call_col",
+            label = "In Silico Binary Call Column",
+            choices = NULL
+          ),
+          selectInput(
+            inputId = "insilico_ad_col",
+            label = "In Silico Applicability Domain",
+            choices = NULL
+          )
+        )
+      ),
+      actionButton(inputId = "review_entries",
+                   label = "Done",
+                   width = "100%")
+      ),
   ## Modals -----
   ### DPRA -----
-  bsModal_h2(
+  bsModal(
     id = "dpra_dep_modal",
     title = "DPRA % Depletion",
     trigger = "info_dpradep",
@@ -454,10 +493,10 @@ selectcolumns_panel <- panel_step(
       ), "."
     )
   ),
-  bsModal_h2(
+  bsModal(
     id = "dpra_call_modal",
     title = "DPRA Binary Call",
-    trigger = "info_dpra_call_1",
+    trigger = "info_dpracall",
     p(
       "Results from the direct peptide reactivity assay (DPRA)",
       "are used in the 2o3 and KE3/1 STS defined approaches."
@@ -492,10 +531,10 @@ selectcolumns_panel <- panel_step(
     )
   ),
   ### hCLAT -----
-  bsModal_h2(
+  bsModal(
     id = "hclat_call_modal",
     title = "h-CLAT Binary Call",
-    trigger = "info_dpradep",
+    trigger = "info_hclatcall",
     p("Results from the human cell line activation test (h-CLAT) are used in the 2o3 defined approach."),
     p(
       "The column corresponding to h-CLAT binary call should only contain the values:",
@@ -525,7 +564,7 @@ selectcolumns_panel <- panel_step(
       ), "."
     )
   ),
-  bsModal_h2(
+  bsModal(
     id = "hclat_mit_modal",
     title = "h-CLAT MIT",
     trigger = "info_hclatmit",
@@ -563,7 +602,7 @@ selectcolumns_panel <- panel_step(
   ),
 
   ### KeratinoSens -----
-  bsModal_h2(
+  bsModal(
     id = "ks_call_modal",
     title = HTML("KeratinoSens&trade; Binary Call"),
     trigger = "info_kscall",
@@ -598,7 +637,7 @@ selectcolumns_panel <- panel_step(
   ),
 
   ### In Silico -----
-  bsModal_h2(
+  bsModal(
     id = "insilico_modal",
     title = "In Silico Binary Call Prediction and Applicability Domain",
     trigger = "info_insilico_call",
@@ -658,31 +697,71 @@ selectcolumns_panel <- panel_step(
   )
 )
 # Step 4: Review Selection -----
-reviewselection_panel <- panel_step(
+reviewselection_panel <- bsCollapsePanel_dass(
   title = "Step 4: Review Selection",
-  id = "panel_review",
+  value = "panel_review",
   div(
     id = "review_contents",
-    style = "display:none;",
-    htmlOutput("dupe_label"),
-    htmlOutput("review_label"),
-    dataTableOutput("dt_review"),
-    br(),
-    actionButton(
-      inputId = "run_dass",
-      width = "100%",
-      label = "Run"
+    class = "hiddenBlock",
+    div(
+      id = "dupe_col_warning",
+      class = "warningText hiddenBlock",
+      p(
+        strong("Warning: Single column assigned to more than one variable.")
+      )
+    ),
+    div(
+      id = "panel4_warn",
+      class = "hiddenBlock",
+      div(
+        id = "col_flag_warning",
+        class = "warningText",
+        p(
+          strong("Warning: Selected data columns have been flagged for invalid values.")
+        )
+      ),
+      div(
+        id = "review_instructions_warn",
+        p("Review the selected columns and flags in the table below. Upload an updated dataset or select new columns."),
+        p("Click 'Run' to run DASS anyway. Invalid values will be",
+          "considered missing (NA) and will", strong("not"), "be used to evaluate",
+          "skin sensitization hazard identification or potency.")
+      )
+    ),
+    div(
+      id = "panel4_nowarn",
+      class = "hiddenBlock",
+      p("Review the selected columns and click 'Run' to run DASS.")
     )
+  ),
+  dataTableOutput("dt_review"),
+  br(),
+  actionButton(
+    inputId = "run_dass",
+    width = "100%",
+    label = "Run"
+  ),
+  bsModal(
+    id = "confirm_run_with_flag",
+    title = "Warning",
+    trigger = NULL,
+    p(
+      "The selected columns have been flagged for invalid values. Invalid",
+      "values will be considered missing (NA) and will", strong("not"), "be used",
+      "to evaluate skin sensitization hazard identification or potency. Continue?"
+    ),
+    actionButton(inputId = "run_with_flags", label = "Run"),
+    actionButton(inputId = "cancel_run", label = "Cancel")
   )
 )
 
 # Step 5: Results -----
-results_panel <- panel_step(
+results_panel <- bsCollapsePanel_dass(
   title = "Step 5: Results",
-  id = "panel_results",
+  value = "panel_results",
   div(
     id = "result_contents",
-    style = "display:none;",
+    class = "hiddenBlock",
     p(
       "Results of the DASS App analysis are shown in the table below. Use the",
       "scroll bar along the bottom of the table to view all the columns.",
@@ -740,16 +819,15 @@ results_panel <- panel_step(
         downloadButton(outputId = "downloadres_xl", "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
         downloadButton("downloadres_txt", "Tab-Delimited (.txt)", icon = icon("file-alt"), class = "btn-dl"),
       )
-    ),
-    br(),
-    fluidRow(column(12,
-      align = "center",
-      dataTableOutput("dt_results")
-    ))
+    )
   ),
-
+  # br(),
+  fluidRow(column(12,
+                  align = "center",
+                  dataTableOutput("dt_results")
+  )),
   ## Modals -----
-  bsModal_h2(
+  bsModal(
     id = "res_pink_modal",
     title = "Input and Calculated Columns",
     trigger = "info_pink",
@@ -761,7 +839,7 @@ results_panel <- panel_step(
     p("Binary call data are transformed to ‘0’ for negative results and ‘1’ for positive results."),
     p("If the h-CLAT minimum induction threshold was used, negative results are transformed to ‘Inf’.")
   ),
-  bsModal_h2(
+  bsModal(
     id = "res_blue_modal",
     title = "DA Columns",
     trigger = "info_blue",
@@ -777,21 +855,80 @@ results_panel <- panel_step(
   )
 )
 
+# Supplemental -----
+performance_panel <- bsCollapsePanel_dass(
+  title = "Supplemental: Compare Results",
+  value = "panel_performance",
+  div(
+    id = "performanceUI",
+    class = "hiddenBlock",
+    p(
+      "The dropdown menus show column names from your uploaded data and",
+      "column names from the DA output. You may calculate accuracy of a",
+      "DA result against reference data. Reference data should be included",
+      "in your uploaded data. Select the prediction and reference columns",
+      "to be compared."
+    ),
+    selectInput(
+      inputId = "perfPredCol",
+      label = "Select Prediction Column",
+      selectize = TRUE,
+      choices = NULL
+    ),
+    # radioButtons(
+    #   inputId = "referenceType",
+    #   label = "Select Reference",
+    #   choiceNames = c("Results Table", "Integrated Chemical Environment"),
+    #   choiceValues = c("resTable", "ice")
+    # ),
+    
+    # conditionalPanel(
+    #   condition = "input.referenceType=='resTable'",
+      selectInput(
+        inputId = "perfRefRes",
+        label = "Select Reference Column",
+        selectize = TRUE,
+        choices = NULL
+      ),
+      selectInput(
+        inputId = "idColumnsRes",
+        label = "Select Identifier Columns (optional)",
+        selectize = TRUE,
+        choices = NULL,
+        multiple = T
+      ),
+      actionButton(
+        inputId = "compareToTable",
+        label = "Compare"
+      )
+    # ),
+    # conditionalPanel(
+    #   condition = "input.referenceType=='ice'"
+    # )
+  ),
+  div(
+    uiOutput("suppCompare_ui")
+  )
+)
+
 # Build page -----
 ui_dass <- fluidPage(
   fluidRow(
     column(
-      width = 10,
-      offset = 1,
-      ## for debugging. uncomment observer in step2
-      # actionButton("browser", "browser"),
-      ##
-      welcome_panel,
-      selectda_panel,
-      uploaddata_panel,
-      selectcolumns_panel,
-      reviewselection_panel,
-      results_panel
+      width = 12,
+      bsCollapse_dass(
+        id = "panelGroup",
+        multiple = T,
+        welcome_panel,
+        selectda_panel, 
+        uploaddata_panel,
+        selectcolumns_panel,
+        reviewselection_panel,
+        results_panel,
+        performance_panel,
+        open = c("panel_welcome", "panel_dass_options", "panel_data_upload")
+        # open = "panel_performance"
+      )
     )
   )
 )
