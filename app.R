@@ -38,9 +38,9 @@ ui <- fluidPage(
     tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
 
   htmltools::findDependencies(selectizeInput("foo", "bar", choices = "a")),
+  htmltools::findDependencies(icon("box", lib = "font-awesome")),
   # for debugging
   actionButton("browser", "browser"),
-
   ui_dass,
   tags$footer(
     tags$script(src = "js.js")
@@ -57,7 +57,7 @@ server <- function(input, output, session) {
   source("R/server/Step4-ReviewColumns.R", local = TRUE)
   source("R/server/Step5-Results.R", local = TRUE)
   source("R/server/Step6-Performance.R", local = TRUE)
-  
+
   # for debugging
   observeEvent(input$browser,{
     browser()

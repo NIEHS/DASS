@@ -805,25 +805,25 @@ results_panel <- bsCollapsePanel_dass(
         )
       ),
       "For more details about the appended columns, see the User Guide.",
-    ),
-    div(
-      class = "dropdown",
-      tags$button(
-        class = "dropbtn",
-        style = "padding:1vh;",
-        "Download Results",
-        icon("caret-down")
-      ),
-      div(
-        class = "dropdown-content",
-        downloadButton(outputId = "downloadres_xl", "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
-        downloadButton("downloadres_txt", "Tab-Delimited (.txt)", icon = icon("file-alt"), class = "btn-dl"),
-      )
     )
   ),
   # br(),
   fluidRow(column(12,
-                  align = "center",
+                  div(
+                    class = "dropdown",
+                    id = "dlDropdown",
+                    tags$button(
+                      class = "dropbtn btn-default",
+                      style = "padding:1vh;",
+                      "Download Results",
+                      icon("caret-down")
+                    ),
+                    div(
+                      class = "dropdown-content",
+                      downloadButton(outputId = "downloadres_xl", "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
+                      downloadButton(outputId = "downloadres_txt", "Tab-Delimited (.txt)", icon = icon("file-alt"), class = "btn-dl"),
+                    )
+                  ),
                   dataTableOutput("dt_results")
   )),
   ## Modals -----
@@ -869,46 +869,50 @@ performance_panel <- bsCollapsePanel_dass(
       "in your uploaded data. Select the prediction and reference columns",
       "to be compared."
     ),
-    selectInput(
-      inputId = "perfPredCol",
-      label = "Select Prediction Column",
-      selectize = TRUE,
-      choices = NULL
+    radioButtons(
+      inputId = "compareType",
+      label = "Select type of comparison",
+      "Reference",
+      "Concordance"
     ),
-    # radioButtons(
-    #   inputId = "referenceType",
-    #   label = "Select Reference",
-    #   choiceNames = c("Results Table", "Integrated Chemical Environment"),
-    #   choiceValues = c("resTable", "ice")
-    # ),
-    
-    # conditionalPanel(
-    #   condition = "input.referenceType=='resTable'",
+    div(
+      id = "referenceCompare_ui",
+      selectInput(
+        inputId = "perfPredCol",
+        label = "Select Prediction Column(s)",
+        selectize = TRUE,
+        choices = NULL
+        # multiple = TRUE
+      ),
       selectInput(
         inputId = "perfRefRes",
         label = "Select Reference Column",
         selectize = TRUE,
         choices = NULL
       ),
-      selectInput(
-        inputId = "idColumnsRes",
-        label = "Select Identifier Columns (optional)",
-        selectize = TRUE,
-        choices = NULL,
-        multiple = T
-      ),
       actionButton(
-        inputId = "compareToTable",
+        inputId = "compareToRef",
         label = "Compare"
       )
-    # ),
-    # conditionalPanel(
-    #   condition = "input.referenceType=='ice'"
-    # )
-  ),
-  div(
-    uiOutput("suppCompare_ui")
+    )
+
+
+  #     selectInput(
+  #       inputId = "idColumnsRes",
+  #       label = "Select Identifier Columns (optional)",
+  #       selectize = TRUE,
+  #       choices = NULL,
+  #       multiple = T
+  #     ),
+  #     actionButton(
+  #       inputId = "compareToTable",
+  #       label = "Compare"
+  #     )
+  # 
   )
+  # div(
+  #   uiOutput("suppCompare_ui")
+  # )
 )
 
 # Build page -----

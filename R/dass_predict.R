@@ -387,7 +387,10 @@ concatOrString <- function(vector) {
   paste(sprintf("^%s$", vector), collapse = "|")
 }
 
-# 
+roundPercent <- function(x, digits = 0) {
+  paste0(round(x * 100, digits = digits), "%")
+}
+
 # `pred` - factor vector with 0/1
 # `ref` - factor vector with 0/1. reference for comparing against pred
 # Calculates binary performance metrics
@@ -417,7 +420,7 @@ compareBinary <- function(pred, ref) {
   fp <- cm[1,2]
   tn <- cm[2,2]
   fn <- cm[2,1]
-  
+
   acc <- (tp + tn)/n
   tpr <- tp/(tp + fn)
   fpr <- fp/(fp + tn)
@@ -428,17 +431,18 @@ compareBinary <- function(pred, ref) {
   
   out <- list(
     confusionMatrix = cm,
+    N = sum(cm),
     truePositive = tp,
     falsePositive = fp,
     trueNegative = tn,
     falseNegative = fn,
-    accuracy = acc,
-    balancedAccuracy = balAcc,
-    f1Score = f1,
-    truePositiveRate = tpr,
-    falsePositiveRate = fpr,
-    trueNegativeRate = tnr,
-    falseNegativeRate = fnr
+    accuracy = roundPercent(acc),
+    balancedAccuracy = roundPercent(balAcc),
+    f1Score = roundPercent(f1),
+    truePositiveRate = roundPercent(tpr),
+    falsePositiveRate = roundPercent(fpr),
+    trueNegativeRate = roundPercent(tnr),
+    falseNegativeRate = roundPercent(fnr)
   )
   return(out)
 }

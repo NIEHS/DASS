@@ -13,7 +13,7 @@
 # Step 4: Review Selections -----
 call0_str <- c("0", "i", "inactive", "n", "neg", "negative", "non-sensitizer", "non-sensitiser", "nonsensitizer", "nonsensitiser")
 call1_str <- c("1", "a", "active", "p", "pos", "positive", "sensitizer", "sensitiser")
-mit_str <- c("Inf", "i", "inactive", "n", "neg", "negative", "non-sensitizer", "non-sensitiser", "nonsensitizer", "nonsensitiser")
+mit_str <- c("NI", "Inf", "i", "inactive", "n", "neg", "negative", "non-sensitizer", "non-sensitiser", "nonsensitizer", "nonsensitiser")
 
 ## Reactive Values -----
 # formatted data

@@ -19,8 +19,12 @@ body {
 }
 
 /* BUTTONS */
-.btn-default, .btn-default:focus, 
-.dropbtn {
+#dlDropdown {
+  margin-bottom: 1em;  
+}
+
+
+.btn-default, .btn-default:focus {
   background-color:#527f24;
   border: 1px solid #234510;
   color:#ffffff;
@@ -28,8 +32,7 @@ body {
   border-radius:4px;
 }
 
-.btn-default:hover,
-.dropdown:hover .dropbtn{
+.btn-default:hover{
   background-color:#234510;
   color:#ffffff;
   font-weight:700;
@@ -40,17 +43,35 @@ body {
   color:#ffffff;
   font-weight:700;
 }
-/*
-.btn-browse {
-  color:#232b5f;
-  font-weight:700;
-  border-color:#232b5f;
+
+#dt_results button {
+  background-image: none;
 }
 
-.btn-browse:hover {
-  background-color:#ACADBF;
+.dropdown-content a,
+#dt_results .buttons-columnVisibility{
+  background-color:#dae6ee;
+  text-align: left;
 }
-*/
+
+.dropdown-content a:active:hover,
+.dropdown-content a:active,
+.dropdown-content a:hover,
+.dropdown-content a:focus,
+#dt_results .dt-button-collection .dt-button:hover,
+#dt_results .dt-button-collection .dt-button:active,
+#dt_results .dt-button-collection .dt-button:focus,
+#dt_results .buttons-columnVisibility.active {
+  color: black;
+  background-color: #9ad7ff;
+}
+
+.buttons-columnVisibility.active::before {
+  font-family: FontAwesome;
+  content: "\f00c";
+  font-size: large;
+  padding: 0 0.5em 0 0;
+}
 
 /* New button class */
 .btn-qs {
@@ -64,13 +85,6 @@ body {
   color:#234510;
   background-color:transparent;
   border-color:transparent;
-}
-
-.btn-dl {
-  width: inherit;
-  text-align: left;
-  border-radius:0;
-  background-color:#dae6ee;
 }
 
 /* PANEL */
@@ -149,7 +163,7 @@ caption-side: bottom;
 
 .compTable .cmCell,
 .compTable .cmHead {
-  padding: 3px;
+  padding: 0.5em;
   text-align: center;
 }
 
@@ -208,7 +222,7 @@ caption-side: bottom;
 }
 
 /* Change color of dropdown links on hover */
-.dropdown-content a:hover {background-color: #ddd;}
+/*.dropdown-content a:hover {background-color: #ddd;}*/
 
 /* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {display: block;}
@@ -304,14 +318,3 @@ h2 {
   margin-left: 25px;
 }
 
-.user_data_highlight {
-  background-color: #F0E442;
-}
-
-.input_highlight {
-  background-color: #CC79A7;
-}
-
-.result_highlight {
-  background-color: #56B4E9;
-}

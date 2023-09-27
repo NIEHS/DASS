@@ -124,10 +124,14 @@ output$dt_results <- renderDataTable({
     dass_res$results,
     class = "table-bordered stripe",
     rownames = FALSE,
+    extensions = "Buttons",
     selection = "none",
     options = list(
+      dom = "Brtp",
       scrollX = TRUE,
-      scrollY = TRUE
+      scrollY = TRUE,
+      buttons = list(
+        list(extend = "colvis", collectionLayout = "columns", attr = list(id = "resColPicker")))
     )) %>%
     formatStyle(
       columns = dass_res$da_output,
