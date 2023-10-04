@@ -770,7 +770,7 @@ results_panel <- bsCollapsePanel_dass(
     ),
     div(
       class = "key-block",
-      h2("Table Key", style = "font-size:1.2em; font-weight:bold; margin-top:10px; text-align:center;"),
+      h2("Table Key", style = "font-size:1.2em; font-weight:bold; margin-top:10px;"),
       tags$dl(
         tags$dt(
           "Yellow columns"
@@ -872,8 +872,7 @@ performance_panel <- bsCollapsePanel_dass(
     radioButtons(
       inputId = "compareType",
       label = "Select type of comparison",
-      "Reference",
-      "Concordance"
+      choices = c("Hazard", "Potency")
     ),
     div(
       id = "referenceCompare_ui",
@@ -881,8 +880,8 @@ performance_panel <- bsCollapsePanel_dass(
         inputId = "perfPredCol",
         label = "Select Prediction Column(s)",
         selectize = TRUE,
-        choices = NULL
-        # multiple = TRUE
+        choices = NULL,
+        multiple = TRUE
       ),
       selectInput(
         inputId = "perfRefRes",
@@ -894,9 +893,7 @@ performance_panel <- bsCollapsePanel_dass(
         inputId = "compareToRef",
         label = "Compare"
       )
-    )
-
-
+    ),
   #     selectInput(
   #       inputId = "idColumnsRes",
   #       label = "Select Identifier Columns (optional)",
@@ -909,10 +906,11 @@ performance_panel <- bsCollapsePanel_dass(
   #       label = "Compare"
   #     )
   # 
+  ),
+  div(
+    actionButton(inputId = "downloadSupp", label = "Download"),
+    uiOutput("suppCompare_ui")
   )
-  # div(
-  #   uiOutput("suppCompare_ui")
-  # )
 )
 
 # Build page -----

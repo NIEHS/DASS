@@ -24,6 +24,7 @@ require(shiny)
 require(shinyBS)
 require(shinyjqui)
 require(shinyjs)
+require(shinyscreenshot)
 
 # Load functions
 source("R/dass_predict.R")
@@ -39,9 +40,9 @@ ui <- fluidPage(
 
   htmltools::findDependencies(selectizeInput("foo", "bar", choices = "a")),
   htmltools::findDependencies(icon("box", lib = "font-awesome")),
-  # for debugging
-  actionButton("browser", "browser"),
   ui_dass,
+  # for debugging
+  # div(style = "position: fixed; top: 0;", actionButton("browser", "browser")),
   tags$footer(
     tags$script(src = "js.js")
   )
@@ -59,9 +60,9 @@ server <- function(input, output, session) {
   source("R/server/Step6-Performance.R", local = TRUE)
 
   # for debugging
-  observeEvent(input$browser,{
-    browser()
-  })
+  # observeEvent(input$browser,{
+  #   browser()
+  # })
 }
 
 # Create App -----

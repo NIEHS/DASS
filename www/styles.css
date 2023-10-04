@@ -167,15 +167,6 @@ caption-side: bottom;
   text-align: center;
 }
 
-.cmVert {
-  writing-mode: vertical-rl;
-  min-width: calc(1em + 6px + 2px);
-  transform: rotate(-180deg);
-  -ms-transform:rotate(-180deg); /* IE 9 */
-  -moz-transform:rotate(-180deg); /* Firefox */
-  -webkit-transform:rotate(-180deg); /* Safari and Chrome */
-  -o-transform:rotate(-180deg); /* Opera */
-}
 
 /* BORDERED CLASSES */
 .warn-block {

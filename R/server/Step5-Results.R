@@ -113,7 +113,6 @@ run_dass <- reactive({
   dass_res$user_select <- col_sty
   dass_res$da_input <- in_sty
   dass_res$da_output <- da_sty
-  fill_supplemental()
   shinyjs::runjs(sprintf("showScroll('%s', '%s', '%s', '%s')", "result_contents", "div", "value", "panel_results"))
   shinyjs::runjs("$('#performanceUI').show()")
   updateCollapse(session, id = "panelGroup", open = c("panel_results", "panel_performance"), close = "panel_review")
@@ -151,20 +150,6 @@ output$dt_results <- renderDataTable({
   dt_results$x$options$rowCallback <- JS(append(rc, after = length(rc) - 1, "showNA(row, data);"))
   dt_results
   })
-
-### Step 6: Supplemental -----
-fill_supplemental <- reactive({
-  result_cols <- c("DA ITS Call",
-                   "DA ITS Potency",
-                   "DA 2o3 Call",
-                   "DA KE 3/1 STS Call",
-                   "DA KE 3/1 STS Potency")
-  dass_res_dt <- dass_res$results
-  result_cols <- result_cols[result_cols %in% names(dass_res_dt)]
-  updateSelectInput(inputId = "perfPredCol", choices = result_cols, selected = "")
-  updateSelectInput(inputId = "perfRefRes", choices = c(names(usr_dt()), grep("^DA", names(dass_res_dt), value = T)), selected = "")
-  updateSelectInput(inputId = "idColumnsRes", choices = names(usr_dt()))
-})
 
 ## Confirm Run -----
 observeEvent(input$run_dass, {
@@ -265,7 +250,7 @@ output$downloadres_xl <- downloadHandler(
   filename = function() {
     fname <- unlist(strsplit(input$fpath$name, "[.]"))
     fname <- paste(fname[-length(fname)], collapse = ".")
-    paste0(fname, "_DASSResults_", Sys.Date(), ".xlsx")
+    paste0(fname, "_DASSResults_", format.Date(Sys.time(), "%Y%m%d-%H%M%S"), ".xlsx")
   },
   content = function(con) {
     saveWorkbook(wb = create_xl_file(), file = con)
@@ -278,7 +263,7 @@ output$downloadres_txt <- downloadHandler(
   filename = function() {
     fname <- unlist(strsplit(input$fpath$name, "[.]"))
     fname <- paste(fname[-length(fname)], collapse = ".")
-    paste0(fname, "_DASSResults_", Sys.Date(), ".txt")
+    paste0(fname, "_DASSResults_", format.Date(Sys.time(), "%Y%m%d-%H%M%S"), ".txt")
   },
   content = function(con) {
     write.table(x = dass_res$results, file = con, quote = F, row.names = F, sep = "\t")
