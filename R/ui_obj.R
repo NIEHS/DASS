@@ -11,7 +11,7 @@
 # - shiny shinyBS shinyjs
 # =============================================================================#
 
-source("r/modifyCollapses.R")
+source("R/modifyCollapses.R")
 
 # Create page
 # Welcome -----

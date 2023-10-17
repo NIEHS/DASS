@@ -594,9 +594,9 @@ draw_CM <- function(cm) {
 
 draw_metTab <- function(named_list, fixNames = T) {
   metricLabels <- gsub("([[:upper:]])", "_\\1", names(named_list)) |>
-    strsplit(split = "_") |>
-    sapply(X = _, paste, collapse = " ") |>
-    gsub("^(.){1}", "\\U\\1", x = _, perl = T) |>
+    strsplit(split = "_")
+  metricLabels <- sapply(X = metricLabels, paste, collapse = " ")
+  metricLabels <- gsub("^(.){1}", "\\U\\1", x = metricLabels, perl = T) |>
     trimws()
   
   df <- data.frame(Metric = metricLabels, Value = unlist(named_list))
