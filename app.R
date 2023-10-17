@@ -24,7 +24,9 @@ require(shiny)
 require(shinyBS)
 require(shinyjqui)
 require(shinyjs)
-require(shinyscreenshot)
+require(ggplot2)
+require(grid)
+require(gridExtra)
 
 # Load functions
 source("R/dass_predict.R")

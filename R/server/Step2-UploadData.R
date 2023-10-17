@@ -15,30 +15,51 @@
 ## Formatting -----
 ## Reactive Values -----
 # user's uploaded data
-data_trigger <- reactiveVal()
 usr_dt <- reactiveVal()
 xlsheet <- reactiveVal()
+demo_data <- reactiveVal()
+dt_analyze <- reactiveVal()
 
-resetApp_newData <- reactive({
-  if (!is.null(usr_dt())) {
-    # Clear and hide UI objects in case data were previously uploaded.
-    usr_dt(NULL)
-    data_trigger(NULL)
-    xlsheet(NULL)
-    dass_choice(NULL)
-    dat_for_anlz$col_data <- dat_for_anlz$col_dict <- NULL
-    dt_review(NULL)
-    flagged(NULL)
-    dass_res$results <- dass_res$user_select <- dass_res$da_input <- dass_res$da_output <- NULL
-    
-    shinyjs::runjs("resetHidden();")
-    shinyjs::runjs("rmDPRAListener();")
+# Demo -----
+observeEvent(input$useDemoData, {
+  if (input$useDemoData) {
+    demo_data(fread("www/dassAppDemoData-fromGL497Annex2.csv"))
+    dt_analyze(demo_data())
+    shinyjs::show("user_data_block_confirm")
+    shinyjs::hide("uploadBlock")
+  }
+  
+  if (!input$useDemoData) {
+    shinyjs::show("uploadBlock")
+    if (is.null(usr_dt())) {
+      dt_analyze(NULL)
+      shinyjs::hide("user_data_block_confirm")
+    } else {
+      dt_analyze(usr_dt())
+    }
   }
 })
 
 # Data Loading -----
+load_data <- reactive({
+  usr_dt(read_data(input$fpath$datapath, sheet = xlsheet()))
+  dt_analyze(usr_dt())
+  shinyjs::runjs(sprintf("showScroll('%s', '%s', '%s', '%s')", "user_data_block_confirm", "label", "id", "fpath-label"))
+})
+
+observeEvent(dt_analyze(), {
+  dass_choice(NULL)
+  dat_for_anlz$col_data <- dat_for_anlz$col_dict <- NULL
+  dt_review(NULL)
+  flagged(NULL)
+  dass_res$results <- dass_res$user_select <- dass_res$da_input <- dass_res$da_output <- NULL
+  
+  shinyjs::hide("run_dass")
+  shinyjs::runjs("resetHidden(false);")
+  shinyjs::runjs("rmDPRAListener();")
+})
+
 observeEvent(input$fpath, {
-  resetApp_newData()
   # Check file extension
   ext <- unlist(strsplit(input$fpath$name, "[.]"))
   ext <- ext[length(ext)]
@@ -57,7 +78,7 @@ observeEvent(input$fpath, {
     sheets <- readxl::excel_sheets(input$fpath$datapath)
     if (length(sheets) == 1) {
       xlsheet(1)
-      data_trigger(1)
+      load_data()
     } else if (length(sheets) > 1) {
       # Render error (workaround to show error with easyclose)
       sheet_text_ui <- span(
@@ -78,15 +99,11 @@ observeEvent(input$fpath, {
   }
   
   if (grepl("^csv$|^tsv$|^txt$", ext)) {
+    shinyjs::hide("xlsheet_text_ui")
     # Data are automatically read in
-    data_trigger(1)
+    load_data()
   }
-})
-
-observeEvent(data_trigger(), {
-  usr_dt(read_data(input$fpath$datapath, sheet = xlsheet()))
-  shinyjs::runjs(sprintf("showScroll('%s', '%s', '%s', '%s')", "user_data_block_confirm", "label", "id", "fpath-label"))
-}, ignoreNULL = T)
+}, ignoreInit = T)
 
 # User confirms a worksheet in the modal
 observeEvent(input$confirm_xl_sheet, {
@@ -104,7 +121,7 @@ observeEvent(input$confirm_xl_sheet, {
   })
   
   xlsheet(input$xl_sheet_list)
-  data_trigger(1)
+  load_data()
 
   shinyjs::show("xlsheet_text_ui")
   toggleModal(session, "xl_select_modal", toggle = "close")
@@ -127,9 +144,8 @@ observeEvent(input$button_choose_xlsheet, {
 
 ## Tables -----
 # User data
-output$usr_dt <- DT::renderDataTable({
-  req(usr_dt())
-  datatable(usr_dt(),
+output$dt_analyze <- DT::renderDataTable({
+  datatable(dt_analyze(),
             class = "table-bordered stripe",
             options = list(
               scrollY = TRUE,

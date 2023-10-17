@@ -25,8 +25,8 @@ read_data <- function(fpath, sheet = 1) {
 }
 
 # grep functions for case-insensitive matching
-grep_ci <- function(str, x) grep(pattern = str, x = x, ignore.case = T)
-grepl_ci <- function(str, x) grepl(pattern = str, x = x, ignore.case = T)
+grep_ci <- function(str, x, ...) grep(pattern = str, x = x, ignore.case = T, ...)
+grepl_ci <- function(str, x, ...) grepl(pattern = str, x = x, ignore.case = T, ...)
 
 # Function to produce the columns needed to calculate the predictions
 # the user has requested.
@@ -395,8 +395,8 @@ roundPercent <- function(x, digits = 0) {
 # `ref` - factor vector with 0/1. reference for comparing against pred
 # Calculates binary performance metrics
 compareBinary <- function(pred, ref) {
-  if (!all(na.omit(pred) %in% c(0,1))) {
-    stop("`pred` should be a factor with levels = c(0,1)")
+  if (!all(na.omit(pred) %in% c(0,1, "Inconclusive"))) {
+    stop("`pred` should be a factor with levels = c(0,1, Inconclusive)")
   }
   if (!all(na.omit(ref) %in% c(0,1))) {
     stop("`ref` should be a factor with levels = c(0,1)")
@@ -404,54 +404,73 @@ compareBinary <- function(pred, ref) {
   if (length(pred) != length(ref)) {
     stop("`pred` and `ref` should be the same length")
   }
-  naIdx <- is.na(pred)|is.na(ref)
-  pred <- pred[!naIdx]
-  n <- length(pred)
+  
+  # Keep only cases with reference data
+  refNA <- is.na(ref)
+  ref <- ref[!refNA]
+  pred <- pred[!refNA]
+  
+  # Check number of pairs
+  n <- length(ref)
   if (n <= 5) {
     stop("Fewer than 5 non-missing pairs")
   }
-  ref <- ref[!naIdx]
+
+  pred <- factor(pred, levels = c("1", "0", "Inconclusive"), labels = c("Positive", "Negative", "Inconclusive"))
+  pred <- droplevels(pred)
+  ref <- factor(ref, levels = c("1", "0"), labels = c("Positive", "Negative"))
+  ref <- droplevels(ref)
   
-  pred <- relevel(pred, "1")
-  ref <- relevel(ref, "1")
-  
-  cm <- table(pred, ref)
+  cm <- table(pred, ref, useNA = "ifany")
   tp <- cm[1,1]
   fp <- cm[1,2]
   tn <- cm[2,2]
   fn <- cm[2,1]
 
   acc <- (tp + tn)/n
-  tpr <- tp/(tp + fn)
-  fpr <- fp/(fp + tn)
-  tnr <- tn/(fp + tn)
-  fnr <- fn/(tp + fn)
+  tpr <- tp/(sum(ref == "Positive"))
+  fpr <- fp/(sum(ref == "Negative"))
+  tnr <- tn/(sum(ref == "Negative"))
+  fnr <- fn/(sum(ref == "Positive"))
   balAcc <- (tpr + tnr)/2
   f1 <- (2*tp)/((2*tp) + fp + fn)
   
-  out <- list(
-    confusionMatrix = cm,
+  vals <- list(
     N = sum(cm),
     truePositive = tp,
     falsePositive = fp,
     trueNegative = tn,
     falseNegative = fn,
-    accuracy = roundPercent(acc),
-    balancedAccuracy = roundPercent(balAcc),
-    f1Score = roundPercent(f1),
-    truePositiveRate = roundPercent(tpr),
-    falsePositiveRate = roundPercent(fpr),
-    trueNegativeRate = roundPercent(tnr),
-    falseNegativeRate = roundPercent(fnr)
+    accuracy = acc,
+    balancedAccuracy = balAcc,
+    f1Score = f1,
+    truePositiveRate = tpr,
+    falsePositiveRate = fpr,
+    trueNegativeRate = tnr,
+    falseNegativeRate = fnr
   )
-  return(out)
+  
+  figs <- list(
+    cm = draw_CM(cm),
+    mets = draw_metTab(list(
+      N = sum(cm),
+      accuracy = roundPercent(acc),
+      balancedAccuracy = roundPercent(balAcc),
+      f1Score = roundPercent(f1),
+      truePositiveRate = roundPercent(tpr),
+      falsePositiveRate = roundPercent(fpr),
+      trueNegativeRate = roundPercent(tnr),
+      falseNegativeRate = roundPercent(fnr)))
+  )
+
+  return(list(vals = vals, figs = figs))
 }
 # `pred` - factor vector with 1A/1B/NC
 # `ref` - factor vector with 1A/1B/NC. reference for comparing against pred
 # Calculates categorical performance metrics
 compareCat <- function(pred, ref) {
-  if (!all(na.omit(pred) %in% c("1A", "1B", "NC"))) {
-    stop("`pred` should be a factor with levels = c('1A', '1B', 'NC')")
+  if (!all(na.omit(pred) %in% c("1A", "1B", "NC", "Inconclusive"))) {
+    stop("`pred` should be a factor with levels = c('1A', '1B', 'NC', 'Inconclusive')")
   }
   if (!all(na.omit(ref) %in% c("1A", "1B", "NC"))) {
     stop("`ref` should be a factor with levels = c('1A', '1B', 'NC')")
@@ -459,28 +478,158 @@ compareCat <- function(pred, ref) {
   if (length(pred) != length(ref)) {
     stop("`pred` and `ref` should be the same length")
   }
-  naIdx <- !is.na(pred) & !is.na(ref)
-  n <- sum(naIdx)
+  
+  # Keep only cases with reference data
+  refNA <- is.na(ref)
+  ref <- ref[!refNA]
+  pred <- pred[!refNA]
+  
+  # Check number of pairs
+  n <- length(ref)
   if (n <= 5) {
     stop("Fewer than 5 non-missing pairs")
   }
-  pred <- pred[naIdx]
-  ref <- ref[naIdx]
   
-  if (!is.ordered(pred)) pred <- factor(pred, levels = c("1A", "1B", "NC"), ordered = T)
+  if (!is.ordered(pred)) pred <- factor(pred, levels = c("1A", "1B", "NC", "Inconclusive"), ordered = T)
   if (!is.ordered(ref)) ref <- factor(ref, levels = c("1A", "1B", "NC"), ordered = T)
 
-  cm <- table(pred, ref)
-  acc <- mean(pred == ref)
-  under <- mean(pred > ref)
-  over <- mean(pred < ref)
+  predLev <- factor(pred, levels = c("1A", "1B", "NC"), ordered = T)
+  
+  acc <- mean(predLev == ref, na.rm = T)
+  under <- mean(predLev > ref, na.rm = T)
+  over <- mean(predLev < ref, na.rm = T)
 
-  out <- list(
+  pred <- droplevels(pred)
+  ref <- droplevels(ref)
+  
+  cm <- table(pred, ref)
+  
+  vals <- list(
     confusionMatrix = cm,
     N = n,
-    accuracy = roundPercent(acc),
-    overpredicted = roundPercent(over),
-    underpredicted = roundPercent(under)
+    accuracy = acc,
+    overpredicted = over,
+    underpredicted = under
   )
-  return(out)
+  
+  figs <- list(
+    cm = draw_CM(cm),
+    mets = draw_metTab(list(
+      N = n,
+      accuracy = roundPercent(acc),
+      overpredicted = roundPercent(over),
+      underpredicted = roundPercent(under)
+    ))
+  )
+
+  return(list(vals = vals, figs = figs))
 }
+
+draw_CM <- function(cm) {
+  colnames(cm)[is.na(colnames(cm))] <- "NA"
+  rownames(cm)[is.na(rownames(cm))] <- "NA"
+  
+  ref_labs <- colnames(cm)
+  pred_labs <- rownames(cm)
+  
+  cm <- as.data.table(cm)
+  cmNames <- names(cm)
+  cm <- data.frame(dcast(cm, as.formula(paste(cmNames[1], "~", cmNames[2])), value.var = cmNames[3]), check.names = F)
+  
+  cm <- cm[match(pred_labs, cm[[cmNames[1]]]),]
+  cm <- cm[c(cmNames[1], ref_labs)]
+  
+  nCol <- ncol(cm) + 1
+  nRow <- nrow(cm) + 2
+  
+  df <- rbind(
+    c(rep("", nCol - 2), "Reference"),
+    names(cm),
+    cm
+  )
+
+  df <- cbind(c(rep("", nRow - 1), "Predicted"), df)
+  
+  df[1:2,1:2] <- ""
+  tab <- tableGrob(df, cols = NULL, rows = NULL)
+  
+  blankCells <- tab$layout$t %in% 1:2 & tab$layout$r %in% 1:2
+  refCell <- tab$layout$t == 1 & tab$layout$r == nCol
+  predCell <- tab$layout$l == 1 & tab$layout$b == nRow
+  pnCell <- (tab$layout$t == 2 & tab$layout$r %in% 3:nCol) | (tab$layout$t %in% c(3:nRow) & tab$layout$r == 2)
+  valCells <- tab$layout$t %in% 3:nRow & tab$layout$r %in% 3:nCol
+  
+  rectCells <- sapply(tab$grobs, function(x) grepl("rect", x))
+  textCells <- sapply(tab$grobs, function(x) grepl("text", x))
+  
+  tab$grobs[(refCell | predCell | pnCell) & textCells] <- lapply(tab$grobs[(refCell | predCell | pnCell) & textCells], function(x) {
+    x$gp$font <- 2
+    return(x)
+  })
+  
+  tab$grobs[(refCell | predCell | pnCell) & rectCells] <- lapply(tab$grobs[(refCell | predCell | pnCell) & rectCells], function(x) {
+    x$gp$fill <- "#dae6ee"
+    x$gp$col <- "black"
+    return(x)
+  })
+  
+  tab$layout[refCell, "l"] <- 3
+  tab$layout[predCell, "t"] <- 3
+  
+  tab$grobs[blankCells & rectCells] <- lapply(tab$grobs[blankCells & rectCells], function (x) {
+    x$gp$fill <- NULL
+    return(x)
+  })
+  
+  tab$grobs[valCells & rectCells] <- lapply(tab$grobs[valCells & rectCells], function(x) {
+    x$gp$fill <- "white"
+    x$gp$col <- "black"
+    return(x)
+  })
+  
+  tab$widths <- rep(max(tab$widths), nCol)
+  
+  return(tab)
+}
+
+draw_metTab <- function(named_list, fixNames = T) {
+  metricLabels <- gsub("([[:upper:]])", "_\\1", names(named_list)) |>
+    strsplit(split = "_") |>
+    sapply(X = _, paste, collapse = " ") |>
+    gsub("^(.){1}", "\\U\\1", x = _, perl = T) |>
+    trimws()
+  
+  df <- data.frame(Metric = metricLabels, Value = unlist(named_list))
+  tab <- tableGrob(df, rows = NULL, cols = c("Metric", "Value"))
+  metCol <- tab$layout$l == 1 & tab$layout$t != 1
+  valCol <- tab$layout$r == 2 & tab$layout$t != 1
+  header <- tab$layout$t == 1
+  
+  rectCells <- sapply(tab$grobs, function(x) grepl("rect", x))
+  
+  tab$grobs[(metCol | header) & rectCells] <- lapply(tab$grobs[(metCol | header) & rectCells], function(x) {
+    x$gp$fill <- x$gp$fill <- "#dae6ee"
+    return(x)
+  })
+  
+  tab$grobs[rectCells] <- lapply(tab$grobs[rectCells], function(x) {
+    x$gp$col <- "black"
+    return(x)
+  })
+  
+  tab$grobs[valCol & rectCells] <- lapply(tab$grobs[valCol & rectCells], function(x) {
+    x$gp$fill <- "white"
+    return(x)
+  })
+  
+  return(tab)
+}
+
+
+
+
+
+
+
+
+

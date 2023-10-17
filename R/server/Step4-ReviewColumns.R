@@ -83,7 +83,7 @@ observeEvent(input$review_entries, {
   # Maintain expected order. Depends on labels used in check_cols
   cols_to_check <- as.character(sort(factor(cols_to_check, levels = names(col_summary))))
   cols_to_check <- unlist(col_summary[cols_to_check])
-  col_blank <- any(cols_to_check == "")
+  col_blank <- any(cols_to_check == "") | any(is.null(cols_to_check))
   if (col_blank) showNotification(type = "error", ui = "Missing required columns.", duration = 10)
   req(!col_blank)
   
@@ -92,7 +92,7 @@ observeEvent(input$review_entries, {
   # Create named list mapping selected column to new variable name
   col_dict <- dat_for_anlz$col_dict <- col_summary[names(cols_to_check)]
   col_vec <- unlist(col_dict, use.names = F)
-  col_data <- usr_dt()[, .SD, .SDcols = col_vec]
+  col_data <- dt_analyze()[, .SD, .SDcols = col_vec]
   
   # setnames(col_data, old = col_vec, new = names(col_dict))
   # setnames can't handle duplicate selections

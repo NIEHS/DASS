@@ -263,6 +263,22 @@ uploaddata_panel <- bsCollapsePanel_dass(
     download = NA, target = "_blank"
   ),
   hr(style = "width:50%"),
+  HTML(
+    "<div class='form-group shiny-input-container' style='width:100%;'>",
+    "<div class='checkbox'>",
+    "<label>",
+    "<input id='useDemoData' type='checkbox'/>",
+    "<span>Use demo data</span>",
+    "</label>",
+    "<button id='info_demo' type='button' class='btn action-link btn-qs' aria-label='demo data info'>",
+    "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+    "</button>",
+    "</div>",
+    "</div>"
+  ),
+  
+div(
+  id = "uploadBlock",
   p("Click 'Browse' below and select your file."),
   div(
     class = "form-group shiny-input-container",
@@ -302,10 +318,9 @@ uploaddata_panel <- bsCollapsePanel_dass(
       )
     ),
   ),
-  uiOutput("xlsheet_text_ui"),
+  uiOutput("xlsheet_text_ui")),
   hr(style = "width:50%"),
-  DT::dataTableOutput("usr_dt"),
-
+  DT::dataTableOutput("dt_analyze"),
     div(
       id = "user_data_block_confirm",
       class = "hiddenBlock",
@@ -319,18 +334,24 @@ uploaddata_panel <- bsCollapsePanel_dass(
     )
   ,
   ## Modals -----
-bsModal(
-    id = "xl_select_modal",
-    title = "Excel sheet selection dialog box",
-    trigger = "select_sheet",
-    selectInput(
-      inputId = "xl_sheet_list",
-      label = "Select the Excel worksheet to upload",
-      choices = NULL,
-      selectize = FALSE
+  bsModal(
+      id = "xl_select_modal",
+      title = "Excel sheet selection dialog box",
+      trigger = "select_sheet",
+      selectInput(
+        inputId = "xl_sheet_list",
+        label = "Select the Excel worksheet to upload",
+        choices = NULL,
+        selectize = FALSE
+      ),
+      actionButton(inputId = "confirm_xl_sheet", label = "Upload Data"),
+      actionButton(inputId = "cancel_xl_sheet", label = "Cancel")
     ),
-    actionButton(inputId = "confirm_xl_sheet", label = "Upload Data"),
-    actionButton(inputId = "cancel_xl_sheet", label = "Cancel")
+  bsModal(
+    id = "demo_data_modal",
+    title = "Demo Data",
+    trigger = "info_demo",
+    p("This data set...")
   )
 )
 
@@ -356,7 +377,7 @@ selectcolumns_panel <- bsCollapsePanel_dass(
       div(
         id = "dpraCallSelect",
         class = "hiddenBlock",
-        tags$h2("DPRA Call",
+        tags$h2("DPRA Binary Call",
                 actionLink(inputId = "info_dpracall", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
         div(
           class = "col_assay_endpoint",
@@ -380,7 +401,8 @@ selectcolumns_panel <- bsCollapsePanel_dass(
             selectInput(
               inputId = "dpra_call_col",
               label = "DPRA Binary Call Column",
-              choices = NULL
+              choices = NULL,
+              selectize = F
             )
           ))
         
@@ -395,12 +417,14 @@ selectcolumns_panel <- bsCollapsePanel_dass(
           selectInput(
             inputId = "dpra_pC_col",
             label = "DPRA %-Cysteine Depletion Column",
-            choices = NULL
+            choices = NULL,
+            selectize = F
           ),
           selectInput(
             inputId = "dpra_pK_col",
             label = "DPRA %-Lysine Depletion Column",
-            choices = NULL
+            choices = NULL,
+            selectize = F
           )
         )
       ),
@@ -414,7 +438,8 @@ selectcolumns_panel <- bsCollapsePanel_dass(
           selectInput(
             inputId = "hclat_call_col",
             label = "h-CLAT Binary Call Column",
-            choices = NULL
+            choices = NULL,
+            selectize = F
           )
         )
       ),
@@ -428,7 +453,8 @@ selectcolumns_panel <- bsCollapsePanel_dass(
           selectInput(
             inputId = "hclat_mit_col",
             label = "h-CLAT Minimum Induction Threshold (MIT) Column",
-            choices = NULL
+            choices = NULL,
+            selectize = F
           )
         )
       ),
@@ -442,7 +468,8 @@ selectcolumns_panel <- bsCollapsePanel_dass(
           selectInput(
             inputId = "ks_call_col",
             label = "KS Binary Call Column",
-            choices = NULL
+            choices = NULL,
+            selectize = F
           )
         )
       ),
@@ -456,12 +483,14 @@ selectcolumns_panel <- bsCollapsePanel_dass(
           selectInput(
             inputId = "insilico_call_col",
             label = "In Silico Binary Call Column",
-            choices = NULL
+            choices = NULL,
+            selectize = F
           ),
           selectInput(
             inputId = "insilico_ad_col",
             label = "In Silico Applicability Domain",
-            choices = NULL
+            choices = NULL,
+            selectize = F
           )
         )
       ),
@@ -805,27 +834,27 @@ results_panel <- bsCollapsePanel_dass(
         )
       ),
       "For more details about the appended columns, see the User Guide.",
-    )
-  ),
-  # br(),
-  fluidRow(column(12,
-                  div(
-                    class = "dropdown",
-                    id = "dlDropdown",
-                    tags$button(
-                      class = "dropbtn btn-default",
-                      style = "padding:1vh;",
-                      "Download Results",
-                      icon("caret-down")
-                    ),
+    ),
+    fluidRow(column(12,
                     div(
-                      class = "dropdown-content",
-                      downloadButton(outputId = "downloadres_xl", "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
-                      downloadButton(outputId = "downloadres_txt", "Tab-Delimited (.txt)", icon = icon("file-alt"), class = "btn-dl"),
+                      class = "dropdown",
+                      id = "dlDropdown",
+                      tags$button(
+                        class = "dropbtn btn-default",
+                        style = "padding:1vh;",
+                        "Download Results",
+                        icon("caret-down")
+                      ),
+                      div(
+                        class = "dropdown-content",
+                        downloadButton(outputId = "downloadres_xl", "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
+                        downloadButton(outputId = "downloadres_txt", "Tab-Delimited (.txt)", icon = icon("file-alt"), class = "btn-dl"),
+                      )
                     )
-                  ),
-                  dataTableOutput("dt_results")
-  )),
+    ))
+  ),
+  dataTableOutput("dt_results"),
+  # br(),
   ## Modals -----
   bsModal(
     id = "res_pink_modal",
@@ -885,31 +914,52 @@ performance_panel <- bsCollapsePanel_dass(
       ),
       selectInput(
         inputId = "perfRefRes",
-        label = "Select Reference Column",
+        label = list(
+          span("Select Reference Column(s)"),
+          actionLink(inputId = "info_refCol", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))
+        ),
         selectize = TRUE,
-        choices = NULL
+        choices = NULL,
+        multiple = TRUE
       ),
       actionButton(
         inputId = "compareToRef",
         label = "Compare"
       )
-    ),
-  #     selectInput(
-  #       inputId = "idColumnsRes",
-  #       label = "Select Identifier Columns (optional)",
-  #       selectize = TRUE,
-  #       choices = NULL,
-  #       multiple = T
-  #     ),
-  #     actionButton(
-  #       inputId = "compareToTable",
-  #       label = "Compare"
-  #     )
-  # 
+    )
   ),
   div(
+    class = "hiddenBlock",
+    id = "perfBlock",
+    hr(style = "width:50%"),
     actionButton(inputId = "downloadSupp", label = "Download"),
-    uiOutput("suppCompare_ui")
+    selectInput(inputId = "perfList", label = "Select Output", choices = NULL),
+    plotOutput("perfFigure")
+  ),
+  ## Modals -----
+  bsModal(
+    id = "refCol_modal",
+    title = "Reference column",
+    trigger = "info_refCol",
+    div(
+      h2("Hazard"),
+      p("data req")
+    ),
+    div(
+      h2("Potency"),
+      p("data req")
+    )
+  ),
+  bsModal(
+    id = "perfDLMenu",
+    title = "Download Performance",
+    trigger = "downloadSupp",
+    div(
+      actionLink(inputId = "perfAll", label = "Select All"), " | ",
+      actionLink(inputId = "perfNone", label = "Deselect All"),
+      checkboxGroupInput(inputId = "tableChoices", label = "Select tables to download", choices = NULL),
+      downloadButton(outputId = "dlPerf", label = "Download")
+    )
   )
 )
 
@@ -929,7 +979,6 @@ ui_dass <- fluidPage(
         results_panel,
         performance_panel,
         open = c("panel_welcome", "panel_dass_options", "panel_data_upload")
-        # open = "panel_performance"
       )
     )
   )

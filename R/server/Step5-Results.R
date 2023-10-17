@@ -100,7 +100,7 @@ run_dass <- reactive({
            old = colnames(da_out),
            new = new_col_names)
   
-  res_merged <- cbind(usr_dt(), da_out)
+  res_merged <- cbind(dt_analyze(), da_out)
   # Set up columns to style
   da_sty <- grep("^DA .*", names(da_out), value = T)
   da_font <- grep("Call|Potency", da_sty, value = T)
@@ -119,6 +119,7 @@ run_dass <- reactive({
 })
 
 output$dt_results <- renderDataTable({
+  req(dass_res$results)
   dt_results <- datatable(
     dass_res$results,
     class = "table-bordered stripe",
@@ -130,7 +131,9 @@ output$dt_results <- renderDataTable({
       scrollX = TRUE,
       scrollY = TRUE,
       buttons = list(
-        list(extend = "colvis", collectionLayout = "columns", attr = list(id = "resColPicker")))
+        list(extend = "colvis", collectionLayout = "columns", attr = list(id = "resColPicker")),
+        list(extend = "colvisGroup", text = "Hide all", hide = ":visible"),
+        list(extend = "colvisGroup", text = "Show all", show = ":hidden"))
     )) %>%
     formatStyle(
       columns = dass_res$da_output,
@@ -248,8 +251,12 @@ create_xl_file <- reactive({
 
 output$downloadres_xl <- downloadHandler(
   filename = function() {
-    fname <- unlist(strsplit(input$fpath$name, "[.]"))
-    fname <- paste(fname[-length(fname)], collapse = ".")
+    if (input$useDemoData) {
+      fname <- "DemoData"
+    } else {
+      fname <- unlist(strsplit(input$fpath$name, "[.]"))
+      fname <- paste(fname[-length(fname)], collapse = ".")
+    }
     paste0(fname, "_DASSResults_", format.Date(Sys.time(), "%Y%m%d-%H%M%S"), ".xlsx")
   },
   content = function(con) {
@@ -261,8 +268,12 @@ outputOptions(output, "downloadres_xl", suspendWhenHidden = FALSE)
 
 output$downloadres_txt <- downloadHandler(
   filename = function() {
-    fname <- unlist(strsplit(input$fpath$name, "[.]"))
-    fname <- paste(fname[-length(fname)], collapse = ".")
+    if (input$useDemoData) {
+      fname <- "DemoData"
+    } else {
+      fname <- unlist(strsplit(input$fpath$name, "[.]"))
+      fname <- paste(fname[-length(fname)], collapse = ".")
+    }
     paste0(fname, "_DASSResults_", format.Date(Sys.time(), "%Y%m%d-%H%M%S"), ".txt")
   },
   content = function(con) {

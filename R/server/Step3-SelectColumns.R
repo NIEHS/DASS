@@ -17,6 +17,7 @@
 dass_choice <- reactiveVal()
 
 resetApp_newDASS <- reactive({
+  req(dass_choice())
   dat_for_anlz$col_data <- dat_for_anlz$col_dict <- NULL
   dt_review(NULL)
   flagged(NULL)
@@ -28,7 +29,7 @@ resetApp_newDASS <- reactive({
 
 ## Set Up Panel 3 -----
 observeEvent(input$confirm_data, {
-  req(usr_dt())
+  req(dt_analyze())
   check_select <- all(!input$do_da_2o3 &
                         !input$do_da_its & !input$do_da_ke31)
   if (check_select) {
@@ -39,13 +40,12 @@ observeEvent(input$confirm_data, {
     )
   } 
   req(!check_select)
-  
   if (!is.null(dass_choice())) {
     resetApp_newDASS()
   }
   
   # set up values for dropdown lists
-  col_select_input <- colnames(usr_dt())
+  col_select_input <- colnames(dt_analyze())
   template_cols <- c("dpra_call","dpra_pC","dpra_pK","hclat_call","hclat_mit",
                      "ks_call","ks_imax","insilico_call","insilico_ad")
   template_col_select <- list(
@@ -142,6 +142,5 @@ observeEvent(input$confirm_data, {
     shinyjs::runjs(sprintf("$('#%s').show()", i))
   }
   shinyjs::runjs(sprintf("showScroll('%s', '%s', '%s', '%s')", "selectcol_ui", "div", "value", "panel_col_options"))
-
   updateCollapse(session, id = "panelGroup", open = "panel_col_options", close = c("panel_dass_options", "panel_data_upload"))
 }, ignoreInit = T)

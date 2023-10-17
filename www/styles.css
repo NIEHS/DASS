@@ -14,7 +14,7 @@ Description: custom style sheet
 }
 
 body {
-  background-color: transparent;
+  background-color: white;
   color:black;
 }
 
@@ -58,9 +58,9 @@ body {
 .dropdown-content a:active,
 .dropdown-content a:hover,
 .dropdown-content a:focus,
-#dt_results .dt-button-collection .dt-button:hover,
-#dt_results .dt-button-collection .dt-button:active,
-#dt_results .dt-button-collection .dt-button:focus,
+#dt_results .dt-button:hover,
+#dt_results .dt-button:active,
+#dt_results .dt-button:focus,
 #dt_results .buttons-columnVisibility.active {
   color: black;
   background-color: #9ad7ff;
@@ -238,6 +238,8 @@ label[for="fpath"] {
   max-width: 100%;
   padding-top: 2vh;
   padding-bottom: 2vh;
+  display: block;
+  margin: auto;
 }
 
 .modal-dialog {
