@@ -830,7 +830,7 @@ results_panel <- bsCollapsePanel_dass(
         ),
         tags$dd(
           "Appended columns with the DASS predictions. The corresponding column",
-          "names begin with ‘DA’ and the name of the DA."
+          "names begin with 'DA' and the name of the DA."
         )
       ),
       "For more details about the appended columns, see the User Guide.",
