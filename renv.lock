@@ -323,7 +323,7 @@
     },
     "ggplot2": {
       "Package": "ggplot2",
-      "Version": "3.3.0",
+      "Version": "3.3.4",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -342,7 +342,7 @@
         "tibble",
         "withr"
       ],
-      "Hash": "911561e07da928345f1ae2d69f97f3ea"
+      "Hash": "53ed0e82132d7f6ade8428f494d175e1"
     },
     "glue": {
       "Package": "glue",

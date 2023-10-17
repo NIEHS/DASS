@@ -563,7 +563,7 @@ draw_CM <- function(cm) {
   textCells <- sapply(tab$grobs, function(x) grepl("text", x))
   
   tab$grobs[(refCell | predCell | pnCell) & textCells] <- lapply(tab$grobs[(refCell | predCell | pnCell) & textCells], function(x) {
-    x$gp$font <- 2
+    x$gp$font <- as.integer(2)
     return(x)
   })
   
