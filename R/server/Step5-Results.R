@@ -105,7 +105,7 @@ run_dass <- reactive({
   da_sty <- grep("^DA .*", names(da_out), value = T)
   da_font <- grep("Call|Potency", da_sty, value = T)
   in_sty <- grep("^DA .*", names(da_out), value = T, invert = T)
-  col_sty_old <- dt_review()[,`Selected Column`]
+  col_sty_old <- unique(dt_review()[,`Selected Column`])
   col_sty <- paste0(col_sty_old, "*")
   setnames(res_merged, old = col_sty_old, new = col_sty)
 
@@ -131,9 +131,9 @@ output$dt_results <- renderDataTable({
       scrollX = TRUE,
       scrollY = TRUE,
       buttons = list(
-        list(extend = "colvis", collectionLayout = "columns", attr = list(id = "resColPicker")),
-        list(extend = "colvisGroup", text = "Hide all", hide = ":visible"),
-        list(extend = "colvisGroup", text = "Show all", show = ":hidden"))
+        list(extend = "colvis", text = "Column Visibility", collectionLayout = "columns", attr = list(id = "resColPicker")),
+        list(extend = "colvisGroup", text = "Hide All Columns", hide = ":visible"),
+        list(extend = "colvisGroup", text = "Show All Columns", show = ":hidden"))
     )) %>%
     formatStyle(
       columns = dass_res$da_output,

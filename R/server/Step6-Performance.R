@@ -14,6 +14,7 @@
 # Step 6: Performance -----
 ## Reactives -----
 perfTabs <- reactiveVal()
+perfVals <- reactiveVal()
 plotShown <- reactiveVal()
 
 ## Compare -----
@@ -139,6 +140,7 @@ binaryCompare <- reactive({
   })
   
   allCompVals <- do.call("c", allCompVals) |> rbindlist(fill = T)
+  perfVals(allCompVals)
   
   allCompTabs <- lapply(allComps, function(oneOut) {
     lapply(oneOut, function(x) {
@@ -245,6 +247,7 @@ catCompare <- reactive({
   })
 
   allCompVals <- do.call("c", allCompVals) |> rbindlist(fill = T)
+  perfVals(allCompVals)
   
   allCompTabs <- lapply(allComps, function(oneOut) {
     lapply(oneOut, function(x) {
@@ -278,9 +281,9 @@ observeEvent(input$perfNone, {
 
 observe({
   if (is.null(input$tableChoices)) {
-    shinyjs::hide("dlPerf")
+    shinyjs::disable("dlPerf")
   } else {
-    shinyjs::show("dlPerf")
+    shinyjs::enable("dlPerf")
   }
 })
 
@@ -295,14 +298,54 @@ output$dlPerf <- downloadHandler(
     paste0(fname, "_DASSResults_Performance_", format.Date(Sys.time(), "%Y%m%d-%H%M%S"), ".pdf")
   },
   content = function(con) {
-    grobList <- perfTabs()
+    tabChoice <- input$tableChoices
     pdf(con)
-    for (i in input$tableChoices) {
-      grid.draw(grobList[[i]])
-      if (i != length(input$tableChoices)) grid.newpage()
+    for (i in tabChoice) {
+      grid.draw(perfTabs()[[i]])
+      if (i != tabChoice[length(tabChoice)]) grid.newpage()
       }
     dev.off()
   }
 )
 
 outputOptions(output, "dlPerf", suspendWhenHidden = FALSE)
+
+output$perfFlat_xl <- downloadHandler(
+  filename = function() {
+    if (input$useDemoData) {
+      fname <- "DemoData"
+    } else {
+      fname <- unlist(strsplit(input$fpath$name, "[.]"))
+      fname <- paste(fname[-length(fname)], collapse = ".")
+    }
+    paste0(fname, "_DASSResults_Performance_", format.Date(Sys.time(), "%Y%m%d-%H%M%S"), ".xlsx")
+  },
+  content = function(con) {
+    outCols <- setdiff(names(perfVals()), c("id", "label"))
+    
+    wb <- createWorkbook()
+    addWorksheet(wb, sheetName = "DASSPerformance")
+    writeData(wb, sheet = "DASSPerformance", perfVals()[,.SD,.SDcols = outCols])
+    saveWorkbook(wb = wb, file = con)
+  }
+)
+
+outputOptions(output, "perfFlat_xl", suspendWhenHidden = FALSE)
+
+output$perfFlat_txt <- downloadHandler(
+  filename = function() {
+    if (input$useDemoData) {
+      fname <- "DemoData"
+    } else {
+      fname <- unlist(strsplit(input$fpath$name, "[.]"))
+      fname <- paste(fname[-length(fname)], collapse = ".")
+    }
+    paste0(fname, "_DASSResults_Performance_", format.Date(Sys.time(), "%Y%m%d-%H%M%S"), ".txt")
+  },
+  content = function(con) {
+    outCols <- setdiff(names(perfVals()), c("id", "label"))
+    write.table(x =  perfVals()[,.SD,.SDcols = outCols], file = con, quote = F, row.names = F, sep = "\t")
+  }
+)
+
+outputOptions(output, "perfFlat_txt", suspendWhenHidden = FALSE)

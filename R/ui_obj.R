@@ -60,7 +60,16 @@ welcome_panel <- bsCollapsePanel_dass(
       href = "mailto:ICE-support@niehs.nih.gov",
       "ICE-support@niehs.nih.gov."
     )
-  )
+  ),
+  div(
+    style = "text-align:center;",
+  a(
+    class = "btn btn-default",
+    type = "button",
+    target = "_blank",
+    href = "https://rstudio.niehs.nih.gov/dass/", 
+    span(class = "external-link", "Launch app in new window ")
+  ))
 )
 
 # Step 1: Select DAs -----
@@ -263,19 +272,7 @@ uploaddata_panel <- bsCollapsePanel_dass(
     download = NA, target = "_blank"
   ),
   hr(style = "width:50%"),
-  HTML(
-    "<div class='form-group shiny-input-container' style='width:100%;'>",
-    "<div class='checkbox'>",
-    "<label>",
-    "<input id='useDemoData' type='checkbox'/>",
-    "<span>Use demo data</span>",
-    "</label>",
-    "<button id='info_demo' type='button' class='btn action-link btn-qs' aria-label='demo data info'>",
-    "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-    "</button>",
-    "</div>",
-    "</div>"
-  ),
+
   
 div(
   id = "uploadBlock",
@@ -319,6 +316,19 @@ div(
     ),
   ),
   uiOutput("xlsheet_text_ui")),
+  HTML(
+    "<div class='form-group shiny-input-container' style='width:100%;'>",
+    "<div class='checkbox'>",
+    "<label>",
+    "<input id='useDemoData' type='checkbox'/>",
+    "<span>Use demo data</span>",
+    "</label>",
+    "<button id='info_demo' type='button' class='btn action-link btn-qs' aria-label='demo data info'>",
+    "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+    "</button>",
+    "</div>",
+    "</div>"
+  ),
   hr(style = "width:50%"),
   DT::dataTableOutput("dt_analyze"),
     div(
@@ -351,7 +361,7 @@ div(
     id = "demo_data_modal",
     title = "Demo Data",
     trigger = "info_demo",
-    p("This data set...")
+    p("Select this option to load a demo data set instead of uploading your own data.")
   )
 )
 
@@ -369,7 +379,7 @@ selectcolumns_panel <- bsCollapsePanel_dass(
         "A column must be selected for each",
         "endpoint shown. When you are finished, click 'Done'."),
       p(
-        "Click on the in information buttons next to the assay endpoint names to view",
+        "Click on the information buttons next to the assay endpoint names to view",
         "information about the endpoints and data formatting requirements.",
         "Values that are incorrectly formatted or invalid",
         "will be treated as missing data and may affect the results. More details are given",
@@ -794,6 +804,7 @@ results_panel <- bsCollapsePanel_dass(
     p(
       "Results of the DASS App analysis are shown in the table below. Use the",
       "scroll bar along the bottom of the table to view all the columns.",
+      "The buttons above the table can be used to hide or show columns.",
       "Use the 'Download Results' button to export your results to an Excel",
       "spreadsheet or text file, which may allow easier viewing.",
     ),
@@ -892,11 +903,15 @@ performance_panel <- bsCollapsePanel_dass(
     id = "performanceUI",
     class = "hiddenBlock",
     p(
-      "The dropdown menus show column names from your uploaded data and",
-      "column names from the DA output. You may calculate accuracy of a",
-      "DA result against reference data. Reference data should be included",
-      "in your uploaded data. Select the prediction and reference columns",
-      "to be compared."
+      "This section allows you to compare the DA outcomes to reference data.",
+      "The reference data should be provided in your uploaded data file."
+    ),
+    p(
+      "Use the dropdown lists to select the DA predictions you want to evaluate and specify ",
+      "the columns containing your reference data. You may select more than one prediction or",
+      "reference column. Click 'Compare' to generate a confusion matrix and accuracy metrics.",
+      "Comparisons will only be performed if there are valid values",
+      "for at least five prediction-reference pairs."
     ),
     radioButtons(
       inputId = "compareType",
@@ -932,6 +947,11 @@ performance_panel <- bsCollapsePanel_dass(
     class = "hiddenBlock",
     id = "perfBlock",
     hr(style = "width:50%"),
+    p(
+      "Confusion matrices and performance metrics are shown below. Use the dropdown list",
+      "to select the comparison you would like to view. Use the 'Download' button to open",
+      "the download menu."
+    ),
     actionButton(inputId = "downloadSupp", label = "Download"),
     selectInput(inputId = "perfList", label = "Select Output", choices = NULL),
     plotOutput("perfFigure")
@@ -943,23 +963,70 @@ performance_panel <- bsCollapsePanel_dass(
     trigger = "info_refCol",
     div(
       h2("Hazard"),
-      p("data req")
+      p(
+        "The columns corresponding to reference hazard calls should only contain the values:",
+        tags$ul(
+          tags$li(
+            "'sensitizer', 'sensitiser', 'a', 'active', 'p', 'pos', 'positive', or 1 to indicate positive assay outcomes.*"
+          ),
+          tags$li(
+            "'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*"
+          ),
+          tags$li(
+            "Missing values should be blank or labeled as 'NA'."
+          )
+        ),
+        span(
+          style = "font-size:90%",
+          "* Case insensitive"
+        )
+      )
     ),
     div(
       h2("Potency"),
-      p("data req")
+      p(
+        "The columns corresponding to reference potency classifications should only contain the values:",
+        tags$ul(
+          tags$li(
+            "1A, 1B, NC"
+          ),
+          tags$li(
+            "Missing values should be blank or labeled as 'NA'."
+          )
+        ),
+        span(
+          style = "font-size:90%",
+          "* Case insensitive"
+        )
+      )
     )
   ),
   bsModal(
     id = "perfDLMenu",
-    title = "Download Performance",
+    title = "Download Performance Output",
     trigger = "downloadSupp",
+    div(
+      p(
+        "Confusion matrices and performance tables can be downloaded as a PDF file.",
+        "Use the checkboxes to select the output you would like to download.",
+        "More details about the performance output are available in the User Guide."
+      )
+    ),
     div(
       actionLink(inputId = "perfAll", label = "Select All"), " | ",
       actionLink(inputId = "perfNone", label = "Deselect All"),
-      checkboxGroupInput(inputId = "tableChoices", label = "Select tables to download", choices = NULL),
-      downloadButton(outputId = "dlPerf", label = "Download")
+      checkboxGroupInput(inputId = "tableChoices", label = NULL, choices = NULL),
+      downloadButton(outputId = "dlPerf", label = "Download Output")
+    ),
+    hr(style = "width:50%"),
+    p(
+      "You can download the results in table format as an Excel file or text file.",
+    ),
+    p(
+      downloadButton(outputId = "perfFlat_xl", label = "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
+      downloadButton(outputId = "perfFlat_txt", label = "Tab-Delimited (.txt) ", icon = icon("file-alt"), class = "btn-dl")
     )
+
   )
 )
 
@@ -980,6 +1047,15 @@ ui_dass <- fluidPage(
         performance_panel,
         open = c("panel_welcome", "panel_dass_options", "panel_data_upload")
       )
+    ),
+    column(
+      width = 12,
+      style = "text-align:center;",
+      a(href = "https://github.com/NIEHS/DASS",
+        target = "_blank",
+        "Source Code"),
+      br(),
+      span("Last updated: 2023-Oct")
     )
   )
 )
