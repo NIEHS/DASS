@@ -11,20 +11,19 @@
   "Packages": {
     "DT": {
       "Package": "DT",
-      "Version": "0.30",
+      "Version": "0.27",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "crosstalk",
         "htmltools",
         "htmlwidgets",
-        "httpuv",
         "jquerylib",
         "jsonlite",
         "magrittr",
         "promises"
       ],
-      "Hash": "dffb4d94a00be1b4a4507e53ab95bd90"
+      "Hash": "3444e6ed78763f9f13aaa39f2481eb34"
     },
     "MASS": {
       "Package": "MASS",

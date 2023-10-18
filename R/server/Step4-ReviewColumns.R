@@ -237,7 +237,7 @@ output$dt_review <- DT::renderDataTable({
                          ))
 
   if (length(flag_row) > 0) {
-    dt_review <- formatStyle(dt_review, 0, target = "row", color = styleRow(flag_row, rep("#D55E00", length = length(flag_row))))
+    dt_review <- formatStyle(dt_review, 0, target = "row", color = styleRow(flag_row, rep("#C25400", length = length(flag_row))))
   }
   dt_review
 })

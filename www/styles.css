@@ -223,11 +223,13 @@ caption-side: bottom;
 white-space:nowrap;
 }
 
+/*
 label[for="fpath"] {
   height:0;
   display:block;
   visibility:hidden;
 }
+*/
 
 .progress-bar {
   background-color:#234510;
@@ -298,7 +300,7 @@ dt{
 
 .warningText {
   font-weight: bold;
-  color: #D55E00;
+  color: #C25400;
 }
 
 h2 {
@@ -311,3 +313,6 @@ h2 {
   margin-left: 25px;
 }
 
+div.datatables table{
+  color: black;
+}

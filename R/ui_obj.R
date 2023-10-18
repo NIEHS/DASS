@@ -276,7 +276,6 @@ uploaddata_panel <- bsCollapsePanel_dass(
   
 div(
   id = "uploadBlock",
-  p("Click 'Browse' below and select your file."),
   div(
     class = "form-group shiny-input-container",
     style = "width:100%",
@@ -284,7 +283,8 @@ div(
       class = "control-label",
       `for` = "fpath",
       id = "fpath-label",
-      value = "File input"
+      value = "File input",
+      "Click 'Browse' below and select your file."
     ),
     div(
       class = "input-group",
@@ -388,7 +388,10 @@ selectcolumns_panel <- bsCollapsePanel_dass(
         id = "dpraCallSelect",
         class = "hiddenBlock",
         tags$h2("DPRA Binary Call",
-                actionLink(inputId = "info_dpracall", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
+                HTML(
+                "<button id='info_dpracall' type='button' class='btn action-link btn-qs' aria-label='DPRA Call info'>",
+                "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+                "</button>")),
         div(
           class = "col_assay_endpoint",
           radioButtons(
@@ -421,7 +424,11 @@ selectcolumns_panel <- bsCollapsePanel_dass(
         id = "dpraDepSelect",
         class = "hiddenBlock",
         tags$h2("DPRA % Depletion",
-                actionLink(inputId = "info_dpradep", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
+                HTML(
+                  "<button id='info_dpradep' type='button' class='btn action-link btn-qs' aria-label='DPRA Depletion info'>",
+                  "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+                  "</button>")
+                ),
         div(
           class = "col_assay_endpoint",
           selectInput(
@@ -442,7 +449,10 @@ selectcolumns_panel <- bsCollapsePanel_dass(
         id = "hclatCallSelect",
         class = "hiddenBlock",
         tags$h2("h-CLAT Binary Call",
-                actionLink(inputId = "info_hclatcall", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
+                HTML(
+                  "<button id='info_hclatcall' type='button' class='btn action-link btn-qs' aria-label='hCLAT call info'>",
+                  "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+                  "</button>")),
         div(
           class = "col_assay_endpoint",
           selectInput(
@@ -457,7 +467,10 @@ selectcolumns_panel <- bsCollapsePanel_dass(
         id = "hclatMitSelect",
         class = "hiddenBlock",
         tags$h2("h-CLAT MIT",
-                actionLink(inputId = "info_hclatmit", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
+                HTML(
+                  "<button id='info_hclatmit' type='button' class='btn action-link btn-qs' aria-label='hCLAT MIT info'>",
+                  "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+                  "</button>")),
         div(
           class = "col_assay_endpoint",
           selectInput(
@@ -472,7 +485,10 @@ selectcolumns_panel <- bsCollapsePanel_dass(
         id = "ksCallSelect",
         class = "hiddenBlock",
         tags$h2("KeratinoSens(TM) Binary Call",
-                actionLink(inputId = "info_kscall", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
+                HTML(
+                  "<button id='info_kscall' type='button' class='btn action-link btn-qs' aria-label='keratinosens call info'>",
+                  "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+                  "</button>")),
         div(
           class = "col_assay_endpoint",
           selectInput(
@@ -487,7 +503,10 @@ selectcolumns_panel <- bsCollapsePanel_dass(
         id = "inSilicoSelect",
         class = "hiddenBlock",
         tags$h2("In Silico Binary Call",
-                actionLink(inputId = "info_insilico_call", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))),
+                HTML(
+                  "<button id='info_insilico_call' type='button' class='btn action-link btn-qs' aria-label='in silico call info'>",
+                  "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+                  "</button>")),
         div(
           class = "col_assay_endpoint",
           selectInput(
@@ -854,7 +873,9 @@ results_panel <- bsCollapsePanel_dass(
                         class = "dropbtn btn-default",
                         style = "padding:1vh;",
                         "Download Results",
-                        icon("caret-down")
+                        HTML(
+                          "<i class='fas fa-caret-down' role='presentation'> </i>"
+                        )
                       ),
                       div(
                         class = "dropdown-content",
@@ -931,7 +952,9 @@ performance_panel <- bsCollapsePanel_dass(
         inputId = "perfRefRes",
         label = list(
           span("Select Reference Column(s)"),
-          actionLink(inputId = "info_refCol", class = "btn-qs", label = NULL, icon = icon("question-sign", lib = "glyphicon"))
+          HTML("<button id='info_refCol' type='button' class='btn action-link btn-qs' aria-label='reference column info'>",
+          "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+          "</button>")
         ),
         selectize = TRUE,
         choices = NULL,
@@ -1015,7 +1038,7 @@ performance_panel <- bsCollapsePanel_dass(
     div(
       actionLink(inputId = "perfAll", label = "Select All"), " | ",
       actionLink(inputId = "perfNone", label = "Deselect All"),
-      checkboxGroupInput(inputId = "tableChoices", label = NULL, choices = NULL),
+      checkboxGroupInput(inputId = "tableChoices", label = "Select Output to Download", choices = NULL),
       downloadButton(outputId = "dlPerf", label = "Download Output")
     ),
     hr(style = "width:50%"),

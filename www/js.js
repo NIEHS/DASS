@@ -20,7 +20,7 @@ function showNA(row, data) {
   for (var i=0; i<data.length; i++) {
     if(data[i]===null){
       $('td:eq('+i+')', row).html('NA')
-        .css({'color': 'rgb(89,89,89)'});
+        .css({'color': 'rgb(0,0,0)'});
     }
   }
 }
@@ -52,3 +52,9 @@ function resetHidden(hideAll=true) {
 }
 
 $(document).on('shiny:connected', resetHidden);
+$(document).on('shiny:connected', function() {
+  let predCol = document.querySelector("#perfPredCol");
+  let refCol = document.querySelector("#perfRefRes");
+  predCol.setAttribute("title", "Select prediction columns");
+  refCol.setAttribute("title", "Select reference columns");
+});

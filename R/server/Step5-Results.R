@@ -126,6 +126,7 @@ output$dt_results <- renderDataTable({
     rownames = FALSE,
     extensions = "Buttons",
     selection = "none",
+    callback = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
     options = list(
       dom = "Brtp",
       scrollX = TRUE,

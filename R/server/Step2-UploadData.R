@@ -151,6 +151,8 @@ output$dt_analyze <- DT::renderDataTable({
               scrollY = TRUE,
               scrollX = TRUE,
               rowCallback = JS("showNA")
-            )
+            ),
+            callback = JS("$('#dt_analyze .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))")
   )
 })
+
