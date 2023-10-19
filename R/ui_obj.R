@@ -1078,7 +1078,7 @@ ui_dass <- fluidPage(
         target = "_blank",
         "Source Code"),
       br(),
-      span("Last updated: 2023-Oct")
+      span("Last updated: 2023-Oct-20")
     )
   )
 )
