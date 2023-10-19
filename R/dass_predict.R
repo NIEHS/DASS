@@ -412,7 +412,7 @@ compareBinary <- function(pred, ref) {
   
   # Check number of pairs
   n <- length(ref)
-  if (n <= 5) {
+  if (n < 5) {
     stop("Fewer than 5 non-missing pairs")
   }
 
@@ -422,10 +422,11 @@ compareBinary <- function(pred, ref) {
   ref <- droplevels(ref)
   
   cm <- table(pred, ref, useNA = "ifany")
-  tp <- cm[1,1]
-  fp <- cm[1,2]
-  tn <- cm[2,2]
-  fn <- cm[2,1]
+  cm_dt <- data.table(cm)
+  tp <- cm_dt[pred == "Positive" & ref == "Positive", sum(N, na.rm = T)]
+  fp <- cm_dt[pred == "Positive" & ref == "Negative", sum(N, na.rm = T)]
+  tn <- cm_dt[pred == "Negative" & ref == "Negative", sum(N, na.rm = T)]
+  fn <- cm_dt[pred == "Negative" & ref == "Positive", sum(N, na.rm = T)]
 
   acc <- (tp + tn)/n
   tpr <- tp/(sum(ref == "Positive"))

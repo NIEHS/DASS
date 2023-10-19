@@ -36,6 +36,8 @@ observe({
 
 observeEvent(input$compareToRef, {
   req(dass_res$results)
+  req(input$perfRefRes)
+  req(input$perfPredCol)
   switch(
     input$compareType,
     Hazard = binaryCompare(),
