@@ -120,7 +120,7 @@ binaryCompare <- reactive({
               textGrob(label = paste("Reference Column: ", predOut$refCol)),
               textGrob(label = paste("Prediction Column:", predOut$predCol)),
               perf$figs[[1]],
-              perf$figs[[2]]),  layout_matrix  = matrix(c(1,2,3,rep(4, 6), rep(5, 10)))
+              perf$figs[[2]]), layout_matrix  = matrix(c(1,2,3,rep(4, 6), rep(5, 10)))
           )
           perfFig$id <- predOut$id
           
@@ -155,6 +155,8 @@ binaryCompare <- reactive({
   perfTabs(allCompTabs)
   updateSelectInput(inputId = "perfList", choices = names(allCompTabs))
   updateCheckboxGroupInput(inputId = "tableChoices", choices = names(allCompTabs))
+  shinyjs::show("binaryDefs")
+  shinyjs::hide("potencyDefs")
 })
 
 ### Categorical -----
@@ -263,6 +265,9 @@ catCompare <- reactive({
   perfTabs(allCompTabs)
   updateSelectInput(inputId = "perfList", choices = names(allCompTabs))
   updateCheckboxGroupInput(inputId = "tableChoices", choices = names(allCompTabs))
+  
+  shinyjs::hide("binaryDefs")
+  shinyjs::show("potencyDefs")
 })
 
 observeEvent(input$perfList, {

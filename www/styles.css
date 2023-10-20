@@ -316,3 +316,17 @@ h2 {
 div.datatables table{
   color: black;
 }
+
+.defTab {
+  margin: auto;
+}
+
+.defTab th,
+.defTab td {
+  padding: 4px 8px;
+  font-size: 0.75em;
+}
+
+.defTab th {
+  text-align: center;
+}

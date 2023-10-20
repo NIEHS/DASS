@@ -34,7 +34,7 @@ welcome_panel <- bsCollapsePanel_dass(
       "Sensitization as a Replacement for Laboratory Animal Testing"
     ),
     ". The defined approaches (DAs) predict skin sensitization hazard",
-    "(either a sensitizer or non-sensitizer) and potency by integrating data",
+    "(either a sensitizer or non-sensitizer) and potency (UN GHS categories) by integrating data",
     "from in vitro assays that represent key events in the",
     a(
       href = "https://doi.org/https://doi.org/10.1787/9789264221444-en",
@@ -357,12 +357,16 @@ div(
       actionButton(inputId = "confirm_xl_sheet", label = "Upload Data"),
       actionButton(inputId = "cancel_xl_sheet", label = "Cancel")
     ),
-  bsModal(
-    id = "demo_data_modal",
-    title = "Demo Data",
-    trigger = "info_demo",
-    p("Select this option to load a demo data set instead of uploading your own data.")
-  )
+    bsModal(
+      id = "demo_data_modal",
+      title = "Demo Data",
+      trigger = "info_demo",
+      p("Select this option to load a demo data set instead of uploading your own data."),
+      p("The data set includes values for all possible endpoints. The column names are set up so",
+      "that the selections in Step 3 are automatically filled."), 
+      p("If you select the ITS DA, the 'dpra_pC' column will be flagged in Step 4 because the value for OTNE (Row 60)",
+      "contains a symbol. This example demonstrates how the app processes invalid values.")
+    )
 )
 
 # Step 3: Select Columns -----
@@ -977,7 +981,36 @@ performance_panel <- bsCollapsePanel_dass(
     ),
     actionButton(inputId = "downloadSupp", label = "Download"),
     selectInput(inputId = "perfList", label = "Select Output", choices = NULL),
-    plotOutput("perfFigure")
+    plotOutput("perfFigure"),
+    hr(style = "width:50%"),
+    div(
+      class = "hiddenBlock",
+      id = "binaryDefs",
+      h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
+      HTML("<table class = 'defTab' border=1>
+<tr> <th> Metric </th> <th> Definition </th>  </tr>
+<tr> <td> N </td> <td> The number of valid reference values </td>  </tr>
+  <tr> <td> Accuracy  </td> <td>  (True positives + True negatives) / (All positives + All negatives) </td> </tr>
+  <tr> <td> Balanced Accuracy  </td> <td>  (True positive rate + True negative rate)/2 </td> </tr>
+  <tr> <td> F1 Score  </td> <td>  (2&times;True positives) / (2&times;True positives + False positives + False negatives) </td> </tr>
+  <tr> <td> True Positive Rate (Sensitivity)  </td> <td>  True positives / All positives </td> </tr>
+  <tr> <td> False Positive Rate  </td> <td>  False positives / All positives </td> </tr>
+  <tr> <td> True Negative Rate (Specificity)  </td> <td>  True negatives / All negatives </td> </tr>
+  <tr> <td> False Negative Rate  </td> <td>  False negatives / All negatives </td> </tr>
+   </table>")
+    ),
+  div(
+    class = "hiddenBlock",
+    id = "potencyDefs",
+    h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
+    HTML("<table class = 'defTab' border=1>
+         <tr> <th> Metric </th> <th> Definition </th>  </tr>
+    <tr> <td> N </td> <td> The number of valid reference values </td>  </tr>
+    <tr> <td> Accuracy  </td> <td>  The percentage of predicted values equal to reference values </td> </tr>
+    <tr> <td> Overpredicted </td> <td>  The percentage of predicted values with a more potent GHS category than the corresponding reference value </td> </tr>
+    <tr> <td> Underpredicted  </td> <td>  The percentage of predicted values with a less potent GHS category than the corresponding reference value </td> </tr>
+     </table>")
+  )
   ),
   ## Modals -----
   bsModal(
