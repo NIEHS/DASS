@@ -9,24 +9,24 @@
 # server files to build app.
 # Required Packages:
 # - data.table, DT
-# - htmltools
+# - ggplot2, grid, gridExtra
 # - openxlsx
 # - readxl
-# - shiny shinyBS shinyjs
+# - shiny shinyBS shinyjqui shinyjs
 #=============================================================================#
 
 # Load packages
 require(data.table)
 require(DT)
+require(ggplot2)
+require(grid)
+require(gridExtra)
 require(openxlsx)
 require(readxl)
 require(shiny)
 require(shinyBS)
 require(shinyjqui)
 require(shinyjs)
-require(ggplot2)
-require(grid)
-require(gridExtra)
 
 # Load functions
 source("R/dass_predict.R")
