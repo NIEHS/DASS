@@ -113,9 +113,11 @@ run_dass <- reactive({
   dass_res$user_select <- col_sty
   dass_res$da_input <- in_sty
   dass_res$da_output <- da_sty
-  shinyjs::runjs(sprintf("showScroll('%s', '%s', '%s', '%s')", "result_contents", "div", "value", "panel_results"))
-  shinyjs::runjs("$('#performanceUI').show()")
-  updateCollapse(session, id = "panelGroup", open = c("panel_results", "panel_performance"), close = "panel_review")
+
+  shinyjs::show("result_contents")
+  shinyjs::show("performanceUI")
+  updateTabsetPanel(inputId = "stepSet", selected = "Results")
+  # updateCollapse(session, id = "panelGroup", open = c("panel_results", "panel_performance"), close = "panel_review")
 })
 
 output$dt_results <- renderDataTable({

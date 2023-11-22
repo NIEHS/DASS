@@ -12,20 +12,39 @@
 # =============================================================================#
 
 # Step 2: Upload Data -----
-## Formatting -----
-## Reactive Values -----
-# user's uploaded data
-usr_dt <- reactiveVal()
-xlsheet <- reactiveVal()
-demo_data <- reactiveVal()
-dt_analyze <- reactiveVal()
+## Tab -----
+observeEvent(input$confirmDAs, {
+  check_select <- all(!input$do_da_2o3 &
+                        !input$do_da_its & !input$do_da_ke31)
+  
+  if (check_select) {
+    showNotification(
+      type = "error",
+      ui = "No defined approaches selected.",
+      duration = 10
+    )
+  } 
+  req(!check_select)
+  if (!is.null(dass_choice())) {
+    shinyjs::runjs("resetHidden(false);")
+    shinyjs::runjs("rmDPRAListener();")
+  }
 
-# Demo -----
+  updateTabsetPanel(inputId = "stepSet", selected = "Upload Data")
+  shinyjs::runjs("$('#stepSet')[0].scrollIntoView();")
+})
+
+## Reactive Values -----
+usr_dt <- reactiveVal()
+dt_analyze <- reactiveVal()
+demo_data <- reactiveVal()
+xlsheet <- reactiveVal()
+
+## Demo -----
 observeEvent(input$useDemoData, {
   if (input$useDemoData) {
     demo_data(fread("www/dassAppDemoData-fromGL497Annex2.csv"))
     dt_analyze(demo_data())
-    shinyjs::show("user_data_block_confirm")
     shinyjs::hide("uploadBlock")
   }
   
@@ -33,30 +52,16 @@ observeEvent(input$useDemoData, {
     shinyjs::show("uploadBlock")
     if (is.null(usr_dt())) {
       dt_analyze(NULL)
-      shinyjs::hide("user_data_block_confirm")
     } else {
       dt_analyze(usr_dt())
     }
   }
 })
 
-# Data Loading -----
+## Upload -----
 load_data <- reactive({
   usr_dt(read_data(input$fpath$datapath, sheet = xlsheet()))
   dt_analyze(usr_dt())
-  shinyjs::runjs(sprintf("showScroll('%s', '%s', '%s', '%s')", "user_data_block_confirm", "label", "id", "fpath-label"))
-})
-
-observeEvent(dt_analyze(), {
-  dass_choice(NULL)
-  dat_for_anlz$col_data <- dat_for_anlz$col_dict <- NULL
-  dt_review(NULL)
-  flagged(NULL)
-  dass_res$results <- dass_res$user_select <- dass_res$da_input <- dass_res$da_output <- NULL
-  
-  shinyjs::hide("run_dass")
-  shinyjs::runjs("resetHidden(false);")
-  shinyjs::runjs("rmDPRAListener();")
 })
 
 observeEvent(input$fpath, {
@@ -64,7 +69,7 @@ observeEvent(input$fpath, {
   ext <- unlist(strsplit(input$fpath$name, "[.]"))
   ext <- ext[length(ext)]
   extvalid <- grepl("^csv$|^tsv$|^txt$|^xls$|^xlsx$", ext)
-  
+
   if (!extvalid) {
     showNotification(
       type = "error",
@@ -73,7 +78,7 @@ observeEvent(input$fpath, {
     )
     req(extvalid)
   }
-  
+
   if (grepl("^xls$|^xlsx$", ext)) {
     sheets <- readxl::excel_sheets(input$fpath$datapath)
     if (length(sheets) == 1) {
@@ -89,15 +94,15 @@ observeEvent(input$fpath, {
       output$xlsheet_text_ui <- renderUI({
         sheet_text_ui
       })
-      
+
       shinyjs::show("xlsheet_text_ui")
-      
+
       # Show excel worksheet selector
       updateSelectInput(session, "xl_sheet_list", choices = sheets)
       toggleModal(session, "xl_select_modal", toggle = "open")
     }
   }
-  
+
   if (grepl("^csv$|^tsv$|^txt$", ext)) {
     shinyjs::hide("xlsheet_text_ui")
     # Data are automatically read in
@@ -112,14 +117,14 @@ observeEvent(input$confirm_xl_sheet, {
     span(style = "font-weight:bold;", "Selected Worksheet:"),
     input$xl_sheet_list,
     "(",
-    actionLink(inputId = "button_change_xlsheet", 
+    actionLink(inputId = "button_change_xlsheet",
                  label = "Change Selected Worksheet"),
     ")"
   )
   output$xlsheet_text_ui <- renderUI({
     sheet_text_ui
   })
-  
+
   xlsheet(input$xl_sheet_list)
   load_data()
 
@@ -142,8 +147,17 @@ observeEvent(input$button_choose_xlsheet, {
   toggleModal(session, "xl_select_modal", toggle = "open")
 })
 
+observeEvent(dt_analyze(), {
+  if (is.null(dt_analyze())) {
+    shinyjs::hide("data_block")
+  } else {
+    shinyjs::show("data_block")
+  }
+  shinyjs::runjs("resetHidden(false);")
+  shinyjs::runjs("rmDPRAListener();")
+}, ignoreNULL = F)
+
 ## Tables -----
-# User data
 output$dt_analyze <- DT::renderDataTable({
   datatable(dt_analyze(),
             class = "table-bordered stripe",
@@ -155,4 +169,3 @@ output$dt_analyze <- DT::renderDataTable({
             callback = JS("$('#dt_analyze .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))")
   )
 })
-

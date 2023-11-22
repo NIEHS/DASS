@@ -7,15 +7,6 @@ License: MIT
 Description: js for DASS App
 */
 
-function showScroll(showID, htmlTag, attrName, attrValue) {
-  $('#' + showID).show(() => {
-    $($.fn.dataTable.tables(true)).DataTable()
-      .columns.adjust();
-    document.querySelector(`${htmlTag}[${attrName}='${attrValue}']`)
-      .scrollIntoView({behavior: 'smooth'}, true);
-  });
-}
-
 function showNA(row, data) {
   for (var i=0; i<data.length; i++) {
     if(data[i]===null){
@@ -47,11 +38,12 @@ function resetHidden(hideAll=true) {
   if (hideAll) {
     $(".hiddenBlock").hide();
   } else {
-    $(".hiddenBlock:not(#user_data_block_confirm)").hide();
+    $(".hiddenBlock:not(#data_block)").hide();
   }
 }
 
 $(document).on('shiny:connected', resetHidden);
+
 $(document).on('shiny:connected', function() {
   let predCol = document.querySelector("#perfPredCol");
   let refCol = document.querySelector("#perfRefRes");

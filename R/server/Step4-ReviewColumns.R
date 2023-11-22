@@ -217,9 +217,9 @@ observeEvent(input$review_entries, {
   }
   
   dt_review(dt_review)
-  showElement("run_dass")
-  shinyjs::runjs(sprintf("showScroll('%s', '%s', '%s', '%s')", "review_contents", "div", "value", "panel_review"))
-  updateCollapse(session, id = "panelGroup", open = "panel_review", close = "panel_col_options")
+  shinyjs::show("review_contents")
+  # shinyjs::runjs(sprintf("showScroll('%s', '%s', '%s', '%s')", "review_contents", "div", "value", "panel_review"))
+  updateTabsetPanel(inputId = "stepSet", selected = "Review Selection")
 }, ignoreInit = T)
 
 output$dt_review <- DT::renderDataTable({

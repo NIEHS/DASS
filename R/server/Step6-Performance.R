@@ -18,6 +18,8 @@ perfVals <- reactiveVal()
 plotShown <- reactiveVal()
 
 ## Compare -----
+observeEvent(input$goToCompare, updateTabsetPanel(inputId = "stepSet", selected = "Compare"))
+
 # Update prediction column menu
 observe({
   req(dass_res$results)

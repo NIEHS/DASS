@@ -11,21 +11,9 @@
 # =============================================================================#
 
 # Step 3: Select Columns -----
-# output tables will show "NA" instead of blanks
 ## Reactive Values -----
 # selected tests ordered as: 2o3, its, ke 3/1 sts
 dass_choice <- reactiveVal()
-
-resetApp_newDASS <- reactive({
-  req(dass_choice())
-  dat_for_anlz$col_data <- dat_for_anlz$col_dict <- NULL
-  dt_review(NULL)
-  flagged(NULL)
-  dass_res$results <- dass_res$user_select <- dass_res$da_input <- dass_res$da_output <- NULL
-  
-  shinyjs::runjs("resetHidden(false);")
-  shinyjs::runjs("rmDPRAListener();")
-})
 
 ## Set Up Panel 3 -----
 observeEvent(input$confirm_data, {
@@ -38,12 +26,12 @@ observeEvent(input$confirm_data, {
       ui = "No defined approaches selected.",
       duration = 10
     )
-  } 
-  req(!check_select)
-  if (!is.null(dass_choice())) {
-    resetApp_newDASS()
   }
-  
+  req(!check_select)
+  # if (!is.null(dass_choice())) {
+  #   resetApp_newDASS()
+  # }
+
   # set up values for dropdown lists
   col_select_input <- colnames(dt_analyze())
   template_cols <- c("dpra_call","dpra_pC","dpra_pK","hclat_call","hclat_mit",
@@ -85,7 +73,7 @@ observeEvent(input$confirm_data, {
   dass_choice(dass_opts)
   dass_vars <- dass_vars[dass_selected]
   dass_vars <- sort(unique(unlist(dass_vars)))
-  
+
   # Set up UI for Panel 3
   # DPRA %C- and %K-depletion
   # For DPRA call, if %C- and %K depletion are provided, user may choose
@@ -113,9 +101,9 @@ observeEvent(input$confirm_data, {
       toUpdate = c("insilico_call_col", "insilico_ad_col")
     )
   )
-  
+
   colLoop <- id_list[intersect(names(id_list), dass_vars)]
-  
+
   if (all(c("dpra_pC", "dpra_pK") %in% dass_vars)) {
     if (!"dpra_call" %in% dass_vars) {
       colLoop$dpraDep <- list(
@@ -126,7 +114,7 @@ observeEvent(input$confirm_data, {
 
   toShow <- sapply(colLoop, function(x) x[["toShow"]]) |> unlist(use.names = F)
   toUpdate <- sapply(colLoop, function(x) x[["toUpdate"]]) |> unlist(use.names = F)
-  
+
   if (!all(c("dpra_pC", "dpra_pK") %in% dass_vars)) {
     if ("dpra_call" %in% dass_vars) {
       toShow <- toShow[toShow != "dpraDepSelect"]
@@ -138,9 +126,12 @@ observeEvent(input$confirm_data, {
     tmp <- gsub("_col$", "", i)
     updateSelectInput(inputId = i, choices = col_select_input, selected = template_col_select[[tmp]])
   }
+  updateTabsetPanel(inputId = "stepSet", selected = "Select Data Columns")
+  
   for (i in toShow) {
     shinyjs::runjs(sprintf("$('#%s').show()", i))
   }
-  shinyjs::runjs(sprintf("showScroll('%s', '%s', '%s', '%s')", "selectcol_ui", "div", "value", "panel_col_options"))
-  updateCollapse(session, id = "panelGroup", open = "panel_col_options", close = c("panel_dass_options", "panel_data_upload"))
+  
+  shinyjs::show("selectcol_ui")
+  shinyjs::runjs("$('#stepSet')[0].scrollIntoView();")
 }, ignoreInit = T)

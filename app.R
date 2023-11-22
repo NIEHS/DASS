@@ -60,7 +60,6 @@ server <- function(input, output, session) {
   source("R/server/Step4-ReviewColumns.R", local = TRUE)
   source("R/server/Step5-Results.R", local = TRUE)
   source("R/server/Step6-Performance.R", local = TRUE)
-
   # for debugging
   # observeEvent(input$browser,{
   #   browser()
