@@ -68,7 +68,7 @@ h2 {
   color: white;
   border-radius: 10px 0 0 10px;
   padding: 1em 1em;
-  width: 33%;
+  flex: 1 1 40%;
 }
 
 .details-panel {
@@ -76,8 +76,9 @@ h2 {
   color: black;
   border-radius: 0 10px 10px 0;
   padding: 1em 3em;
-  flex: 1 1 auto;
-  width: 67%;
+  flex: 1 1 60%;
+  display: flex;
+  align-items: center;
 }
 
 .link-list {
