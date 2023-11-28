@@ -275,7 +275,7 @@ h2 {
   margin: 1em 0;
   padding: 2em;
   border-radius: 10px;
-  border: 4px solid var(--darkblue);
+  border: 2px solid var(--darkblue);
 }
 
 .warn-block {
@@ -393,4 +393,54 @@ dt{
 
 .defTab th {
   text-align: center;
+}
+
+/* PANELS */
+.panel-default .panel-heading {
+  background-color: var(--darkblue);
+}
+
+.panel-body {
+  padding: 2em;
+}
+
+.panel-default {
+  margin-top: 20px;
+  border: 1px solid var(--darkblue);
+}
+
+.panel-title a {
+  color: white;
+  font-size: 2rem;
+}
+
+.selectionRow .form-group{
+  display: inline-block;
+  margin-bottom: 0;
+}
+
+details summary {
+  background-color: var(--lightblue);
+  font-size: 1.2em;
+  font-weight: bold;
+  padding: 4px 2px;
+  border-radius: 8px;
+  margin: 0.5em 0;
+}
+
+details summary:hover {
+  cursor: pointer; 
+    background-color: var(--midblue);
+} 
+
+details[open] summary:before {
+  content: "\25BE";
+}
+
+details summary:before {
+  content: "\25B8";
+}
+
+.detailsBody {
+  padding: 0 2em;
 }

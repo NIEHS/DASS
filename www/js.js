@@ -44,9 +44,10 @@ function resetHidden(hideAll=true) {
 
 $(document).on('shiny:connected', resetHidden);
 
+/*
 $(document).on('shiny:connected', function() {
   let predCol = document.querySelector("#perfPredCol");
   let refCol = document.querySelector("#perfRefRes");
   predCol.setAttribute("title", "Select prediction columns");
   refCol.setAttribute("title", "Select reference columns");
-});
+});*/

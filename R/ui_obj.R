@@ -980,8 +980,9 @@ resultsModals <- list(
 compare_panel <- tabPanel(
   title = "Compare",
   div(
-    id = "performanceUI",
-    class = "bordered-panel hiddenBlock",
+    id = "compareText",
+    class = "bordered-panel",
+    # class = "bordered-panel hiddenBlock",
     p(
       "This section allows you to compare the DA outcomes to reference data.",
       "The reference data should be provided in your uploaded data file."
@@ -993,79 +994,180 @@ compare_panel <- tabPanel(
       "Comparisons will only be performed if there are valid values",
       "for at least five prediction-reference pairs."
     ),
-    radioButtons(
-      inputId = "compareType",
-      label = "Select type of comparison",
-      choices = c("Hazard", "Potency")
-    ),
-    div(
-      id = "referenceCompare_ui",
-      selectInput(
-        inputId = "perfPredCol",
-        label = "Select Prediction Column(s)",
-        selectize = TRUE,
-        choices = NULL,
-        multiple = TRUE
+    hr(width = "50%"),
+    tags$details(
+      open = "open",
+      tags$summary(
+        "Select Endpoint Type"
       ),
-      selectInput(
-        inputId = "perfRefRes",
-        label = list(
-          span("Select Reference Column(s)"),
-          HTML("<button id='info_refCol' type='button' class='btn action-link btn-qs' aria-label='reference column info'>",
-          "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-          "</button>")
-        ),
-        selectize = TRUE,
-        choices = NULL,
-        multiple = TRUE
-      ),
-      actionButton(
-        inputId = "compareToRef",
-        label = "Compare"
+      div(
+        class = "detailsBody",
+        radioButtons(
+          inputId = "compareType",
+          label = "Select type of endpoint for comparison",
+          choices = c("Hazard", "Potency")
+        )
       )
     ),
-  div(
-    class = "hiddenBlock",
-    id = "perfBlock",
-    hr(style = "width:50%"),
-    p(
-      "Confusion matrices and performance metrics are shown below. Use the dropdown list",
-      "to select the comparison you would like to view. Use the 'Download' button to open",
-      "the download menu."
+    tags$details(
+      open = "open",
+      tags$summary(
+        "Select Columns to Compare"
+      ),
+      div(
+        id = "referenceCompare_ui",
+        class = "detailsBody",
+        div(
+          class = "selectionRow",
+          selectInput(
+            inputId = "perfPredCol",
+            label = "Select Prediction Column(s)",
+            selectize = TRUE,
+            choices = NULL,
+            multiple = TRUE
+          ),
+          selectInput(
+            inputId = "perfRefRes",
+            label = list(
+              span("Select Reference Column(s)"),
+              HTML("<button id='info_refCol' type='button' class='btn action-link btn-qs' aria-label='reference column info'>",
+                   "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+                   "</button>")
+            ),
+            selectize = TRUE,
+            choices = NULL,
+            multiple = TRUE
+          )
+        ),
+        checkboxInput(
+          inputId = "choosePullRef",
+          label = "Use reference data from ICE (?)"
+        ),
+        conditionalPanel(
+          condition = "input.choosePullRef",
+          checkboxGroupInput(
+            inputId = "iceReferenceSelect",
+            label = "ICE Reference Options",
+            choices = c("LLNA", "Other")
+          )
+        )
+      )
     ),
-    actionButton(inputId = "downloadSupp", label = "Download"),
-    selectInput(inputId = "perfList", label = "Select Output", choices = NULL),
-    plotOutput("perfFigure"),
-    hr(style = "width:50%"),
-    div(
-      class = "hiddenBlock",
-      id = "binaryDefs",
-      h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
-      HTML("<table class = 'defTab' border=1>
-<tr> <th> Metric </th> <th> Definition </th>  </tr>
-<tr> <td> N </td> <td> The number of valid reference values </td>  </tr>
-  <tr> <td> Accuracy  </td> <td>  (True positives + True negatives) / (All positives + All negatives) </td> </tr>
-  <tr> <td> Balanced Accuracy  </td> <td>  (True positive rate + True negative rate)/2 </td> </tr>
-  <tr> <td> F1 Score  </td> <td>  (2&times;True positives) / (2&times;True positives + False positives + False negatives) </td> </tr>
-  <tr> <td> True Positive Rate (Sensitivity)  </td> <td>  True positives / All positives </td> </tr>
-  <tr> <td> False Positive Rate  </td> <td>  False positives / All positives </td> </tr>
-  <tr> <td> True Negative Rate (Specificity)  </td> <td>  True negatives / All negatives </td> </tr>
-  <tr> <td> False Negative Rate  </td> <td>  False negatives / All negatives </td> </tr>
-   </table>")
+    # tags$details(
+    #   open = "open",
+    #   tags$summary(
+    #     "(Optional) Overlay"
+    #   ),
+    #   div(
+    #     class = "detailsBody",
+    #     p("select.... validated...blah?"),
+    #     selectInput(
+    #       inputId = "overlayColumnSelect",
+    #       label = "Select numeric columns for overlay",
+    #       choices = NULL
+    #     )
+    #   )
+    # ),
+    tags$details(
+      open = "open",
+      tags$summary(
+        "A Name"
+      ),
+      div(
+        class = "detailsBody",
+        checkboxInput(
+          inputId = "choosePullICE",
+          label = "Pull chemical information from ICE (?)"
+        ),
+        conditionalPanel(
+          condition = "input.choosePullICE",
+          tags$ol(
+            tags$li("Choose identifiers. multi? sep box for each CASRN, qsar-ready smiles, etc.?"),
+            tags$li("Choose options from ICE. Start with chem prop.",
+                    tags$ul(tags$li("maybe add other endpoints? if >1 result then viz shows median, more context on hover")))
+          )
+        )
+      )
     ),
-  div(
-    class = "hiddenBlock",
-    id = "potencyDefs",
-    h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
-    HTML("<table class = 'defTab' border=1>
-         <tr> <th> Metric </th> <th> Definition </th>  </tr>
+    actionButton(
+      inputId = "doCompare",
+      label = "Compare",
+      width = "100%"
+    )
+  ),
+  bsCollapse(
+    multiple = T,
+    open = c("Tables", "Figures"),
+    bsCollapsePanel(
+      title = "Tables",
+      div(
+        class = "hiddenBlock",
+        id = "compareTableBody",
+        p(
+          "Confusion matrices and performance metrics are shown below. Use the dropdown list",
+          "to select the comparison you would like to view. Use the 'Download' button to open",
+          "the download menu."
+        ),
+        actionButton(
+          inputId = "downloadCompareTables",
+          label = "Download"
+        ),
+        selectInput(inputId = "perfList", label = "Select Output", choices = NULL),
+        plotOutput("perfFigure"),
+        hr(width = "50%"),
+        div(
+          class = "hiddenBlock",
+          id = "binaryDefs",
+          h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
+          HTML("<table class = 'defTab' border=1>
+    <tr> <th> Metric </th> <th> Definition </th>  </tr>
     <tr> <td> N </td> <td> The number of valid reference values </td>  </tr>
-    <tr> <td> Accuracy  </td> <td>  The percentage of predicted values equal to reference values </td> </tr>
-    <tr> <td> Overpredicted </td> <td>  The percentage of predicted values with a more potent GHS category than the corresponding reference value </td> </tr>
-    <tr> <td> Underpredicted  </td> <td>  The percentage of predicted values with a less potent GHS category than the corresponding reference value </td> </tr>
-     </table>")
+      <tr> <td> Accuracy  </td> <td>  (True positives + True negatives) / (All positives + All negatives) </td> </tr>
+      <tr> <td> Balanced Accuracy  </td> <td>  (True positive rate + True negative rate)/2 </td> </tr>
+      <tr> <td> F1 Score  </td> <td>  (2&times;True positives) / (2&times;True positives + False positives + False negatives) </td> </tr>
+      <tr> <td> True Positive Rate (Sensitivity)  </td> <td>  True positives / All positives </td> </tr>
+      <tr> <td> False Positive Rate  </td> <td>  False positives / All positives </td> </tr>
+      <tr> <td> True Negative Rate (Specificity)  </td> <td>  True negatives / All negatives </td> </tr>
+      <tr> <td> False Negative Rate  </td> <td>  False negatives / All negatives </td> </tr>
+       </table>")
+        ),
+      div(
+        class = "hiddenBlock",
+        id = "potencyDefs",
+        h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
+        HTML("<table class = 'defTab' border=1>
+             <tr> <th> Metric </th> <th> Definition </th>  </tr>
+        <tr> <td> N </td> <td> The number of valid reference values </td>  </tr>
+        <tr> <td> Accuracy  </td> <td>  The percentage of predicted values equal to reference values </td> </tr>
+        <tr> <td> Overpredicted </td> <td>  The percentage of predicted values with a more potent GHS category than the corresponding reference value </td> </tr>
+        <tr> <td> Underpredicted  </td> <td>  The percentage of predicted values with a less potent GHS category than the corresponding reference value </td> </tr>
+         </table>")
+      )
+      )
+    ),
+    bsCollapsePanel(
+      title = "Figures",
+      div(
+        selectInput(
+          inputId = "violinIdentifiers",
+          label = "Select Identifiers",
+          choices = NULL,
+          multiple = T
+        ),
+        selectInput(
+          inputId = "violinDensitySelect",
+          label = "Select Numeric Data",
+          choices = NULL
+        ),
+        selectInput(
+          inputId = "violinCompareSelect",
+          label = "Select Comparison",
+          choices = NULL
+        ),
+        plotOutput("violin") 
+      )
+    )
   )
-  ))
 )
 
 compareModals <- list(
@@ -1116,7 +1218,7 @@ compareModals <- list(
   bsModal(
     id = "perfDLMenu",
     title = "Download Performance Output",
-    trigger = "downloadSupp",
+    trigger = "downloadCompareTables",
     div(
       p(
         "Confusion matrices and performance tables can be downloaded as a PDF file.",

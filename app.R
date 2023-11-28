@@ -44,7 +44,7 @@ ui <- fluidPage(
   htmltools::findDependencies(icon("box", lib = "font-awesome")),
   ui_dass,
   # for debugging
-  # div(style = "position: fixed; top: 0;", actionButton("browser", "browser")),
+  div(style = "position: fixed; top: 0;", actionButton("browser", "browser")),
   tags$footer(
     tags$script(src = "js.js")
   )
@@ -61,9 +61,9 @@ server <- function(input, output, session) {
   source("R/server/Step5-Results.R", local = TRUE)
   source("R/server/Step6-Performance.R", local = TRUE)
   # for debugging
-  # observeEvent(input$browser,{
-  #   browser()
-  # })
+  observeEvent(input$browser,{
+    browser()
+  })
 }
 
 # Create App -----

@@ -12,12 +12,6 @@
 # =============================================================================#
 
 # Step 6: Performance -----
-## Reactives -----
-perfTabs <- reactiveVal()
-perfVals <- reactiveVal()
-plotShown <- reactiveVal()
-
-## Compare -----
 observeEvent(input$goToCompare, updateTabsetPanel(inputId = "stepSet", selected = "Compare"))
 
 # Update prediction column menu
@@ -34,9 +28,17 @@ observe({
            updateSelectInput(inputId = "perfPredCol", choices = daPots)
            updateSelectInput(inputId = "perfRefRes", choices = c(names(dt_analyze())), selected = "")
          })
+  updateSelectInput(inputId = "overlayColumnSelect", choices = c(names(dt_analyze())), selected = "")
 })
 
-observeEvent(input$compareToRef, {
+## Reactives -----
+perfTabs <- reactiveVal()
+perfVals <- reactiveVal()
+plotShown <- reactiveVal()
+
+
+## Compare -----
+observeEvent(input$doCompare, {
   req(dass_res$results)
   req(input$perfRefRes)
   req(input$perfPredCol)
@@ -45,7 +47,8 @@ observeEvent(input$compareToRef, {
     Hazard = binaryCompare(),
     Potency = catCompare()
   )
-  shinyjs::show("perfBlock")
+  
+  
 })
 
 ### Binary -----
@@ -55,22 +58,22 @@ binaryCompare <- reactive({
     dt_analyze()[,.SD, .SDcols = input$perfRefRes],
     dass_res$results[,.SD,.SDcols = input$perfPredCol]
   )
-  
+
   allComps <- lapply(input$perfRefRes, function(refCol) {
     # Get selected columns
     ref_tmp <- data_compare[,.SD,.SDcols = c(refCol, input$perfPredCol)]
-    
+
     # Check for invalid values
     refWarn <- ref_tmp[
       !is.na(get(refCol)),
       any(!grepl_ci(concatOrString(c(call1_str, call0_str)), get(refCol)))]
-    
+
     # Convert to 1/0
     ref_tmp[,(refCol) := fcase(
       grepl_ci(concatOrString(call1_str), get(refCol)), 1,
       grepl_ci(concatOrString(call0_str), get(refCol)), 0
     )]
-    
+
     # Count missing
     ref_noMiss <- ref_tmp[,!is.na(get(refCol))]
     refError <- ref_tmp[ref_noMiss,.N < 5]
@@ -85,7 +88,7 @@ binaryCompare <- reactive({
           textGrob(label = "Error: Fewer than 5 valid reference values provided.", gp = gpar(col = "#D55E00"))
         ))
       perfFig$id <- id
-      
+
       out <- list(
         vals = perf,
         figs = perfFig
@@ -94,28 +97,28 @@ binaryCompare <- reactive({
     } else {
       # ref_tmp <- ref_tmp[,lapply(.SD, function(x) factor(x, levels = c("1", "0")))]
       ref_tmp[,(input$perfPredCol) := lapply(.SD, function(x) factor(x, levels = c("1", "0", "Inconclusive"))), .SDcols = input$perfPredCol]
-      
+
       oneOut <- lapply(input$perfPredCol, function(predCol) {
         pred_noMiss <- ref_tmp[,!is.na(get(predCol))]
         predError <- ref_tmp[ref_noMiss & pred_noMiss & (get(predCol) != "Inconclusive"), .N < 5]
         predOut <- list(
           id = gsub("\\s+|[.]+", "", tolower(paste(refCol, predCol, sep = "_"))),
           label = paste(refCol, predCol, sep = " vs. "),
-          refCol = refCol, 
+          refCol = refCol,
                    predCol = predCol,
                    refWarn = refWarn,
                    refError = refError,
                    predError = predError)
-        
+
         if (predError) {
           return(predOut)
         } else {
           perf <- compareBinary(
             pred = ref_tmp[ref_noMiss & pred_noMiss,get(predCol)],
             ref = ref_tmp[ref_noMiss & pred_noMiss,get(refCol)])
-          
+
           # nGrob <- 5 + refWarn
-          
+
           perfFig <- arrangeGrob(
             grobs = list(
               textGrob(label = "Confusion Matrix and Performance Metrics", gp = gpar(font = 2, cex = 1.25)),
@@ -125,27 +128,27 @@ binaryCompare <- reactive({
               perf$figs[[2]]), layout_matrix  = matrix(c(1,2,3,rep(4, 6), rep(5, 10)))
           )
           perfFig$id <- predOut$id
-          
+
           out <- list(
             vals = as.data.frame(list(predOut, perf$vals)),
             figs = perfFig)
-          
+
           return(out)
         }
       })
       return(oneOut)
     }
   })
-  
+
   allCompVals <- lapply(allComps, function(oneOut) {
     lapply(oneOut, function(x) {
       x$vals
     })
   })
-  
+
   allCompVals <- do.call("c", allCompVals) |> rbindlist(fill = T)
   perfVals(allCompVals)
-  
+
   allCompTabs <- lapply(allComps, function(oneOut) {
     lapply(oneOut, function(x) {
       x$figs
@@ -155,10 +158,24 @@ binaryCompare <- reactive({
   names(allCompTabs) <- sapply(allCompTabs, function(x) x$id)
 
   perfTabs(allCompTabs)
-  updateSelectInput(inputId = "perfList", choices = names(allCompTabs))
-  updateCheckboxGroupInput(inputId = "tableChoices", choices = names(allCompTabs))
+  updateSelectInput(inputId = "violinCompareSelect", choices = names(allCompTabs), selected = "")
+  updateSelectInput(inputId = "violinDensitySelect", choices = names(dt_analyze()), selected = "")
+  updateSelectInput(inputId = "violinIdentifiers", choices = names(dt_analyze()), selected = "")
+
+  shinyjs::show("compareTableBody")
   shinyjs::show("binaryDefs")
   shinyjs::hide("potencyDefs")
+  
+  updateCheckboxGroupInput(inputId = "tableChoices", choices = names(allCompTabs))
+  updateSelectInput(inputId = "perfList", choices = names(allCompTabs))
+})
+
+observe({
+  req(input$violinDensitySelect)
+  req(input$violinCompareSelect)
+
+  densityData <- dt_analyze()[input$violinDensitySelect]
+  dt_analyze()[,.SD, .SDcols = c(input$violinIdentifiers, input$violinDensitySelect)]
 })
 
 ### Categorical -----
@@ -168,27 +185,27 @@ catCompare <- reactive({
     dt_analyze()[,.SD, .SDcols = input$perfRefRes],
     dass_res$results[,.SD,.SDcols = input$perfPredCol]
   )
-  
+
   allComps <- lapply(input$perfRefRes, function(refCol) {
     # Get selected columns
     ref_tmp <- data_compare[,.SD,.SDcols = c(refCol, input$perfPredCol)]
-    
+
     # Check for invalid values
     refWarn <- ref_tmp[
       !is.na(get(refCol)),
       any(!grepl_ci(concatOrString(c("1A", "1B", "NC")), get(refCol)))]
-    
+
     # Convert to caps
     ref_tmp[,(refCol) := fcase(
       grepl_ci("^1A$", get(refCol)), "1A",
       grepl_ci("^1B$", get(refCol)), "1B",
       grepl_ci("^NC$", get(refCol)), "NC"
     )]
-    
+
     # Count missing
     ref_noMiss <- ref_tmp[,!is.na(get(refCol))]
     refError <- ref_tmp[ref_noMiss,.N < 5]
-    
+
     if (refError) {
       id <- sprintf("%s_error", refCol)
       perf <- data.frame(id = id, label = id, refCol = refCol, refWarn = refWarn, refError = refError)
@@ -199,7 +216,7 @@ catCompare <- reactive({
           textGrob(label = "Error: Fewer than 5 valid reference values provided.", gp = gpar(col = "#D55E00"))
         ))
       perfFig$id <- id
-      
+
       out <- list(
         vals = perf,
         figs = perfFig
@@ -213,19 +230,19 @@ catCompare <- reactive({
         predOut <- list(
           id = gsub("\\s+|[.]+", "", tolower(paste(refCol, predCol, sep = "_"))),
           label = paste(refCol, predCol, sep = " vs. "),
-          refCol = refCol, 
+          refCol = refCol,
           predCol = predCol,
           refWarn = refWarn,
           refError = refError,
           predError = predError)
-        
+
         if (predError) {
           return(predOut)
         } else {
           perf <- compareCat(
             pred = ref_tmp[ref_noMiss & pred_noMiss,get(predCol)],
             ref = ref_tmp[ref_noMiss & pred_noMiss,get(refCol)])
-          
+
           perfFig <- arrangeGrob(
             grobs = list(
               textGrob(label = "Confusion Matrix and Performance Metrics", gp = gpar(font = 2, cex = 1.25)),
@@ -235,17 +252,17 @@ catCompare <- reactive({
               perf$figs[[2]]),  layout_matrix  = matrix(c(1,2,3,rep(4, 5), rep(5, 6)))
           )
           perfFig$id <- predOut$id
-          
+
           out <- list(
             vals = as.data.frame(list(predOut, perf$vals[-1])),
             figs = perfFig)
-          
+
           return(out)
         }
       })
     }
   })
-  
+
   allCompVals <- lapply(allComps, function(oneOut) {
     lapply(oneOut, function(x) {
       x$vals
@@ -254,22 +271,27 @@ catCompare <- reactive({
 
   allCompVals <- do.call("c", allCompVals) |> rbindlist(fill = T)
   perfVals(allCompVals)
-  
+
   allCompTabs <- lapply(allComps, function(oneOut) {
     lapply(oneOut, function(x) {
       x$figs
     })
   })
-  
+
   allCompTabs <- do.call("c", allCompTabs)
   names(allCompTabs) <- sapply(allCompTabs, function(x) x$id)
-  
+
   perfTabs(allCompTabs)
   updateSelectInput(inputId = "perfList", choices = names(allCompTabs))
-  updateCheckboxGroupInput(inputId = "tableChoices", choices = names(allCompTabs))
+  updateSelectInput(inputId = "violinCompareSelect", choices = names(allCompTabs))
+  updateSelectInput(inputId = "violinDensitySelect", choices = names(dt_analyze()))
+  shinyjs::show("compareTableBody")
   
+  updateCheckboxGroupInput(inputId = "tableChoices", choices = names(allCompTabs))
+
   shinyjs::hide("binaryDefs")
   shinyjs::show("potencyDefs")
+  
 })
 
 observeEvent(input$perfList, {
@@ -278,6 +300,7 @@ observeEvent(input$perfList, {
 
 output$perfFigure <- renderPlot({grid.draw(plotShown())})
 
+# output$violin <- renderPlot()
 ## Download -----
 
 observeEvent(input$perfAll, {
@@ -331,7 +354,7 @@ output$perfFlat_xl <- downloadHandler(
   },
   content = function(con) {
     outCols <- setdiff(names(perfVals()), c("id", "label"))
-    
+
     wb <- createWorkbook()
     addWorksheet(wb, sheetName = "DASSPerformance")
     writeData(wb, sheet = "DASSPerformance", perfVals()[,.SD,.SDcols = outCols])

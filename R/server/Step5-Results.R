@@ -117,7 +117,30 @@ run_dass <- reactive({
   shinyjs::show("result_contents")
   shinyjs::show("performanceUI")
   updateTabsetPanel(inputId = "stepSet", selected = "Results")
-  # updateCollapse(session, id = "panelGroup", open = c("panel_results", "panel_performance"), close = "panel_review")
+  
+  compareSelects <- c("binaryRefSelect", "binaryIdentifier")
+  
+  updateSelectInput(
+    inputId = "binaryRefSelect",
+    choices = names(dt_analyze())
+  )
+  updateSelectInput(
+    inputId = "binaryDASelect",
+    choices = grep("Call", da_sty, value = T)
+  )
+  
+  if (any(grepl("Potency", da_sty))) {
+    updateSelectInput(
+      inputId = "potencyRefSelect",
+      choices = names(dt_analyze())
+    )
+    updateSelectInput(
+      inputId = "potencyDASelect",
+      choices = grep("Potency", da_sty, value = T)
+    )
+    
+  }
+  
 })
 
 output$dt_results <- renderDataTable({
@@ -126,6 +149,7 @@ output$dt_results <- renderDataTable({
     dass_res$results,
     class = "table-bordered stripe",
     rownames = FALSE,
+    filter = "top",
     extensions = "Buttons",
     selection = "none",
     callback = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
