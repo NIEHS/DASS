@@ -268,7 +268,7 @@ a:focus, a:hover {
 
 .external-link::after {
   font-family: FontAwesome;
-  content: "\f08e";
+  content: " \f08e";
   font-size: x-small;
 }
 

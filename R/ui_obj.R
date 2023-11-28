@@ -387,7 +387,13 @@ selectcolumns_panel <- bsCollapsePanel_dass(
         "information about the endpoints and data formatting requirements.",
         "Values that are incorrectly formatted or invalid",
         "will be treated as missing data and may affect the results. More details are given",
-        "in the User Guide."),
+        "in the",
+        a(
+          href = "user_guide.pdf",
+          target = "_blank",
+          class = "external-link",
+          "User Guide"
+        ), "."),
       div(
         id = "dpraCallSelect",
         class = "hiddenBlock",
@@ -1111,7 +1117,7 @@ ui_dass <- fluidPage(
         target = "_blank",
         "Source Code"),
       br(),
-      span("Last updated: 2023-Oct-20")
+      span("Last updated: 2023-Nov-28")
     )
   )
 )
