@@ -143,11 +143,11 @@ selectda_panel <- bsCollapsePanel_dass(
     ),
     img(
       class = "da-diagram",
-      src = "diagrams/2o3_diagram-v1.png",
+      src = "diagrams/2o3_diagram.png",
       alt = "Diagram of 2o3 data interpretation procedure"
     ),
     HTML(
-      "<p><a href = 'diagrams/2o3_diagram-v1.png' target='blank' style='font-size:90%;' class = 'external-link'>",
+      "<p><a href = 'diagrams/2o3_diagram.png' target='blank' style='font-size:90%;' class = 'external-link'>",
       "View full-size image",
       "</a></p>"
     ),
@@ -187,11 +187,11 @@ selectda_panel <- bsCollapsePanel_dass(
     ),
     img(
       class = "da-diagram",
-      src = "diagrams/ITS_diagram-v1.png",
+      src = "diagrams/ITS_diagram.png",
       alt = "Diagram of ITS data interpretation procedure"
     ),
     HTML(
-      "<p><a href = 'diagrams/ITS_diagram-v1.png' target='blank' style='font-size:90%;' class = 'external-link'>",
+      "<p><a href = 'diagrams/ITS_diagram.png' target='blank' style='font-size:90%;' class = 'external-link'>",
       "View full-size image",
       "</a></p>"
     ),
@@ -217,11 +217,11 @@ selectda_panel <- bsCollapsePanel_dass(
     ),
     img(
       class = "da-diagram",
-      src = "diagrams/KE31STS_diagram-v1.png",
+      src = "diagrams/KE31STS_diagram.png",
       alt = "Diagram of KE 3/1 STS data interpretation procedure"
     ),
     HTML(
-      "<p><a href = 'diagrams/KE31STS_diagram-v1.png' target='blank' style='font-size:90%;' class = 'external-link'>",
+      "<p><a href = 'diagrams/KE31STS_diagram.png' target='blank' style='font-size:90%;' class = 'external-link'>",
       "View full-size image",
       "</a></p>"
     ),
