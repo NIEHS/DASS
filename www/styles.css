@@ -398,6 +398,24 @@ dt{
 /* PANELS */
 .panel-default .panel-heading {
   background-color: var(--darkblue);
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  display: flex;
+}
+
+.panel-default .panel-heading a {
+  color: white;
+  flex: 1 1 0;
+}
+
+.panel-default .panel-heading:not(:has(a.collapsed)):before {
+  content: "\25BE";
+}
+
+.panel-default .panel-heading:has(a.collapsed):before {
+    content: "\25B8";
+
 }
 
 .panel-body {
@@ -407,11 +425,6 @@ dt{
 .panel-default {
   margin-top: 20px;
   border: 1px solid var(--darkblue);
-}
-
-.panel-title a {
-  color: white;
-  font-size: 2rem;
 }
 
 .selectionRow .form-group{

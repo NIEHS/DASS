@@ -52,18 +52,19 @@ bsCollapsePanel_dass <- function (title, ..., value = title, style = NULL)
     class = paste0("panel panel-", style), 
     value = value, 
     shiny::tags$div(
-      class = "panel-heading", 
-      # role = "tab", 
-      id = paste0("heading_", id), 
-      shiny::tags$h1(
-        class = "panel-title", 
-        shiny::tags$a(
-          `data-toggle` = "collapse", 
-          `aria-controls` = id,
-          role = "button",
-          href = paste0("#", id), title)
-        )
-      ),
+      class = "panel-heading",
+      id = paste0("heading_", id),
+      shiny::tags$a(
+        `data-toggle` = "collapse", 
+        `aria-controls` = id,
+        role = "button",
+        href = paste0("#", id),
+        div(
+          class = "panel-heading-text",
+          title
+          )
+      )
+    ),
     shiny::tags$div(
       id = id, 
       class = "panel-collapse collapse", 

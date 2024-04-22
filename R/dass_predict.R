@@ -394,7 +394,7 @@ roundPercent <- function(x, digits = 0) {
 # `pred` - factor vector with 0/1
 # `ref` - factor vector with 0/1. reference for comparing against pred
 # Calculates binary performance metrics
-compareBinary <- function(pred, ref) {
+compareBinary <- function(pred, ref, predCol = NULL, refCol = NULL) {
   if (!all(na.omit(pred) %in% c(0,1, "Inconclusive"))) {
     stop("`pred` should be a factor with levels = c(0,1, Inconclusive)")
   }
@@ -405,71 +405,70 @@ compareBinary <- function(pred, ref) {
     stop("`pred` and `ref` should be the same length")
   }
   
-  # Keep only cases with reference data
-  refNA <- is.na(ref)
-  ref <- ref[!refNA]
-  pred <- pred[!refNA]
-  
-  # Check number of pairs
-  n <- length(ref)
+  # Count non-missing
+  anyMiss <- is.na(ref) | is.na(pred)
+  n <- sum(!anyMiss)
   if (n < 5) {
     stop("Fewer than 5 non-missing pairs")
   }
-
+  
   pred <- factor(pred, levels = c("1", "0", "Inconclusive"), labels = c("Positive", "Negative", "Inconclusive"))
   pred <- droplevels(pred)
   ref <- factor(ref, levels = c("1", "0"), labels = c("Positive", "Negative"))
   ref <- droplevels(ref)
   
-  cm <- table(pred, ref, useNA = "ifany")
-  cm_dt <- data.table(cm)
-  tp <- cm_dt[pred == "Positive" & ref == "Positive", sum(N, na.rm = T)]
-  fp <- cm_dt[pred == "Positive" & ref == "Negative", sum(N, na.rm = T)]
-  tn <- cm_dt[pred == "Negative" & ref == "Negative", sum(N, na.rm = T)]
-  fn <- cm_dt[pred == "Negative" & ref == "Positive", sum(N, na.rm = T)]
-
-  acc <- (tp + tn)/n
-  tpr <- tp/(sum(ref == "Positive"))
-  fpr <- fp/(sum(ref == "Negative"))
-  tnr <- tn/(sum(ref == "Negative"))
-  fnr <- fn/(sum(ref == "Positive"))
-  balAcc <- (tpr + tnr)/2
+  ref_pred_comp <- fcase(
+    ref == "Positive" & pred == "Positive", "TP",
+    ref == "Negative" & pred == "Positive", "FP",
+    ref == "Positive" & pred == "Negative", "FN",
+    ref == "Negative" & pred == "Negative", "TN"
+  )
+  
+  
+  N <- sum(!is.na(ref_pred_comp))
+  tp <- sum(na.omit(ref_pred_comp == "TP"))
+  fp <- sum(na.omit(ref_pred_comp == "FP"))
+  fn <- sum(na.omit(ref_pred_comp == "FN"))
+  tn <- sum(na.omit(ref_pred_comp == "TN"))
+  
+  acc <- (tp + tn)/N
+  sens <- tp/(tp + fn)
+  spec <- tn/(tn + fp)
+  balAcc <- (sens + spec)/2
   f1 <- (2*tp)/((2*tp) + fp + fn)
   
-  vals <- list(
-    N = sum(cm),
-    truePositive = tp,
-    falsePositive = fp,
-    trueNegative = tn,
-    falseNegative = fn,
-    accuracy = acc,
-    balancedAccuracy = balAcc,
-    f1Score = f1,
-    truePositiveRate = tpr,
-    falsePositiveRate = fpr,
-    trueNegativeRate = tnr,
-    falseNegativeRate = fnr
+  perf_tab <- list(
+    N = N, 
+    `True Positive` = tp,
+    `False Positive` = fp,
+    `False Negative` = fn,
+    `True Negative` = tn,
+    Sensitivity = sens,
+    Specificity = spec,
+    `Balanced Accuracy` = balAcc,
+    Accuracy = acc,
+    `F1 Score` = f1
   )
-  
-  figs <- list(
-    cm = draw_CM(cm),
-    mets = draw_metTab(list(
-      N = sum(cm),
-      accuracy = roundPercent(acc),
-      balancedAccuracy = roundPercent(balAcc),
-      f1Score = roundPercent(f1),
-      truePositiveRate = roundPercent(tpr),
-      falsePositiveRate = roundPercent(fpr),
-      trueNegativeRate = roundPercent(tnr),
-      falseNegativeRate = roundPercent(fnr)))
-  )
+  perf_tab <- lapply(perf_tab, function(x) {names(x) <- "Value"; return(x)})
 
-  return(list(vals = vals, figs = figs))
+  cm <- draw_CM(table(pred, ref))
+  perf_fig <- draw_metTab(perf_tab)
+  ref_pred_comp <- factor(ref_pred_comp, levels = c("NA", "TP", "TN", "FP", "FN"), labels = c("NA", "True Positive", "True Negative", "False Positive", "False Negative"))
+  ref_pred_comp[is.na(ref_pred_comp)] <- "NA"
+  ref_pred_comp <- droplevels(ref_pred_comp)
+   return(list(
+    indiv = ref_pred_comp,
+    perf_list = perf_tab,
+    fig = tableArrange(tab_list = list(cm, perf_fig),
+                       refCol = refCol,
+                       predCol = predCol)
+  ))
 }
+
 # `pred` - factor vector with 1A/1B/NC
 # `ref` - factor vector with 1A/1B/NC. reference for comparing against pred
 # Calculates categorical performance metrics
-compareCat <- function(pred, ref) {
+compareCat <- function(pred, ref, predCol = NULL, refCol = NULL) {
   if (!all(na.omit(pred) %in% c("1A", "1B", "NC", "Inconclusive"))) {
     stop("`pred` should be a factor with levels = c('1A', '1B', 'NC', 'Inconclusive')")
   }
@@ -480,50 +479,76 @@ compareCat <- function(pred, ref) {
     stop("`pred` and `ref` should be the same length")
   }
   
-  # Keep only cases with reference data
-  refNA <- is.na(ref)
-  ref <- ref[!refNA]
-  pred <- pred[!refNA]
-  
-  # Check number of pairs
-  n <- length(ref)
-  if (n <= 5) {
+  # Count non-missing
+  anyMiss <- is.na(ref) | is.na(pred)
+  n <- sum(!anyMiss)
+  if (n < 5) {
     stop("Fewer than 5 non-missing pairs")
   }
   
-  if (!is.ordered(pred)) pred <- factor(pred, levels = c("1A", "1B", "NC", "Inconclusive"), ordered = T)
-  if (!is.ordered(ref)) ref <- factor(ref, levels = c("1A", "1B", "NC"), ordered = T)
+  # pred <- factor(pred, levels = c("1A", "1B", "NC", "Inconclusive"))
+  # pred <- droplevels(pred)
+  # ref  <- factor(ref, levels = c("1A", "1B", "NC"))
+  # ref <- droplevels(ref)
 
-  predLev <- factor(pred, levels = c("1A", "1B", "NC"), ordered = T)
-  
-  acc <- mean(predLev == ref, na.rm = T)
-  under <- mean(predLev > ref, na.rm = T)
-  over <- mean(predLev < ref, na.rm = T)
+  ref_pred <- data.table(pred, ref)
+  ref_pred[,comp := fcase(
+    ref == "1A" & pred == "1A", "1A",
+    ref == "1A" & (pred == "1B" | pred == "NC"), "UP",
+    ref == "1B" & pred == "1B", "1B",
+    ref == "1B" & pred == "NC", "UP",
+    ref == "1B" & pred == "1A", "OP",
+    ref == "NC" & pred == "NC", "NC",
+    ref == "NC" & (pred == "1A" | pred == "1B"), "OP"
+  )]
 
-  pred <- droplevels(pred)
-  ref <- droplevels(ref)
+  N <- ref_pred[!is.na(comp), .N]
+  acc <- ref_pred[!is.na(comp), mean(ref == pred)]
+  under <- ref_pred[!is.na(comp), mean(comp == "UP")]
+  over <- ref_pred[!is.na(comp), mean(comp == "OP")]
   
-  cm <- table(pred, ref)
+  perf_tab <- list(
+    N = N,
+    Accuracy = acc,
+    Overpredicted = over,
+    Underpredicted = under
+  )
+  perf_tab <- lapply(perf_tab, function(x) {names(x) <- "Value"; return(x)})
   
-  vals <- list(
-    confusionMatrix = cm,
-    N = n,
-    accuracy = acc,
-    overpredicted = over,
-    underpredicted = under
+  class_perf <- lapply(c("1A", "1B", "NC"), function(i) {
+    sensitivity <- ref_pred[!is.na(comp) & ref == i, mean(pred == ref)]
+    specificity <- ref_pred[!is.na(comp) & ref != i, mean(pred != i)]
+    list(
+      Sensitivity = sensitivity,
+      Specificity = specificity,
+      `Balanced Accuracy` = (sensitivity + specificity)/2
+    )
+  })
+  names(class_perf) <- c("1A", "1B", "NC")
+  class_perf <- list(Sensitvity = sapply(class_perf, function(x) x[["Sensitivity"]]),
+                     Specificity = sapply(class_perf, function(x) x[["Specificity"]]),
+                     `Balanced Accuracy` = sapply(class_perf, function(x) x[["Balanced Accuracy"]]))
+  
+  cm <- draw_CM(table(pred, ref))
+  perf_fig <- draw_metTab(perf_tab)
+  perf_class_fig <- draw_metTab(class_perf)
+  
+  ref_pred_comp <- factor(ref_pred[["comp"]], levels = c("NA", "NC", "1B", "1A", "OP", "UP"), labels = c("NA", "True NC", "True 1B", "True 1A", "Overpredicted", "Underpredicted"))
+  ref_pred_comp[is.na(ref_pred_comp)] <- "NA"
+  ref_pred_comp <- droplevels(ref_pred_comp)
+  
+  return(
+    list(
+      indiv = ref_pred_comp,
+      perf_list = perf_tab,
+      fig = tableArrange(
+        tab_list = list(cm, perf_fig, perf_class_fig),
+        refCol = refCol,
+        predCol = predCol
+      )
+    )
   )
   
-  figs <- list(
-    cm = draw_CM(cm),
-    mets = draw_metTab(list(
-      N = n,
-      accuracy = roundPercent(acc),
-      overpredicted = roundPercent(over),
-      underpredicted = roundPercent(under)
-    ))
-  )
-
-  return(list(vals = vals, figs = figs))
 }
 
 draw_CM <- function(cm) {
@@ -594,16 +619,31 @@ draw_CM <- function(cm) {
 }
 
 draw_metTab <- function(named_list, fixNames = T) {
-  metricLabels <- gsub("([[:upper:]])", "_\\1", names(named_list)) |>
-    strsplit(split = "_")
-  metricLabels <- sapply(X = metricLabels, paste, collapse = " ")
-  metricLabels <- gsub("^(.){1}", "\\U\\1", x = metricLabels, perl = T) |>
-    trimws()
+  metricLabels <- names(named_list)
+  if (fixNames) {
+    metricLabels <- gsub("([[:upper:]])", "_\\1", metricLabels) |>
+      strsplit(split = "_")
+    metricLabels <- sapply(X = metricLabels, paste, collapse = " ")
+    metricLabels <- gsub("^(.){1}", "\\U\\1", x = metricLabels, perl = T) |>
+      trimws()
+  }
   
-  df <- data.frame(Metric = metricLabels, Value = unlist(named_list))
-  tab <- tableGrob(df, rows = NULL, cols = c("Metric", "Value"))
+  named_list <- lapply(names(named_list), function(x) {
+    tmp <- named_list[[x]]
+    x_names <- names(tmp)
+    if (typeof(tmp) == "double") tmp <- roundPercent(tmp)
+    tmp <- structure(as.character(tmp), names = x_names)
+    return(c(Metric = x, tmp))
+  })
+  
+  
+  # df <- data.frame(Metric = metricLabels, Value = unlist(named_list))
+  df <- data.frame(do.call("rbind", named_list), check.names = F)
+  
+  tab <- tableGrob(df, rows = NULL, cols = names(df))
+  
+  
   metCol <- tab$layout$l == 1 & tab$layout$t != 1
-  valCol <- tab$layout$r == 2 & tab$layout$t != 1
   header <- tab$layout$t == 1
   
   rectCells <- sapply(tab$grobs, function(x) grepl("rect", x))
@@ -618,7 +658,7 @@ draw_metTab <- function(named_list, fixNames = T) {
     return(x)
   })
   
-  tab$grobs[valCol & rectCells] <- lapply(tab$grobs[valCol & rectCells], function(x) {
+  tab$grobs[!(header | metCol) & rectCells] <- lapply(tab$grobs[!(header | metCol) & rectCells], function(x) {
     x$gp$fill <- "white"
     return(x)
   })
@@ -626,11 +666,26 @@ draw_metTab <- function(named_list, fixNames = T) {
   return(tab)
 }
 
+tableArrange <- function(tab_list, refCol = NULL, predCol = NULL) {
+  if (is.null(refCol)) refCol <- "Reference Column"
+  if (is.null(predCol)) predCol <- "Prediction Column"
+  
+  
+  lay_mat <- unlist(lapply(1:length(tab_list), function(x) {
+    rep(x, ceiling(length(tab_list[[x]]$heights) * 1.5))
+  }))
+  lay_mat <- matrix(c(1:3, lay_mat + 3))
 
-
-
-
-
-
-
-
+  tabFig <- arrangeGrob(
+    grobs =   c(
+      list(
+        textGrob(label = "Confusion Matrix and Performance Metrics", gp = gpar(font = 2, cex = 1.25)),
+        textGrob(label = paste("Reference Column: ", refCol)),
+        textGrob(label = paste("Prediction Column:", predCol))
+      ), tab_list
+    ),
+      layout_matrix = lay_mat
+  )
+  
+  return(tabFig)
+}

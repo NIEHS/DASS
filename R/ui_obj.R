@@ -1095,25 +1095,49 @@ compare_panel <- tabPanel(
       width = "100%"
     )
   ),
-  bsCollapse(
+  bsCollapse_dass(
     multiple = T,
     open = c("Tables", "Figures"),
-    bsCollapsePanel(
+    bsCollapsePanel_dass(
       title = "Tables",
       div(
         class = "hiddenBlock",
         id = "compareTableBody",
-        p(
-          "Confusion matrices and performance metrics are shown below. Use the dropdown list",
-          "to select the comparison you would like to view. Use the 'Download' button to open",
-          "the download menu."
+
+          p(
+            "Confusion matrices and performance metrics are shown below. Use the dropdown list",
+            "to select the comparison you would like to view. Use the 'Download' button to open",
+            "the download menu."
+          ),
+          actionButton(
+            inputId = "downloadCompareTables",
+            label = "Download"
+          ),
+        fluidRow(
+          column(
+            width = 6,
+        selectInput(inputId = "referencePerf_1",
+                    label = "Select Reference",
+                    choices = NULL),
+        selectInput(inputId = "predictionPerf_1",
+                    label = "Select Prediction",
+                    choices = NULL),
+        plotOutput("perfFigure_1")),
+        column(
+          width = 6,
+          id = "perfTab_block2",
+          class = "hiddenBlock",
+          selectInput(inputId = "referencePerf_2",
+                      label = "Select Reference",
+                      choices = NULL),
+          selectInput(inputId = "predictionPerf_2",
+                      label = "Select Prediction",
+                      choices = NULL),
+          plotOutput("perfFigure_2"))
+        
+        
         ),
-        actionButton(
-          inputId = "downloadCompareTables",
-          label = "Download"
-        ),
-        selectInput(inputId = "perfList", label = "Select Output", choices = NULL),
-        plotOutput("perfFigure"),
+
         hr(width = "50%"),
         div(
           class = "hiddenBlock",
@@ -1145,9 +1169,14 @@ compare_panel <- tabPanel(
       )
       )
     ),
-    bsCollapsePanel(
+    bsCollapsePanel_dass(
       title = "Figures",
       div(
+        selectInput(
+          inputId = "violinDensitySelect",
+          label = "Select Numeric Data",
+          choices = NULL
+        ),
         selectInput(
           inputId = "violinIdentifiers",
           label = "Select Identifiers",
@@ -1155,16 +1184,11 @@ compare_panel <- tabPanel(
           multiple = T
         ),
         selectInput(
-          inputId = "violinDensitySelect",
-          label = "Select Numeric Data",
-          choices = NULL
-        ),
-        selectInput(
           inputId = "violinCompareSelect",
           label = "Select Comparison",
           choices = NULL
         ),
-        plotOutput("violin") 
+        plotlyOutput("violin") 
       )
     )
   )
@@ -1229,7 +1253,7 @@ compareModals <- list(
     div(
       actionLink(inputId = "perfAll", label = "Select All"), " | ",
       actionLink(inputId = "perfNone", label = "Deselect All"),
-      checkboxGroupInput(inputId = "tableChoices", label = "Select Output to Download", choices = NULL),
+      checkboxGroupInput(inputId = "tableChoices", label = "Select Output to Download", choices = NULL, width = "100%"),
       downloadButton(outputId = "dlPerf", label = "Download Output")
     ),
     hr(style = "width:50%"),

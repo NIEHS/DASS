@@ -39,12 +39,18 @@ usr_dt <- reactiveVal()
 dt_analyze <- reactiveVal()
 demo_data <- reactiveVal()
 xlsheet <- reactiveVal()
-
+numeric_data <- reactiveVal() 
 ## Demo -----
+
 observeEvent(input$useDemoData, {
   if (input$useDemoData) {
     demo_data(fread("www/dassAppDemoData-fromGL497Annex2.csv"))
     dt_analyze(demo_data())
+    
+    numeric_data(lapply(dt_analyze(), function(x) {
+      if (is.numeric(x)) x
+    }))
+  
     shinyjs::hide("uploadBlock")
   }
   
@@ -52,8 +58,13 @@ observeEvent(input$useDemoData, {
     shinyjs::show("uploadBlock")
     if (is.null(usr_dt())) {
       dt_analyze(NULL)
+      numeric_data(NULL)
     } else {
       dt_analyze(usr_dt())
+      numeric_data(lapply(dt_analyze(), function(x) {
+        check_num <- sum(grepl("^[-]{0,1}[0-9]{0,}.{0,1}[0-9]{1,}[eE]{0,1}[-]{0,1}[0-9]{0,1}$", x), na.rm = T)
+        if (check_num >= 5) x
+      }))
     }
   }
 })
