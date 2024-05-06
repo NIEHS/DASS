@@ -408,7 +408,7 @@ observe({
 
 output$dlPerf <- downloadHandler(
   filename = function() {
-    if (input$useDemoData) {
+    if (input$use_demo_data) {
       fname <- "DemoData"
     } else {
       fname <- unlist(strsplit(input$fpath$name, "[.]"))
@@ -435,7 +435,7 @@ outputOptions(output, "dlPerf", suspendWhenHidden = FALSE)
 ### Tables -----
 output$perfFlat_xl <- downloadHandler(
   filename = function() {
-    if (input$useDemoData) {
+    if (input$use_demo_data) {
       fname <- "DemoData"
     } else {
       fname <- unlist(strsplit(input$fpath$name, "[.]"))
@@ -468,7 +468,7 @@ outputOptions(output, "perfFlat_xl", suspendWhenHidden = FALSE)
 # 
 output$perfFlat_txt <- downloadHandler(
   filename = function() {
-    if (input$useDemoData) {
+    if (input$use_demo_data) {
       fname <- "DemoData"
     } else {
       fname <- unlist(strsplit(input$fpath$name, "[.]"))

@@ -48,12 +48,36 @@ h2 {
 
 #selectcol_ui .col_assay_endpoint {
   margin-left: 25px;
+  margin-bottom: 1.25em;
 }
 
 .external-link::after {
   font-family: FontAwesome;
   content: "\00A0\f08e";
   font-size: x-small;
+}
+
+legend {
+  margin-bottom: 0;
+}
+
+fieldset label {
+  font-weight: normal;
+}
+
+label.disabled {
+  color: #595959;
+}
+
+/* https://css-tricks.com/inclusively-hidden/ */
+.sr-only:not(:focus):not(:active) {
+  clip: rect(0 0 0 0); 
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap; 
+  width: 1px;
 }
 
 /* Header */
@@ -81,12 +105,18 @@ h2 {
   align-items: center;
 }
 
+.nav-tabs li.disabled {
+  pointer-events: none;
+  font-weight: normal;
+}
+
 .link-list {
   display: flex;
   flex-direction: column;
   gap: 0.5em;
   padding: 1em;
 }
+
 
 /* TABS */
 .nav-tabs {
@@ -103,6 +133,7 @@ h2 {
   margin:0 1.5em ;
   height:4em;
   background-color: var(--lightblue);
+  font-weight: bold;
 }
 
 .nav-tabs li a {
@@ -293,7 +324,7 @@ h2 {
   padding:1vh;
 }
 
-.key-block {
+.text-block {
   border:1px solid #c8d7e3;
   border-radius:10px;
   background-color:#dae6ee;

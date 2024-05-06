@@ -11,127 +11,127 @@
 # =============================================================================#
 
 # Step 3: Select Columns -----
-## Reactive Values -----
-# selected tests ordered as: 2o3, its, ke 3/1 sts
-dass_choice <- reactiveVal()
+## Observers -----
+# Enable or disable KE1 call selection menu
+ke1_dep_watch <- reactiveVal(F)
+observe({
+  if (input$ke1_call_interpret) {
+    shinyjs::disable("ke1_call_col")
+    shinyjs::show("ke1_dep_select")
+  } else if (!input$ke1_call_interpret) {
+    shinyjs::enable("ke1_call_col")
+    if (!ke1_dep_watch()){
+      shinyjs::hide("ke1_dep_select")
+    }
+  }
+})
 
-## Set Up Panel 3 -----
+# Enable or disable dropdown menus for depletion values
+observe({
+  if (input$ke1_choose_dep) {
+    shinyjs::disable("ke1_mean_c_l_dep_col")
+    shinyjs::enable("ke1_c_dep_col")
+    shinyjs::enable("ke1_l_dep_col")
+  } else if (!input$ke1_choose_dep) {
+    shinyjs::enable("ke1_mean_c_l_dep_col", )
+    shinyjs::disable("ke1_c_dep_col")
+    shinyjs::disable("ke1_l_dep_col")
+  }
+})
+
+## Dictionaries -----
+# HTML IDs to unhide based on DA selections
+ke_block_id <- list(
+  da_2o3 = c("ke1_select_ui", "ke2_select_ui", "ke3_select_ui", "ke1_call_select", "ke3_call_select"),
+  da_its = c("ke1_select_ui", "ke3_select_ui", "insil_select_ui", "ke1_dep_select", "ke3_val_select"),
+  da_ke31 = c("ke1_select_ui", "ke3_select_ui", "ke1_call_select", "ke3_val_select")
+)
+
+# List to store selection details
+tmp_list <- function(x) list(display_name = x, da_2o3 = "", da_its = "", da_ke31 = "", col_name = NULL, values = NULL, converted_values = NULL, flagged = NULL)
+data_select_template <- list(
+  ke1_call_col         = tmp_list("KE1 Assay Call"), 
+  ke1_mean_c_l_dep_col = tmp_list("KE1 Mean Depletion (%)"),
+  ke1_c_dep_col        = tmp_list("KE1 Cys/NAC Depletion (%)"),
+  ke1_l_dep_col        = tmp_list("KE1 Lys/NAL Depletion (%)"),
+  ke2_call_col         = tmp_list("KE2 Assay Call"),
+  ke2_val_col          = tmp_list("KE2 Quantiative Endpoint"),
+  ke3_call_col         = tmp_list("KE3 Assay Call"),
+  ke3_val_col          = tmp_list("KE3 Quantiative Endpoint"),
+  insil_call_col       = tmp_list("In Silico Call Prediction"),
+  insil_ad_col         = tmp_list("In Silico Applicability Domain")
+)
+
+## Set up Panel 3 -----
 observeEvent(input$confirm_data, {
   req(dt_analyze())
-  check_select <- all(!input$do_da_2o3 &
-                        !input$do_da_its & !input$do_da_ke31)
-  if (check_select) {
+  check_select <- c(da_2o3  = input$do_da_2o3,
+                    da_its  = input$do_da_its,
+                    da_ke31 = input$do_da_ke31)
+
+
+  if (!any(check_select)) {
     showNotification(
-      type = "error",
-      ui = "No defined approaches selected.",
+      type     = "error",
+      ui       = "No defined approaches selected.",
       duration = 10
     )
   }
-  req(!check_select)
-  # if (!is.null(dass_choice())) {
-  #   resetApp_newDASS()
-  # }
 
-  # set up values for dropdown lists
-  col_select_input <- colnames(dt_analyze())
-  template_cols <- c("dpra_call","dpra_pC","dpra_pK","hclat_call","hclat_mit",
-                     "ks_call","ks_imax","insilico_call","insilico_ad")
-  template_col_select <- list(
-    dpra_call = "",
-    dpra_pC = "",
-    dpra_pK = "",
-    hclat_call = "",
-    hclat_mit = "",
-    ks_call = "",
-    ks_imax = "",
-    insilico_call = "",
-    insilico_ad = ""
-  )
-  for (i in template_cols) {
-    out <- col_select_input[grep_ci(paste0("^", i, "$"), trimws(col_select_input))]
-    if (length(out) > 0) {
-      template_col_select[[i]] <- out
-    }
-  }
+  req(any(check_select))
+  # Unhide Step 3 UI
+  shinyjs::show("select_col_ui")
+  shinyjs::enable("tab_select_columns")
 
-  # Names of DASS options
-  dass_opts <- c("da_2o3", "da_its", "da_ke31")
-  # Variables needed for each DASS
-  dass_vars <- list(
-    da_2o3 = c("ks_call", "dpra_call", "hclat_call"),
-    da_its = c("hclat_mit", "dpra_pC", "dpra_pK", "insilico"),
-    da_ke31 = c("hclat_mit", "dpra_call")
-  )
-  # Get user DASS selection as logical vector
-  dass_selected <- c(
-    input$do_da_2o3,
-    input$do_da_its,
-    input$do_da_ke31
-  )
-  # Filter DASS options and DASS variable vectors based on selection
-  dass_opts <- dass_opts[dass_selected]
-  dass_choice(dass_opts)
-  dass_vars <- dass_vars[dass_selected]
-  dass_vars <- sort(unique(unlist(dass_vars)))
-
-  # Set up UI for Panel 3
-  # DPRA %C- and %K-depletion
-  # For DPRA call, if %C- and %K depletion are provided, user may choose
-  # how to determine call - as the DPRA call column, or evaluated from
-  # the assay values
-  id_list <- list(
-    dpra_call = list(
-      toShow = c("dpraCallSelect", "dpraDepSelect"),
-      toUpdate = c("dpra_call_col", "dpra_pC_col", "dpra_pK_col")
-    ),
-    hclat_call = list(
-      toShow = "hclatCallSelect",
-      toUpdate = "hclat_call_col"
-    ),
-    hclat_mit = list(
-      toShow = "hclatMitSelect",
-      toUpdate = "hclat_mit_col"
-    ),
-    ks_call = list(
-      toShow = "ksCallSelect",
-      toUpdate = "ks_call_col"
-    ),
-    insilico = list(
-      toShow = "inSilicoSelect",
-      toUpdate = c("insilico_call_col", "insilico_ad_col")
-    )
-  )
-
-  colLoop <- id_list[intersect(names(id_list), dass_vars)]
-
-  if (all(c("dpra_pC", "dpra_pK") %in% dass_vars)) {
-    if (!"dpra_call" %in% dass_vars) {
-      colLoop$dpraDep <- list(
-        toShow = "dpraDepSelect",
-        toUpdate = c("dpra_pC_col", "dpra_pK_col"))
-    }
-  }
-
-  toShow <- sapply(colLoop, function(x) x[["toShow"]]) |> unlist(use.names = F)
-  toUpdate <- sapply(colLoop, function(x) x[["toUpdate"]]) |> unlist(use.names = F)
-
-  if (!all(c("dpra_pC", "dpra_pK") %in% dass_vars)) {
-    if ("dpra_call" %in% dass_vars) {
-      toShow <- toShow[toShow != "dpraDepSelect"]
-      shinyjs::runjs("addDPRAListener()")
-    }
-  }
-
-  for (i in toUpdate) {
-    tmp <- gsub("_col$", "", i)
-    updateSelectInput(inputId = i, choices = col_select_input, selected = template_col_select[[tmp]])
-  }
-  updateTabsetPanel(inputId = "stepSet", selected = "Select Data Columns")
+  # Create vector of UI IDs to show based on selected DAs
+  to_show <- unlist(ke_block_id[names(check_select)[check_select]])
   
-  for (i in toShow) {
+  if (input$do_da_2o3 & input$do_da_2o3_BL) {
+    to_show <- c(to_show, "ke1_dep_select", "ke2_value_select", "ke3_val_select")
+  }
+  to_show <- unique(to_show)
+
+  if ("ke1_dep_select" %in% to_show) {
+    ke1_dep_watch(T)
+  } else {
+    ke1_dep_watch(F)
+  }
+  
+  for (i in to_show) {
     shinyjs::runjs(sprintf("$('#%s').show()", i))
   }
+
+  for (i in names(data_select_template)) {
+    selected <- gsub("_col", "", i)
+    if (!selected %in% names(dt_analyze())) {
+      selected <- NULL
+    }
+    updateSelectInput(inputId = i, choices = c("", names(dt_analyze())), selected = selected)
+  }
+
+  if (input$do_da_ke31) {
+    runjs("toggleAssaySelect('ke1_assay_name', 'adra', true);")
+    updateRadioButtons(inputId = "ke1_assay_name", selected = "dpra")
+    
+    runjs("toggleAssaySelect('ke3_assay_name', 'gardskin', true);")
+    runjs("toggleAssaySelect('ke3_assay_name', 'il8luc', true);")
+    runjs("toggleAssaySelect('ke3_assay_name', 'usens', true);")
+    updateRadioButtons(inputId = "ke3_assay_name", selected = "hclat")
+    
+  } else {
+    runjs("toggleAssaySelect('ke1_assay_name', 'adra', false);")
+    updateRadioButtons(inputId = "ke1_assay_name", selected = "adra")
+    
+    runjs("toggleAssaySelect('ke3_assay_name', 'gardskin', false);")
+    runjs("toggleAssaySelect('ke3_assay_name', 'usens', false);")
+    updateRadioButtons(inputId = "ke3_assay_name", selected = "gardskin")
+    if (input$do_da_its) {
+      runjs("toggleAssaySelect('ke3_assay_name', 'il8luc', true);")
+    } else if (input$do_da_2o3) {
+      runjs("toggleAssaySelect('ke3_assay_name', 'il8luc', false);")
+    }
+  }
   
-  shinyjs::show("selectcol_ui")
-  shinyjs::runjs("$('#stepSet')[0].scrollIntoView();")
-}, ignoreInit = T)
+  updateTabsetPanel(inputId = "step_set", selected = "Select Data Columns")
+  
+})

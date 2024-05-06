@@ -10,34 +10,5 @@
 # =============================================================================#
 
 # Step 1: Select Approaches -----
-# link to select all strategies
-observeEvent(input$dass_all, {
-  updateCheckboxInput(
-    inputId = "do_da_2o3",
-    value = TRUE
-  )
-  updateCheckboxInput(
-    inputId = "do_da_its",
-    value = TRUE
-  )
-  updateCheckboxInput(
-    inputId = "do_da_ke31",
-    value = TRUE
-  )
-})
 
-# link to select no strategies
-observeEvent(input$dass_none, {
-  updateCheckboxInput(
-    inputId = "do_da_2o3",
-    value = FALSE
-  )
-  updateCheckboxInput(
-    inputId = "do_da_its",
-    value = FALSE
-  )
-  updateCheckboxInput(
-    inputId = "do_da_ke31",
-    value = FALSE
-  )
-})
+# link to select all strategies

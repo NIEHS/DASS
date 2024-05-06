@@ -20,30 +20,29 @@ welcome_panel <- fluidRow(
   div(
     class = "header-panel title-panel",
     h1("The DASS App"),
-    div(class = "link-list",
-    tags$a(
-      class = "btn btn-default",
-      href = "user_guide.pdf",
-      target = "_blank",
-      "User Guide"
-    ),
-    tags$a(
-      class = "btn btn-default",
-      href = "mailto:ICE-support@niehs.nih.gov",
-      "Contact Us"
-    ),
-    tags$a(
-      class = "btn btn-default external-link",
-      href = "https://github.com/NIEHS/DASS",
-      target = "_blank",
-      "Source Code"
-    ),
-    tags$a(
-      class = "btn btn-default external-link",
-      href = "https://rstudio.niehs.nih.gov/dass/",
-      target = "_blank",
-      "Launch App in New Window"
-    ),
+    div(
+      class = "link-list",
+      tags$a(
+        class = "btn btn-default",
+        href = "user_guide.pdf",
+        target = "_blank",
+        "User Guide"
+      ),
+      tags$a(class = "btn btn-default",
+             href = "mailto:ICE-support@niehs.nih.gov",
+             "Contact Us"),
+      tags$a(
+        class = "btn btn-default external-link",
+        href = "https://github.com/NIEHS/DASS",
+        target = "_blank",
+        "Source Code"
+      ),
+      tags$a(
+        class = "btn btn-default external-link",
+        href = "https://rstudio.niehs.nih.gov/dass/",
+        target = "_blank",
+        "Launch App in New Window"
+      ),
     ),
     span("Last updated: 2023-Oct-20")
   ),
@@ -56,7 +55,8 @@ welcome_panel <- fluidRow(
         target = "_blank",
         class = "external-link",
         "OECD Guideline No. 497 ",
-      ), " and the U.S. EPA's",
+      ),
+      " and the U.S. EPA's",
       a(
         href = "https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090",
         target = "_blank",
@@ -80,9 +80,8 @@ welcome_panel <- fluidRow(
 )
 
 # Step 1: Select DAs -----
-selectda_panel <- tabPanel(
+select_da_panel <- tabPanel(
   title = "Select Defined Approaches",
-  id = "selectDAPanel",
   fluidRow(
     class = "bordered-panel",
     column(
@@ -93,64 +92,46 @@ selectda_panel <- tabPanel(
       ),
       div(
         style = "margin: 1em 2em;",
-        # Buttons for select/deselect all
-        actionLink(
-          inputId = "dass_all",
-          label = "Select All"
-        ),
-        "|",
-        actionLink(
-          inputId = "dass_none",
-          label = "Deselect All"
-        ),
-        # Creates checkbox widgets (checkboxInput()), written in HTML
-        # to allow action button in label
-        HTML(
-          "<div class='form-group shiny-input-container' style='width:100%;'>",
-          "<div class='checkbox'>",
-          "<label>",
-          "<input id='do_da_2o3' type='checkbox' checked='checked'/>",
-          "<span>2 out of 3 (2o3)</span>",
-          "</label>",
-          "<button id='info_2o3' type='button' class='btn action-link btn-qs' aria-label='2o3 info'>",
-          "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-          "</button>",
-          "</div>",
-          "</div>",
-          "<div class='form-group shiny-input-container' style='width:100%;'>",
-          "<div class='checkbox'>",
-          "<label>",
-          "<input id='do_da_its' type='checkbox' checked='checked'/>",
-          "<span>Integrated Testing Strategy (ITS)</span>",
-          "</label>",
-          "<button id='info_its' type='button' class='btn action-button btn-qs' aria-label='ITS info'>",
-          "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-          "</button>",
-          "</div>",
-          "</div>",
-          "<div class='form-group shiny-input-container' style='width:100%;'>",
-          "<div class='checkbox'>",
-          "<label>",
-          "<input id='do_da_ke31' type='checkbox' checked='checked'/>",
-          "<span>Key Event 3/1 (KE 3/1) Sequential Testing Strategy (STS)</span>",
-          "</label>",
-          "<button id='info_ke31' type='button' class='btn action-button btn-qs' aria-label='STS info'>",
-          "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-          "</a>",
-          "</div>",
-          "</div>"
+        tags$fieldset(
+          tags$legend(class = "sr-only", "Select DAs"),
+          # Buttons for select/deselect all
+          div(
+            style = "margin-bottom: 0.5em",
+            actionLink(inputId = "dass_all",
+                       label = "Select All"),
+            "|",
+            actionLink(inputId = "dass_none",
+                       label = "Deselect All")
+          ),
+          div(
+            tags$input(type = "checkbox", id = "do_da_2o3", checked = "checked"),
+            tags$label(`for` = "do_da_2o3", "2 out of 3 (2o3)", info_button("info_2o3", "2o3 info")),
+            div(
+              style = "margin-left: 2em",
+              tags$input(type = "checkbox", id = "do_da_2o3_BL"),
+              tags$label(`for` = "do_da_2o3_BL", "Apply assay-specific borderline filters to 2o3 results.", info_button("info_2o3_BL", "2o3 Borderline info"))
+            )
+          ),
+          div(
+            tags$input(type = "checkbox", id = "do_da_its", checked = "checked"),
+            tags$label(`for` = "do_da_its", "Integrated Testing Strategy (ITS)", info_button("info_its", "ITS info"))
+          ),
+          div(
+            tags$input(type = "checkbox", id = "do_da_ke31", checked = "checked"),
+            tags$label(`for` = "do_da_ke31", "Key Event 3/1 (KE 3/1) Sequential Testing Strategy (STS)", info_button("info_ke31", "STS info"))
+          )
         )
       )
     ),
     actionButton(
-      inputId = "confirmDAs",
+      inputId = "confirm_da",
       label = "Continue",
       width = "100%"
     )
   )
 )
 
-daModals <- list(
+da_modals <- list(
   bsModal(
     id = "info_2o3_modal",
     title = "2 out of 3",
@@ -160,11 +141,9 @@ daModals <- list(
       "least 2 concordant results among the direct peptide reactivity assay (DPRA),",
       "KeratinoSens\u2122, and human cell line activation test (h-CLAT)."
     ),
-    img(
-      class = "da-diagram",
-      src = "diagrams/2o3_diagram-v1.png",
-      alt = "Diagram of 2o3 data interpretation procedure"
-    ),
+    img(class = "da-diagram",
+        src = "diagrams/2o3_diagram-v1.png",
+        alt = "Diagram of 2o3 data interpretation procedure"),
     HTML(
       "<p><a href = 'diagrams/2o3_diagram-v1.png' target='blank' style='font-size:90%;' class = 'external-link'>",
       "View full-size image",
@@ -177,7 +156,8 @@ daModals <- list(
         target = "_blank",
         class = "external-link",
         "OECD Guideline No. 497: Defined Approaches on Skin Sensitisation"
-      ), "."
+      ),
+      "."
     )
   ),
   bsModal(
@@ -202,13 +182,12 @@ daModals <- list(
         target = "_blank",
         class = "external-link",
         "OECD QSAR Toolbox"
-      ), "."
+      ),
+      "."
     ),
-    img(
-      class = "da-diagram",
-      src = "diagrams/ITS_diagram-v1.png",
-      alt = "Diagram of ITS data interpretation procedure"
-    ),
+    img(class = "da-diagram",
+        src = "diagrams/ITS_diagram-v1.png",
+        alt = "Diagram of ITS data interpretation procedure"),
     HTML(
       "<p><a href = 'diagrams/ITS_diagram-v1.png' target='blank' style='font-size:90%;' class = 'external-link'>",
       "View full-size image",
@@ -221,7 +200,8 @@ daModals <- list(
         target = "_blank",
         class = "external-link",
         "OECD Guideline No. 497: Defined Approaches on Skin Sensitisation"
-      ), "."
+      ),
+      "."
     )
   ),
   bsModal(
@@ -234,11 +214,9 @@ daModals <- list(
       "Predictions are based on the minimum induction threshold from the human cell line activation test (h-CLAT) and",
       "hazard results from the direct peptide reactivity assay (DPRA).",
     ),
-    img(
-      class = "da-diagram",
-      src = "diagrams/KE31STS_diagram-v1.png",
-      alt = "Diagram of KE 3/1 STS data interpretation procedure"
-    ),
+    img(class = "da-diagram",
+        src = "diagrams/KE31STS_diagram-v1.png",
+        alt = "Diagram of KE 3/1 STS data interpretation procedure"),
     HTML(
       "<p><a href = 'diagrams/KE31STS_diagram-v1.png' target='blank' style='font-size:90%;' class = 'external-link'>",
       "View full-size image",
@@ -252,313 +230,447 @@ daModals <- list(
         class = "external-link",
         "Interim Science Policy: Use of Alternative Approaches for Skin Sensitization",
         "as a Replacement for Laboratory Animal Testing Draft for Public Comment"
-      ), "."
+      ),
+      "."
     )
   )
 )
 
 # Step 2: Upload Data -----
-uploaddata_panel <- tabPanel(
+upload_data_panel <- tabPanel(
   title = "Upload Data",
   fluidRow(
-    class = "bordered-panel",
-    column(
-      width = 12,
-      HTML(
-        "<div class='warn-block'>",
-        "<div>",
-        "<i class='glyphicon glyphicon-exclamation-sign' role='presentation'></i>",
-        "</div>",
-        "<div>",
-        "<p style='margin-bottom:0;'>Before uploading your file, ensure that the data meet the",
-        "<a id='show_upload_req' href = 'dassApp-dataRequirements.html' target = '_blank' class = 'action-link' aria-label='data and formatting requirements'>",
-        "<b>data and formatting requirements</b></a>.</p>",
-        "</div>",
-        "</div>"
-      ),
-      br(),
-      p(
-        "A table template is provided in tab-delimited or Excel format.",
-        "The template contains columns for every possible assay endpoint.",
-        "If an assay endpoint will not be used, the corresponding column can be",
-        "deleted but that is not required. Using the template is not required."
-      ),
-      a(
-        href = "DASSApp-dataTemplate.xlsx", "Download Data Template (.xlsx)",
-        download = NA, target = "_blank"
-      ),
-      br(),
-      a(
-        href = "DASSApp-dataTemplate.txt", "Download Data Template (.txt)",
-        download = NA, target = "_blank"
-      ),
-      hr(style = "width:50%"),
-      div(
-        id = "uploadBlock",
-        div(
-          class = "form-group shiny-input-container",
-          style = "width:100%",
-          tags$label(
-            class = "control-label",
-            `for` = "fpath",
-            id = "fpath-label",
-            value = "File input",
-            "Click 'Browse' below and select your file."
-          ),
-          div(
-            class = "input-group",
-            tags$label(
-              class = "input-group-btn input-group-prepend",
-              span(
-                class = "btn btn-default btn-file",
-                "Browse...",
-                tags$input(
-                  id = "fpath",
-                  name = "fpath",
-                  type = "file",
-                  style = "position: absolute !important; top: -99999px !important; left: -99999px !important;",
-                  `data-shinyjs-resettable-id` = "fpath",
-                  `data-shinyjs-resettable-type` = "File",
-                  `data-shinyjs-resettable-value` = "",
-                  `class` = "shinyjs-resettable shiny-bound-input"
-                )
-              )
-            ),
-            tags$input(
-              type = "text",
-              class = "form-control",
-              title = "Form control for file input",
-              style = "border-color:#232b5f; width:100%",
-              placeholder = "No file selected.",
-              readonly = "readonly"
-            )
-          ),
-        ),
-        uiOutput("xlsheet_text_ui")),
-        HTML(
-          "<div class='form-group shiny-input-container' style='width:100%;'>",
-          "<div class='checkbox'>",
-          "<label>",
-          "<input id='useDemoData' type='checkbox'/>",
-          "<span>Use demo data</span>",
-          "</label>",
-          "<button id='info_demo' type='button' class='btn action-link btn-qs' aria-label='demo data info'>",
-          "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-          "</button>",
-          "</div>",
-          "</div>"
-        ),
-      div(
-        class = "hiddenBlock",
-        id = "data_block",
-        hr(style = "width:50%"),
-        DT::dataTableOutput("dt_analyze"),
-        hr(style = "width:50%"),
-        p("Once you have finished selecting the DAs and uploading your data, click 'Continue' to proceed to the next step."),
-        actionButton(
-          inputId = "confirm_data",
-          label = "Continue",
-          width = "100%"
-      ))
+   class = "bordered-panel",
+   column(
+     width = 12,
+     HTML(
+       "<div class='warn-block'>",
+       "<div>",
+       "<i class='glyphicon glyphicon-exclamation-sign' role='presentation'></i>",
+       "</div>",
+       "<div>",
+       "<p style='margin-bottom:0;'>Before uploading your file, ensure that the data meet the",
+       "<a id='show_upload_req' href = 'dassApp-dataRequirements.html' target = '_blank' class = 'action-link' aria-label='data and formatting requirements'>",
+       "<b>data and formatting requirements</b></a>.</p>",
+       "</div>",
+       "</div>"
+     ),
+     br(),
+     p(
+       "A table template is provided in tab-delimited or Excel format.",
+       "The template contains columns for every possible assay endpoint.",
+       "If an assay endpoint will not be used, the corresponding column can be",
+       "deleted but that is not required. Using the template is not required."
+     ),
+     a(
+       href = "DASSApp-dataTemplate.xlsx",
+       "Download Data Template (.xlsx)",
+       download = NA,
+       target = "_blank"
+     ),
+     br(),
+     a(
+       href = "DASSApp-dataTemplate.txt",
+       "Download Data Template (.txt)",
+       download = NA,
+       target = "_blank"
+     ),
+     hr(style = "width:50%"),
+     div(
+       id = "upload_block",
+       div(
+         class = "form-group shiny-input-container",
+         style = "width:100%",
+         tags$label(
+           class = "control-label",
+           `for` = "fpath",
+           # id = "fpath-label",
+           value = "File input",
+           "Click 'Browse' below and select your file."
+         ),
+         div(
+           class = "input-group",
+           tags$label(
+             class = "input-group-btn input-group-prepend",
+             span(
+               class = "btn btn-default btn-file",
+               "Browse...",
+               tags$input(
+                 id = "fpath",
+                 name = "fpath",
+                 type = "file",
+                 style = "position: absolute !important; top: -99999px !important; left: -99999px !important;",
+                 `data-shinyjs-resettable-id` = "fpath",
+                 `data-shinyjs-resettable-type` = "File",
+                 `data-shinyjs-resettable-value` = "",
+                 
+                 `class` = "shinyjs-resettable shiny-bound-input"
+               )
+             )
+           ),
+           tags$input(
+             type = "text",
+             class = "form-control",
+             title = "Form control for file input",
+             style = "border-color:#232b5f; width:100%",
+             placeholder = "No file selected.",
+             readonly = "readonly"
+           )
+         ),
+       ),
+       uiOutput("xl_sheet_text_ui")
+     ),
+     HTML(
+       "<div class='form-group shiny-input-container' style='width:100%;'>",
+       "<div class='checkbox'>",
+       "<label>",
+       "<input id='use_demo_data' type='checkbox'/>",
+       "<span>Use demo data</span>",
+       "</label>",
+       "<button id='info_demo' type='button' class='btn action-link btn-qs' aria-label='demo data info'>",
+       "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+       "</button>",
+       "</div>",
+       "</div>"
+     ),
+     div(
+       class = "hiddenBlock",
+       id = "data_block",
+       hr(style = "width:50%"),
+       DT::dataTableOutput("dt_analyze"),
+       hr(style = "width:50%"),
+       p(
+         "Once you have finished selecting the DAs and uploading your data, click 'Continue' to proceed to the next step."
+       ),
+       actionButton(
+         inputId = "confirm_data",
+         label = "Continue",
+         width = "100%"
+       )
+     )
+   )
+ ))
+
+data_modals <- list(
+  bsModal(
+    id = "xl_select_modal",
+    title = "Excel sheet selection dialog box",
+    trigger = "select_sheet",
+    selectInput(
+      inputId = "xl_sheet_list",
+      label = "Select the Excel worksheet to upload",
+      choices = NULL,
+      selectize = FALSE
+    ),
+    actionButton(inputId = "confirm_xl_sheet", label = "Upload Data"),
+    actionButton(inputId = "cancel_xl_sheet", label = "Cancel")
+  ),
+  bsModal(
+    id = "demo_data_modal",
+    title = "Demo Data",
+    trigger = "info_demo",
+    p(
+      "Select this option to load a demo data set instead of uploading your own data."
+    ),
+    p(
+      "The data set includes values for all possible endpoints. The column names are set up so",
+      "that the selections in Step 3 are automatically filled."
+    ),
+    p(
+      "If you select the ITS DA, the 'dpra_pC' column will be flagged in Step 4 because the value for OTNE (Row 60)",
+      "contains a symbol. This example demonstrates how the app processes invalid values."
     )
   )
-)
-
-dataModals <- list(
-  bsModal(
-      id = "xl_select_modal",
-      title = "Excel sheet selection dialog box",
-      trigger = "select_sheet",
-      selectInput(
-        inputId = "xl_sheet_list",
-        label = "Select the Excel worksheet to upload",
-        choices = NULL,
-        selectize = FALSE
-      ),
-      actionButton(inputId = "confirm_xl_sheet", label = "Upload Data"),
-      actionButton(inputId = "cancel_xl_sheet", label = "Cancel")
-    ),
-    bsModal(
-      id = "demo_data_modal",
-      title = "Demo Data",
-      trigger = "info_demo",
-      p("Select this option to load a demo data set instead of uploading your own data."),
-      p("The data set includes values for all possible endpoints. The column names are set up so",
-      "that the selections in Step 3 are automatically filled."),
-      p("If you select the ITS DA, the 'dpra_pC' column will be flagged in Step 4 because the value for OTNE (Row 60)",
-      "contains a symbol. This example demonstrates how the app processes invalid values.")
-    )
 )
 
 # Step 3: Select Columns -----
-selectcolumns_panel <- tabPanel(
+select_columns_panel <- tabPanel(
   title = "Select Data Columns",
   div(
-    id = "selectcol_ui",
+    id = "select_col_ui",
     class = "bordered-panel hiddenBlock",
-    p("The assay endpoints that are required for the selected DAs are shown below.",
-      "Use the dropdown lists to select the columns from your data",
-      "that correspond to the given endpoints. Columns are automatically selected for an endpoint",
-      "if the column name matches the corresponding column name in the data template.",
-      "A column must be selected for each",
-      "endpoint shown. When you are finished, click 'Done'."),
-    p(
-      "Click on the information buttons next to the assay endpoint names to view",
-      "information about the endpoints and data formatting requirements.",
-      "Values that are incorrectly formatted or invalid",
-      "will be treated as missing data and may affect the results. More details are given",
-      "in the User Guide."),
     div(
-      id = "dpraCallSelect",
+      p(
+        "The assay endpoints that are required for the selected DAs are shown below.",
+        "Use the dropdown lists to select the columns from your data",
+        "that correspond to the given endpoints. Columns are automatically selected for an endpoint",
+        "if the column name matches the corresponding column name in the data template.",
+        "A column must be selected for each",
+        "endpoint shown. When you are finished, click 'Done'."
+      ),
+      p(
+        "Click on the information buttons next to the assay endpoint names to view",
+        "information about the endpoints and data formatting requirements.",
+        "Values that are incorrectly formatted or invalid",
+        "will be treated as missing data and may affect the results. More details are given",
+        "in the User Guide."
+      )
+    ),
+    hr(width = "50%"),
+    ## KE1 -----
+    div(
       class = "hiddenBlock",
-      tags$h2("DPRA Binary Call",
-              HTML(
-              "<button id='info_dpracall' type='button' class='btn action-link btn-qs' aria-label='DPRA Call info'>",
-              "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-              "</button>")),
-      div(
-        class = "col_assay_endpoint",
-        radioButtons(
-          inputId = "dpra_call_choice",
-          label = "Data Source",
-          choiceNames = c(
-            "Use DPRA Binary Call",
-            "Use %-Depletion Values"
+      id = "ke1_select_ui",
+      tags$details(
+        open = "open",
+        tags$summary("Key Event 1 Assay"),
+        div(
+          class = "detailsBody",
+          div(
+            id = "ke1_assay_select",
+            tags$h2(
+              "KE1 Assay",
+              info_button("info_ke1Assay", "KE1 Assay Information")
+            ),
+            div(
+              class = "col_assay_endpoint",
+              radioButtons(
+                inputId = "ke1_assay_name",
+                label = "Select KE1 Assay",
+                choiceNames = c("ADRA", "DPRA"),
+                choiceValues = c("adra", "dpra"),
+                inline = T
+              )
+            )
           ),
-          choiceValues = c(
-            "call",
-            "pdepl"
-          )
-        )),
-
-      div(
-        class = "col_assay_endpoint",
-        conditionalPanel(
-          condition = "input.dpra_call_choice=='call'",
-          selectInput(
-            inputId = "dpra_call_col",
-            label = "DPRA Binary Call Column",
-            choices = NULL,
-            selectize = F
-          )
-        ))
-    ),
-    div(
-      id = "dpraDepSelect",
-      class = "hiddenBlock",
-      tags$h2("DPRA % Depletion",
-              HTML(
-                "<button id='info_dpradep' type='button' class='btn action-link btn-qs' aria-label='DPRA Depletion info'>",
-                "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-                "</button>")
+          div(
+            id = "ke1_call_select",
+            class = "hiddenBlock",
+            tags$h2(
+              "KE1 Call",
+              info_button("info_ke1Call", "KE1 Call information")
+            ),
+            div(
+              class = "col_assay_endpoint",
+              checkboxInput(
+                inputId = "ke1_call_interpret",
+                label = "Derive call from quantiative data.",
+                value = F
               ),
-      div(
-        class = "col_assay_endpoint",
-        selectInput(
-          inputId = "dpra_pC_col",
-          label = "DPRA %-Cysteine Depletion Column",
-          choices = NULL,
-          selectize = F
-        ),
-        selectInput(
-          inputId = "dpra_pK_col",
-          label = "DPRA %-Lysine Depletion Column",
-          choices = NULL,
-          selectize = F
+              selectInput(
+                inputId = "ke1_call_col",
+                label = "Call Column",
+                choices = NULL,
+                selectize = F
+              )
+            )
+          ),
+          div(
+            id = "ke1_dep_select",
+            class = "hiddenBlock",
+            tags$h2(
+              "KE1 Mean Depletion Value",
+              info_button("info_ke1DepValue", "KE1 Mean Depletion Value Information")
+            ),
+            div(
+              class = "col_assay_endpoint",
+              checkboxInput(
+                inputId = "ke1_choose_dep",
+                label = "Derive mean depletion value from data.",
+                value = F
+              ),
+              fluidRow(
+                column(
+                  width = 4,
+                  selectInput(
+                    inputId = "ke1_mean_c_l_dep_col",
+                    label = "Mean Depletion Column",
+                    choices = NULL,
+                    selectize = F
+                  )
+                ),
+                column(
+                  width = 4,
+                  selectInput(
+                    inputId = "ke1_c_dep_col",
+                    label = "Cys/NAC Depletion Column",
+                    choices = NULL,
+                    selectize = F
+                  )
+                ),
+                column(
+                  width = 4,
+                  selectInput(
+                    inputId = "ke1_l_dep_col",
+                    label = "Lys/NAL Depletion Column",
+                    choices = NULL,
+                    selectize = F
+                  )
+                )
+              )
+            )
+          )
         )
       )
     ),
+    ## KE2 -----
     div(
-      id = "hclatCallSelect",
       class = "hiddenBlock",
-      tags$h2("h-CLAT Binary Call",
-              HTML(
-                "<button id='info_hclatcall' type='button' class='btn action-link btn-qs' aria-label='hCLAT call info'>",
-                "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-                "</button>")),
-      div(
-        class = "col_assay_endpoint",
-        selectInput(
-          inputId = "hclat_call_col",
-          label = "h-CLAT Binary Call Column",
-          choices = NULL,
-          selectize = F
+      id = "ke2_select_ui",
+      tags$details(
+        open = "open",
+        tags$summary("Key Event 2 Assay"),
+        div(
+          class = "detailsBody",
+          div(
+            id = "ke2_assay_select",
+            tags$h2(
+              "KE2 Assay",
+              info_button("info_ke2Assay", "KE2 Assay Information")
+            ),
+            div(
+              class = "col_assay_endpoint",
+              radioButtons(
+                inputId = "ke2_assay_name",
+                label = "Select KE2 Assay",
+                choiceNames = c("KeratinoSens", "LuSens"),
+                choiceValues = c("keratinosens", "lusens"),
+                inline = T
+              )
+            ),
+            tags$h2(
+              "KE2 Call",
+              info_button("info_ke2Call", "KE2 Call information")
+            ),
+            div(
+              class = "col_assay_endpoint",
+              selectInput(
+                inputId = "ke2_call_col",
+                label = "Call Column",
+                choices = NULL,
+                selectize = F
+              )
+            ),
+            div(
+              id = "ke2_value_select",
+              class = "hiddenBlock",
+              tags$h2(
+                "KE2 Quantitative Endpoint",
+                info_button("info_ke2Value", "KE2 Value information")
+              ),
+              div(
+                class = "col_assay_endpoint",
+                selectInput(
+                  inputId = "ke2_val_col",
+                  label = "Quantitative Endpoint Column",
+                  choices = NULL,
+                  selectize = F
+                )
+              )
+            )
+          )
         )
       )
     ),
+    ## KE3 -----
     div(
-      id = "hclatMitSelect",
       class = "hiddenBlock",
-      tags$h2("h-CLAT MIT",
-              HTML(
-                "<button id='info_hclatmit' type='button' class='btn action-link btn-qs' aria-label='hCLAT MIT info'>",
-                "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-                "</button>")),
-      div(
-        class = "col_assay_endpoint",
-        selectInput(
-          inputId = "hclat_mit_col",
-          label = "h-CLAT Minimum Induction Threshold (MIT) Column",
-          choices = NULL,
-          selectize = F
+      id = "ke3_select_ui",
+      tags$details(
+        open = "open",
+        tags$summary("Key Event 3 Assay"),
+        div(
+          class = "detailsBody",
+          div(
+            id = "ke3_assay_select",
+            tags$h2(
+              "KE3 Assay",
+              info_button("info_ke3_assay", "KE3 Assay Information")
+            ),
+            div(
+              class = "col_assay_endpoint",
+              radioButtons(
+                inputId = "ke3_assay_name",
+                label = "Select KE3 Assay",
+                choiceNames = c("GARDskin", "h-CLAT", "IL-8 Luc", "U-SENS"),
+                choiceValues = c("gardskin", "hclat", "il8luc", "usens"),
+                inline = T
+              )
+            )
+          ),
+          div(
+            id = "ke3_call_select",
+            class = "hiddenBlock",
+            tags$h2(
+              "KE3 Call",
+              info_button("info_ke3_call", "KE3 Call information")
+            ),
+            div(
+              class = "col_assay_endpoint",
+              selectInput(
+                inputId = "ke3_call_col",
+                label = "Call Column",
+                choices = NULL,
+                selectize = F
+              )
+            )
+          ),
+          div(
+            id = "ke3_val_select",
+            class = "hiddenBlock",
+            tags$h2(
+              "KE3 Quantitative Endpoint",
+              info_button("info_ke3_value", "KE3 Value information")
+            ),
+            div(
+              class = "col_assay_endpoint",
+              selectInput(
+                inputId = "ke3_val_col",
+                label = "Quantitative Endpoint Column",
+                choices = NULL,
+                selectize = F
+              )
+            )
+          )
         )
       )
     ),
+    ## In Silico -----
     div(
-      id = "ksCallSelect",
       class = "hiddenBlock",
-      tags$h2("KeratinoSens(TM) Binary Call",
-              HTML(
-                "<button id='info_kscall' type='button' class='btn action-link btn-qs' aria-label='keratinosens call info'>",
-                "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-                "</button>")),
-      div(
-        class = "col_assay_endpoint",
-        selectInput(
-          inputId = "ks_call_col",
-          label = "KS Binary Call Column",
-          choices = NULL,
-          selectize = F
+      id = "insil_select_ui",
+      tags$details(
+        open = "open",
+        tags$summary("In Silico Model"),
+        div(
+          class = "detailsBody",
+          tags$h2(
+            "In Silico Call Prediction",
+            info_button("info_insil_pred", "In Silico Prediction information")
+          ),
+          div(
+            class = "col_assay_endpoint",
+            selectInput(
+              inputId = "insil_call_col",
+              label = "Call Prediction Column",
+              choices = NULL,
+              selectize = F
+            ),
+            selectInput(
+              inputId = "insil_ad_col",
+              label = "Applicability Domain Column",
+              choices = NULL,
+              selectize = F
+            )
+          )
         )
       )
     ),
-    div(
-      id = "inSilicoSelect",
-      class = "hiddenBlock",
-      tags$h2("In Silico Binary Call",
-              HTML(
-                "<button id='info_insilico_call' type='button' class='btn action-link btn-qs' aria-label='in silico call info'>",
-                "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-                "</button>")),
-      div(
-        class = "col_assay_endpoint",
-        selectInput(
-          inputId = "insilico_call_col",
-          label = "In Silico Binary Call Column",
-          choices = NULL,
-          selectize = F
-        ),
-        selectInput(
-          inputId = "insilico_ad_col",
-          label = "In Silico Applicability Domain",
-          choices = NULL,
-          selectize = F
-        )
-      )
-    ),
-    actionButton(inputId = "review_entries",
-                 label = "Done",
-                 width = "100%")
+    actionButton(
+      inputId = "review_entries",
+      label = "Done",
+      width = "100%"
     )
   )
+)
 
 ## Modals -----
-selectModals <- list(
+select_modals <- list(
   ### DPRA -----
   bsModal(
     id = "dpra_dep_modal",
     title = "DPRA % Depletion",
-    trigger = "info_dpradep",
+    trigger = "info_dpra_dep",
     p(
       "%-Cysteine and %-Lysine depletion values from the direct peptide reactivity",
       "assay (DPRA) are used in ITS."
@@ -574,13 +686,14 @@ selectModals <- list(
         target = "_blank",
         class = "external-link",
         "OECD Test No. 442C: In Chemico Skin Sensitisation"
-      ), "."
+      ),
+      "."
     )
   ),
   bsModal(
     id = "dpra_call_modal",
     title = "DPRA Binary Call",
-    trigger = "info_dpracall",
+    trigger = "info_dpra_call",
     p(
       "Results from the direct peptide reactivity assay (DPRA)",
       "are used in the 2o3 and KE3/1 STS defined approaches."
@@ -594,14 +707,10 @@ selectModals <- list(
         tags$li(
           "'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*"
         ),
-        tags$li(
-          "Missing values should be blank or labeled as 'NA'."
-        )
+        tags$li("Missing values should be blank or labeled as 'NA'.")
       ),
-      span(
-        style = "font-size:90%",
-        "* Case insensitive"
-      )
+      span(style = "font-size:90%",
+           "* Case insensitive")
     ),
     p(
       "Alternatively, the %-Cysteine and %-Lysine depletion values can be evaluated",
@@ -611,15 +720,18 @@ selectModals <- list(
         target = "_blank",
         class = "external-link",
         "OECD Test No. 442C: In Chemico Skin Sensitisation"
-      ), "."
+      ),
+      "."
     )
   ),
   ### hCLAT -----
   bsModal(
     id = "hclat_call_modal",
     title = "h-CLAT Binary Call",
-    trigger = "info_hclatcall",
-    p("Results from the human cell line activation test (h-CLAT) are used in the 2o3 defined approach."),
+    trigger = "info_hclat_call",
+    p(
+      "Results from the human cell line activation test (h-CLAT) are used in the 2o3 defined approach."
+    ),
     p(
       "The column corresponding to h-CLAT binary call should only contain the values:",
       tags$ul(
@@ -629,15 +741,11 @@ selectModals <- list(
         tags$li(
           "'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*"
         ),
-        tags$li(
-          "Missing values should be blank or labeled as 'NA'."
-        )
+        tags$li("Missing values should be blank or labeled as 'NA'.")
       )
     ),
-    span(
-      style = "font-size:90%",
-      "* Case insensitive"
-    ),
+    span(style = "font-size:90%",
+         "* Case insensitive"),
     p(
       "For more details, see ",
       a(
@@ -645,13 +753,14 @@ selectModals <- list(
         target = "_blank",
         class = "external-link",
         "OECD Test No. 442E: In Vitro Skin Sensitisation"
-      ), "."
+      ),
+      "."
     )
   ),
   bsModal(
     id = "hclat_mit_modal",
     title = "h-CLAT MIT",
-    trigger = "info_hclatmit",
+    trigger = "info_hclat_mit",
     p(
       "Minimum induction threshold (MIT) from the human cell line activiation test (h-CLAT)",
       "is used in the ITS and KE3/1 STS defined approaches."
@@ -659,20 +768,14 @@ selectModals <- list(
     p(
       "The column corresponding to h-CLAT MIT should only contain:",
       tags$ul(
-        tags$li(
-          "Numeric values."
-        ),
+        tags$li("Numeric values."),
         tags$li(
           "'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 'Inf' to indicate negative assay outcomes*"
         ),
-        tags$li(
-          "Missing values should be blank or labeled as 'NA'."
-        )
+        tags$li("Missing values should be blank or labeled as 'NA'.")
       ),
-      span(
-        style = "font-size:90%",
-        "* Case insensitive"
-      )
+      span(style = "font-size:90%",
+           "* Case insensitive")
     ),
     p(
       "For more details, see",
@@ -684,13 +787,15 @@ selectModals <- list(
       )
     )
   ),
-
+  
   ### KeratinoSens -----
   bsModal(
     id = "ks_call_modal",
     title = HTML("KeratinoSens&trade; Binary Call"),
-    trigger = "info_kscall",
-    p("Results from the KeratinoSens (KS) assay are used in the 2o3 defined approach."),
+    trigger = "info_ks_call",
+    p(
+      "Results from the KeratinoSens (KS) assay are used in the 2o3 defined approach."
+    ),
     p(
       "The column corresponding to KS hazard should only contain the values:",
       tags$ul(
@@ -700,14 +805,10 @@ selectModals <- list(
         tags$li(
           "'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*"
         ),
-        tags$li(
-          "Missing values should be blank or labeled as 'NA'."
-        )
+        tags$li("Missing values should be blank or labeled as 'NA'.")
       ),
-      span(
-        style = "font-size:90%",
-        "* Case insensitive"
-      )
+      span(style = "font-size:90%",
+           "* Case insensitive")
     ),
     p(
       "For more details, see",
@@ -716,10 +817,11 @@ selectModals <- list(
         target = "_blank",
         class = "external-link",
         "OECD Test No. 442D: In Vitro Skin Sensitisation"
-      ), "."
+      ),
+      "."
     )
   ),
-
+  
   ### In Silico -----
   bsModal(
     id = "insilico_modal",
@@ -732,13 +834,15 @@ selectModals <- list(
         target = "_blank",
         class = "external-link",
         "Derek Nexus"
-      ), ". ITSv2 uses predictions from",
+      ),
+      ". ITSv2 uses predictions from",
       a(
         href = "https://doi.org/10.1016/j.comtox.2019.01.006",
         target = "_blank",
         class = "external-link",
         "OECD QSAR Toolbox"
-      ), "."
+      ),
+      "."
     ),
     p(
       "The column corresponding to in silico binary call predictions should only contain the values",
@@ -749,91 +853,78 @@ selectModals <- list(
         tags$li(
           "'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*"
         ),
-        tags$li(
-          "Missing values should be blank or labeled as 'NA'."
-        )
+        tags$li("Missing values should be blank or labeled as 'NA'.")
       ),
-      span(
-        style = "font-size:90%",
-        "* Case insensitive"
-      )
+      span(style = "font-size:90%",
+           "* Case insensitive")
     ),
     p(
       "Additionally, a column corresponding to applicability domain (AD) should",
       "be provided. This column should only contain the values:",
       tags$ul(
-        tags$li(
-          "'in' or 1 to indicate the chemical is within the AD*"
-        ),
+        tags$li("'in' or 1 to indicate the chemical is within the AD*"),
         tags$li(
           "'out' or 0 to indicate the chemical is outside the AD*. Values for",
           "chemicals outside the AD will not be evaluated."
         ),
-        tags$li(
-          "Missing values should be blank or labeled as 'NA'."
-        )
+        tags$li("Missing values should be blank or labeled as 'NA'.")
       ),
-      span(
-        style = "font-size:90%",
-        "* Case insensitive"
-      )
+      span(style = "font-size:90%",
+           "* Case insensitive")
     )
   )
 )
 
 # Step 4: Review Selection -----
-reviewselection_panel <- tabPanel(
+review_selection_panel <- tabPanel(
   title = "Review Selection",
   div(
     id = "review_contents",
     class = "bordered-panel hiddenBlock",
+    p(
+      "Your selections are summarized below. Review the selected assays and columns.",
+      "When you are done, click 'Run' to run the DASS.",
+      "If you need to change a selected column, return to the 'Select Data Columns'",
+      "page. If you need to upload new or updated data, return to the 'Upload Data' page."
+    ),
+    div(
+      
+    ),
     div(
       id = "dupe_col_warning",
       class = "warningText hiddenBlock",
       p(
-        strong("Warning: Single column assigned to more than one variable.")
+        strong("Warning: Identical column assigned to more than one endpoint.")
       )
     ),
     div(
-      id = "panel4_warn",
-      class = "hiddenBlock",
-      div(
-        id = "col_flag_warning",
-        class = "warningText",
-        p(
-          strong("Warning: Selected data columns have been flagged for invalid values.")
-        )
-      ),
-      div(
-        id = "review_instructions_warn",
-        p("Review the selected columns and flags in the table below. Upload an updated dataset or select new columns."),
-        p("Click 'Run' to run DASS anyway. Invalid values will be",
-          "considered missing (NA) and will", strong("not"), "be used to evaluate",
-          "skin sensitization hazard identification or potency.")
+      id = "flag_col_warning",
+      class = "warningText hiddenBlock",
+      p(
+        strong("Warning: Selected data columns have been flagged for invalid values."),
+        "Invalid values will not be evaluated in the DASS."
       )
     ),
-    div(
-      id = "panel4_nowarn",
-      class = "hiddenBlock",
-      p("Review the selected columns and click 'Run' to run DASS.")
-    ),
-  dataTableOutput("dt_review"),
-  br(),
-  actionButton(
-    inputId = "run_dass",
-    width = "100%",
-    label = "Run"
-  ))
+    dataTableOutput("dt_review"),
+    br(),
+    actionButton(
+      inputId = "run_dass",
+      width = "100%",
+      label = "Run"
+    )
+  )
 )
 
-reviewModals <- list(
+review_modals <- list(
   bsModal(
     id = "confirm_run_with_flag",
     title = "Warning",
     trigger = NULL,
     p(
       "The selected columns have been flagged for invalid values. Invalid",
-      "values will be considered missing (NA) and will", strong("not"), "be used",
+      "values will be considered missing (NA) and will",
+      strong("not"),
+      "be used",
       "to evaluate skin sensitization hazard identification or potency. Continue?"
     ),
     actionButton(inputId = "run_with_flags", label = "Run"),
@@ -855,12 +946,10 @@ results_panel <- tabPanel(
       "spreadsheet or text file, which may allow easier viewing.",
     ),
     div(
-      class = "key-block",
+      class = "text-block",
       h2("Table Key", style = "font-size:1.2em; font-weight:bold; margin-top:10px;"),
       tags$dl(
-        tags$dt(
-          "Yellow columns"
-        ),
+        tags$dt("Yellow columns"),
         tags$dd(
           "The data columns that you selected in Step 3. The column names are annotated with an asterisk."
         ),
@@ -892,33 +981,42 @@ results_panel <- tabPanel(
       ),
       "For more details about the appended columns, see the User Guide.",
     ),
-    fluidRow(column(12,
-                    div(
-                      class = "dropdown",
-                      id = "dlDropdown",
-                      tags$button(
-                        class = "btn dropbtn btn-default",
-                        # style = "padding:1vh;",
-                        "Download Results",
-                        HTML(
-                          "<i class='fas fa-caret-down' role='presentation'> </i>"
-                        )
-                      ),
-                      div(
-                        class = "dropdown-content",
-                        downloadButton(outputId = "downloadres_xl", "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
-                        downloadButton(outputId = "downloadres_txt", "Tab-Delimited (.txt)", icon = icon("file-alt"), class = "btn-dl"),
-                      )
-                    ),
-                    actionButton(inputId = "goToCompare",
-                                 label = "Compare Results")
+    fluidRow(column(
+      12,
+      div(
+        class = "dropdown",
+        id = "dlDropdown",
+        tags$button(
+          class = "btn dropbtn btn-default",
+          # style = "padding:1vh;",
+          "Download Results",
+          HTML("<i class='fas fa-caret-down' role='presentation'> </i>")
+        ),
+        div(
+          class = "dropdown-content",
+          downloadButton(
+            outputId = "downloadres_xl",
+            "Excel (.xlsx)",
+            icon = icon("file-excel"),
+            class = "btn-dl"
+          ),
+          downloadButton(
+            outputId = "downloadres_txt",
+            "Tab-Delimited (.txt)",
+            icon = icon("file-alt"),
+            class = "btn-dl"
+          ),
+        )
+      ),
+      actionButton(inputId = "goToCompare",
+                   label = "Compare Results")
     )),
     br(),
-  dataTableOutput("dt_results")
+    dataTableOutput("dt_results")
   )
 )
 
-resultsModals <- list(
+results_modals <- list(
   bsModal(
     id = "res_pink_modal",
     title = "Input and Calculated Columns",
@@ -928,8 +1026,12 @@ resultsModals <- list(
       "review the selected columns and their transformations to ensure your data",
       "were properly interpreted, especially if the DAs were run with flagged data."
     ),
-    p("Binary call data are transformed to ‘0’ for negative results and ‘1’ for positive results."),
-    p("If the h-CLAT minimum induction threshold was used, negative results are transformed to ‘Inf’.")
+    p(
+      "Binary call data are transformed to ‘0’ for negative results and ‘1’ for positive results."
+    ),
+    p(
+      "If the h-CLAT minimum induction threshold was used, negative results are transformed to ‘Inf’."
+    )
   ),
   bsModal(
     id = "res_blue_modal",
@@ -939,7 +1041,9 @@ resultsModals <- list(
       "If the ITS DA was selected, then the individual ITS scores are also appended",
       "and highlighted in blue. The corresponding columns end with ‘Score’."
     ),
-    p("Hazard call predictions are ‘0’ if the result is negative and ‘1’ if the result is positive."),
+    p(
+      "Hazard call predictions are ‘0’ if the result is negative and ‘1’ if the result is positive."
+    ),
     p(
       "For assigning potency predictions, the DASS App uses categories established",
       "by the United Nations Globally Harmonized System for Classification and Labelling of Chemicals (GHS)."
@@ -947,7 +1051,7 @@ resultsModals <- list(
   )
 )
 
-resultsModals <- list(
+results_modals <- list(
   bsModal(
     id = "res_pink_modal",
     title = "Input and Calculated Columns",
@@ -957,8 +1061,12 @@ resultsModals <- list(
       "review the selected columns and their transformations to ensure your data",
       "were properly interpreted, especially if the DAs were run with flagged data."
     ),
-    p("Binary call data are transformed to ‘0’ for negative results and ‘1’ for positive results."),
-    p("If the h-CLAT minimum induction threshold was used, negative results are transformed to ‘Inf’.")
+    p(
+      "Binary call data are transformed to ‘0’ for negative results and ‘1’ for positive results."
+    ),
+    p(
+      "If the h-CLAT minimum induction threshold was used, negative results are transformed to ‘Inf’."
+    )
   ),
   bsModal(
     id = "res_blue_modal",
@@ -968,7 +1076,9 @@ resultsModals <- list(
       "If the ITS DA was selected, then the individual ITS scores are also appended",
       "and highlighted in blue. The corresponding columns end with ‘Score’."
     ),
-    p("Hazard call predictions are ‘0’ if the result is negative and ‘1’ if the result is positive."),
+    p(
+      "Hazard call predictions are ‘0’ if the result is negative and ‘1’ if the result is positive."
+    ),
     p(
       "For assigning potency predictions, the DASS App uses categories established",
       "by the United Nations Globally Harmonized System for Classification and Labelling of Chemicals (GHS)."
@@ -997,9 +1107,7 @@ compare_panel <- tabPanel(
     hr(width = "50%"),
     tags$details(
       open = "open",
-      tags$summary(
-        "Select Endpoint Type"
-      ),
+      tags$summary("Select Endpoint Type"),
       div(
         class = "detailsBody",
         radioButtons(
@@ -1011,9 +1119,7 @@ compare_panel <- tabPanel(
     ),
     tags$details(
       open = "open",
-      tags$summary(
-        "Select Columns to Compare"
-      ),
+      tags$summary("Select Columns to Compare"),
       div(
         id = "referenceCompare_ui",
         class = "detailsBody",
@@ -1030,19 +1136,19 @@ compare_panel <- tabPanel(
             inputId = "perfRefRes",
             label = list(
               span("Select Reference Column(s)"),
-              HTML("<button id='info_refCol' type='button' class='btn action-link btn-qs' aria-label='reference column info'>",
-                   "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-                   "</button>")
+              HTML(
+                "<button id='info_refCol' type='button' class='btn action-link btn-qs' aria-label='reference column info'>",
+                "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+                "</button>"
+              )
             ),
             selectize = TRUE,
             choices = NULL,
             multiple = TRUE
           )
         ),
-        checkboxInput(
-          inputId = "choosePullRef",
-          label = "Use reference data from ICE (?)"
-        ),
+        checkboxInput(inputId = "choosePullRef",
+                      label = "Use reference data from ICE (?)"),
         conditionalPanel(
           condition = "input.choosePullRef",
           checkboxGroupInput(
@@ -1070,23 +1176,25 @@ compare_panel <- tabPanel(
     # ),
     tags$details(
       open = "open",
-      tags$summary(
-        "A Name"
-      ),
+      tags$summary("A Name"),
       div(
         class = "detailsBody",
-        checkboxInput(
-          inputId = "choosePullICE",
-          label = "Pull chemical information from ICE (?)"
-        ),
-        conditionalPanel(
-          condition = "input.choosePullICE",
-          tags$ol(
-            tags$li("Choose identifiers. multi? sep box for each CASRN, qsar-ready smiles, etc.?"),
-            tags$li("Choose options from ICE. Start with chem prop.",
-                    tags$ul(tags$li("maybe add other endpoints? if >1 result then viz shows median, more context on hover")))
-          )
-        )
+        checkboxInput(inputId = "choosePullICE",
+                      label = "Pull chemical information from ICE (?)"),
+        conditionalPanel(condition = "input.choosePullICE",
+                         tags$ol(
+                           tags$li(
+                             "Choose identifiers. multi? sep box for each CASRN, qsar-ready smiles, etc.?"
+                           ),
+                           tags$li(
+                             "Choose options from ICE. Start with chem prop.",
+                             tags$ul(
+                               tags$li(
+                                 "maybe add other endpoints? if >1 result then viz shows median, more context on hover"
+                               )
+                             )
+                           )
+                         ))
       )
     ),
     actionButton(
@@ -1103,47 +1211,56 @@ compare_panel <- tabPanel(
       div(
         class = "hiddenBlock",
         id = "compareTableBody",
-
-          p(
-            "Confusion matrices and performance metrics are shown below. Use the dropdown list",
-            "to select the comparison you would like to view. Use the 'Download' button to open",
-            "the download menu."
-          ),
-          actionButton(
-            inputId = "downloadCompareTables",
-            label = "Download"
-          ),
+        
+        p(
+          "Confusion matrices and performance metrics are shown below. Use the dropdown list",
+          "to select the comparison you would like to view. Use the 'Download' button to open",
+          "the download menu."
+        ),
+        actionButton(inputId = "downloadCompareTables",
+                     label = "Download"),
         fluidRow(
           column(
             width = 6,
-        selectInput(inputId = "referencePerf_1",
-                    label = "Select Reference",
-                    choices = NULL),
-        selectInput(inputId = "predictionPerf_1",
-                    label = "Select Prediction",
-                    choices = NULL),
-        plotOutput("perfFigure_1")),
-        column(
-          width = 6,
-          id = "perfTab_block2",
-          class = "hiddenBlock",
-          selectInput(inputId = "referencePerf_2",
-                      label = "Select Reference",
-                      choices = NULL),
-          selectInput(inputId = "predictionPerf_2",
-                      label = "Select Prediction",
-                      choices = NULL),
-          plotOutput("perfFigure_2"))
-        
-        
+            selectInput(
+              inputId = "referencePerf_1",
+              label = "Select Reference",
+              choices = NULL
+            ),
+            selectInput(
+              inputId = "predictionPerf_1",
+              label = "Select Prediction",
+              choices = NULL
+            ),
+            plotOutput("perfFigure_1")
+          ),
+          column(
+            width = 6,
+            id = "perfTab_block2",
+            class = "hiddenBlock",
+            selectInput(
+              inputId = "referencePerf_2",
+              label = "Select Reference",
+              choices = NULL
+            ),
+            selectInput(
+              inputId = "predictionPerf_2",
+              label = "Select Prediction",
+              choices = NULL
+            ),
+            plotOutput("perfFigure_2")
+          )
+          
+          
         ),
-
+        
         hr(width = "50%"),
         div(
           class = "hiddenBlock",
           id = "binaryDefs",
           h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
-          HTML("<table class = 'defTab' border=1>
+          HTML(
+            "<table class = 'defTab' border=1>
     <tr> <th> Metric </th> <th> Definition </th>  </tr>
     <tr> <td> N </td> <td> The number of valid reference values </td>  </tr>
       <tr> <td> Accuracy  </td> <td>  (True positives + True negatives) / (All positives + All negatives) </td> </tr>
@@ -1153,20 +1270,23 @@ compare_panel <- tabPanel(
       <tr> <td> False Positive Rate  </td> <td>  False positives / All positives </td> </tr>
       <tr> <td> True Negative Rate (Specificity)  </td> <td>  True negatives / All negatives </td> </tr>
       <tr> <td> False Negative Rate  </td> <td>  False negatives / All negatives </td> </tr>
-       </table>")
+       </table>"
+          )
         ),
-      div(
-        class = "hiddenBlock",
-        id = "potencyDefs",
-        h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
-        HTML("<table class = 'defTab' border=1>
+    div(
+      class = "hiddenBlock",
+      id = "potencyDefs",
+      h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
+      HTML(
+        "<table class = 'defTab' border=1>
              <tr> <th> Metric </th> <th> Definition </th>  </tr>
         <tr> <td> N </td> <td> The number of valid reference values </td>  </tr>
         <tr> <td> Accuracy  </td> <td>  The percentage of predicted values equal to reference values </td> </tr>
         <tr> <td> Overpredicted </td> <td>  The percentage of predicted values with a more potent GHS category than the corresponding reference value </td> </tr>
         <tr> <td> Underpredicted  </td> <td>  The percentage of predicted values with a less potent GHS category than the corresponding reference value </td> </tr>
-         </table>")
+         </table>"
       )
+    )
       )
     ),
     bsCollapsePanel_dass(
@@ -1188,13 +1308,13 @@ compare_panel <- tabPanel(
           label = "Select Comparison",
           choices = NULL
         ),
-        plotlyOutput("violin") 
+        plotlyOutput("violin")
       )
     )
   )
 )
 
-compareModals <- list(
+compare_modals <- list(
   bsModal(
     id = "refCol_modal",
     title = "Reference column",
@@ -1210,14 +1330,10 @@ compareModals <- list(
           tags$li(
             "'non-sensitizer', 'non-sensitiser', 'i', 'inactive', 'n', 'neg', 'negative', or 0 to indicate negative assay outcomes.*"
           ),
-          tags$li(
-            "Missing values should be blank or labeled as 'NA'."
-          )
+          tags$li("Missing values should be blank or labeled as 'NA'.")
         ),
-        span(
-          style = "font-size:90%",
-          "* Case insensitive"
-        )
+        span(style = "font-size:90%",
+             "* Case insensitive")
       )
     ),
     div(
@@ -1225,17 +1341,11 @@ compareModals <- list(
       p(
         "The columns corresponding to reference potency classifications should only contain the values:",
         tags$ul(
-          tags$li(
-            "1A, 1B, NC"
-          ),
-          tags$li(
-            "Missing values should be blank or labeled as 'NA'."
-          )
+          tags$li("1A, 1B, NC"),
+          tags$li("Missing values should be blank or labeled as 'NA'.")
         ),
-        span(
-          style = "font-size:90%",
-          "* Case insensitive"
-        )
+        span(style = "font-size:90%",
+             "* Case insensitive")
       )
     )
   ),
@@ -1251,9 +1361,15 @@ compareModals <- list(
       )
     ),
     div(
-      actionLink(inputId = "perfAll", label = "Select All"), " | ",
+      actionLink(inputId = "perfAll", label = "Select All"),
+      " | ",
       actionLink(inputId = "perfNone", label = "Deselect All"),
-      checkboxGroupInput(inputId = "tableChoices", label = "Select Output to Download", choices = NULL, width = "100%"),
+      checkboxGroupInput(
+        inputId = "tableChoices",
+        label = "Select Output to Download",
+        choices = NULL,
+        width = "100%"
+      ),
       downloadButton(outputId = "dlPerf", label = "Download Output")
     ),
     hr(style = "width:50%"),
@@ -1261,8 +1377,18 @@ compareModals <- list(
       "You can download the results in table format as an Excel file or text file.",
     ),
     p(
-      downloadButton(outputId = "perfFlat_xl", label = "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
-      downloadButton(outputId = "perfFlat_txt", label = "Tab-Delimited (.txt) ", icon = icon("file-alt"), class = "btn-dl")
+      downloadButton(
+        outputId = "perfFlat_xl",
+        label = "Excel (.xlsx)",
+        icon = icon("file-excel"),
+        class = "btn-dl"
+      ),
+      downloadButton(
+        outputId = "perfFlat_txt",
+        label = "Tab-Delimited (.txt) ",
+        icon = icon("file-alt"),
+        class = "btn-dl"
+      )
     )
     
   )
@@ -1272,18 +1398,19 @@ compareModals <- list(
 ui_dass <- list(
   welcome_panel,
   tabsetPanel(
-    id = "stepSet",
-    selectda_panel,
-    uploaddata_panel,
-    selectcolumns_panel,
-    reviewselection_panel,
-    results_panel,    
-    compare_panel
+    id = "step_set",
+    select_da_panel
+    # upload_data_panel,
+    # select_columns_panel,
+    # review_selection_panel,
+    # results_panel
+    # compare_panel
+    # selected = "Select Data Columns"
   ),
-  daModals,
-  dataModals,
-  selectModals,
-  reviewModals,
-  resultsModals,
-  compareModals
+  da_modals,
+  data_modals,
+  select_modals,
+  review_modals,
+  results_modals,
+  compare_modals
 )

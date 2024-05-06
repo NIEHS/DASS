@@ -12,8 +12,17 @@
 # =============================================================================#
 
 # Step 2: Upload Data -----
-## Tab -----
-observeEvent(input$confirmDAs, {
+## Reactive Values -----
+usr_dt <- reactiveVal()
+dt_analyze <- reactiveVal()
+demo_data <- reactiveVal()
+xl_sheet <- reactiveVal()
+numeric_data <- reactiveVal()
+
+step_1_done <- reactiveVal(F)
+
+## Update Tab -----
+observeEvent(input$confirm_da, {
   check_select <- all(!input$do_da_2o3 &
                         !input$do_da_its & !input$do_da_ke31)
   
@@ -25,25 +34,21 @@ observeEvent(input$confirmDAs, {
     )
   } 
   req(!check_select)
-  if (!is.null(dass_choice())) {
-    shinyjs::runjs("resetHidden(false);")
-    shinyjs::runjs("rmDPRAListener();")
-  }
+  
+  
+  
+  # if (!is.null(dass_choice())) {
+  #   shinyjs::runjs("resetHidden(false);")
+  #   shinyjs::runjs("rmDPRAListener();")
+  # }
 
-  updateTabsetPanel(inputId = "stepSet", selected = "Upload Data")
-  shinyjs::runjs("$('#stepSet')[0].scrollIntoView();")
+  updateTabsetPanel(inputId = "step_set", selected = "Upload Data")
+  # shinyjs::runjs("$('#step_set')[0].scrollIntoView();")
 })
 
-## Reactive Values -----
-usr_dt <- reactiveVal()
-dt_analyze <- reactiveVal()
-demo_data <- reactiveVal()
-xlsheet <- reactiveVal()
-numeric_data <- reactiveVal() 
-## Demo -----
-
-observeEvent(input$useDemoData, {
-  if (input$useDemoData) {
+## Load Demo Data -----
+observeEvent(input$use_demo_data, {
+  if (input$use_demo_data) {
     demo_data(fread("www/dassAppDemoData-fromGL497Annex2.csv"))
     dt_analyze(demo_data())
     
@@ -51,11 +56,11 @@ observeEvent(input$useDemoData, {
       if (is.numeric(x)) x
     }))
   
-    shinyjs::hide("uploadBlock")
+    shinyjs::hide("upload_block")
   }
   
-  if (!input$useDemoData) {
-    shinyjs::show("uploadBlock")
+  if (!input$use_demo_data) {
+    shinyjs::show("upload_block")
     if (is.null(usr_dt())) {
       dt_analyze(NULL)
       numeric_data(NULL)
@@ -69,9 +74,9 @@ observeEvent(input$useDemoData, {
   }
 })
 
-## Upload -----
+## Upload User Data -----
 load_data <- reactive({
-  usr_dt(read_data(input$fpath$datapath, sheet = xlsheet()))
+  usr_dt(read_data(input$fpath$datapath, sheet = xl_sheet()))
   dt_analyze(usr_dt())
 })
 
@@ -79,34 +84,34 @@ observeEvent(input$fpath, {
   # Check file extension
   ext <- unlist(strsplit(input$fpath$name, "[.]"))
   ext <- ext[length(ext)]
-  extvalid <- grepl("^csv$|^tsv$|^txt$|^xls$|^xlsx$", ext)
+  ext_valid <- grepl("^csv$|^tsv$|^txt$|^xls$|^xlsx$", ext)
 
-  if (!extvalid) {
+  if (!ext_valid) {
     showNotification(
       type = "error",
       "Incorrect file type. Accepted file extensions: csv, tsv, txt, xlsx",
       duration = 10
     )
-    req(extvalid)
+    req(ext_valid)
   }
 
   if (grepl("^xls$|^xlsx$", ext)) {
     sheets <- readxl::excel_sheets(input$fpath$datapath)
     if (length(sheets) == 1) {
-      xlsheet(1)
+      xl_sheet(1)
       load_data()
     } else if (length(sheets) > 1) {
       # Render error (workaround to show error with easyclose)
       sheet_text_ui <- span(
         span(style = "font-weight:bold;", "Error: No Excel worksheet selected!"),
-        actionLink(inputId = "button_choose_xlsheet",
+        actionLink(inputId = "button_choose_xl_sheet",
                    label = "Open worksheet selector"),
       )
-      output$xlsheet_text_ui <- renderUI({
+      output$xl_sheet_text_ui <- renderUI({
         sheet_text_ui
       })
 
-      shinyjs::show("xlsheet_text_ui")
+      shinyjs::show("xl_sheet_text_ui")
 
       # Show excel worksheet selector
       updateSelectInput(session, "xl_sheet_list", choices = sheets)
@@ -115,7 +120,7 @@ observeEvent(input$fpath, {
   }
 
   if (grepl("^csv$|^tsv$|^txt$", ext)) {
-    shinyjs::hide("xlsheet_text_ui")
+    shinyjs::hide("xl_sheet_text_ui")
     # Data are automatically read in
     load_data()
   }
@@ -128,23 +133,23 @@ observeEvent(input$confirm_xl_sheet, {
     span(style = "font-weight:bold;", "Selected Worksheet:"),
     input$xl_sheet_list,
     "(",
-    actionLink(inputId = "button_change_xlsheet",
+    actionLink(inputId = "button_change_xl_sheet",
                  label = "Change Selected Worksheet"),
     ")"
   )
-  output$xlsheet_text_ui <- renderUI({
+  output$xl_sheet_text_ui <- renderUI({
     sheet_text_ui
   })
 
-  xlsheet(input$xl_sheet_list)
+  xl_sheet(input$xl_sheet_list)
   load_data()
 
-  shinyjs::show("xlsheet_text_ui")
+  shinyjs::show("xl_sheet_text_ui")
   toggleModal(session, "xl_select_modal", toggle = "close")
 })
 
 # User selected a worksheet, but changes it.
-observeEvent(input$button_change_xlsheet, {
+observeEvent(input$button_change_xl_sheet, {
   toggleModal(session, "xl_select_modal", toggle = "open")
 })
 
@@ -154,7 +159,7 @@ observeEvent(input$cancel_xl_sheet, {
 })
 
 # For case when user initially uploads xl file but doesn't select sheet.
-observeEvent(input$button_choose_xlsheet, {
+observeEvent(input$button_choose_xl_sheet, {
   toggleModal(session, "xl_select_modal", toggle = "open")
 })
 

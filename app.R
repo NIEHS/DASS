@@ -31,6 +31,8 @@ require(shinyjs)
 
 # Load functions
 source("R/dass_predict.R")
+source("R/interpret_assay.R")
+source("R/utils.R")
 
 # Load ui from file
 source("R/ui_obj.R")
@@ -60,7 +62,7 @@ server <- function(input, output, session) {
   source("R/server/Step3-SelectColumns.R", local = TRUE)
   source("R/server/Step4-ReviewColumns.R", local = TRUE)
   source("R/server/Step5-Results.R", local = TRUE)
-  source("R/server/Step6-Performance.R", local = TRUE)
+  # source("R/server/Step6-Performance.R", local = TRUE)
   # for debugging
   observeEvent(input$browser,{
     browser()
