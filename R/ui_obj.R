@@ -1081,7 +1081,14 @@ ui_dass <- fluidPage(
       style = "text-align:center;",
       a(href = "https://github.com/NIEHS/DASS",
         target = "_blank",
-        "Source Code"),
+        "Source Code",
+        class = "external-link"),
+      br(),
+      "Please cite:",
+      a(href = "https://doi.org/10.1186/s12859-023-05617-1",
+        target = "_blank",
+        "To et. al, BMC Bioinform. 2024",
+        class = "external-link"),
       br(),
       span("Last updated: July 13, 2024")
     )
