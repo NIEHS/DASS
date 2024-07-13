@@ -276,44 +276,10 @@ uploaddata_panel <- bsCollapsePanel_dass(
   
 div(
   id = "uploadBlock",
-  div(
-    class = "form-group shiny-input-container",
-    style = "width:100%",
-    tags$label(
-      class = "control-label",
-      `for` = "fpath",
-      id = "fpath-label",
-      value = "File input",
-      "Click 'Browse' below and select your file."
-    ),
-    div(
-      class = "input-group",
-      tags$label(
-        class = "input-group-btn input-group-prepend",
-        span(
-          class = "btn btn-default btn-file",
-          "Browse...",
-          tags$input(
-            id = "fpath",
-            name = "fpath",
-            type = "file",
-            style = "position: absolute !important; top: -99999px !important; left: -99999px !important;",
-            `data-shinyjs-resettable-id` = "fpath",
-            `data-shinyjs-resettable-type` = "File",
-            `data-shinyjs-resettable-value` = "",
-            `class` = "shinyjs-resettable shiny-bound-input"
-          )
-        )
-      ),
-      tags$input(
-        type = "text",
-        class = "form-control",
-        title = "Form control for file input",
-        style = "border-color:#232b5f; width:100%",
-        placeholder = "No file selected.",
-        readonly = "readonly"
-      )
-    ),
+  fileInput(
+    inputId = "fpath",
+    label = "Click 'Browse' below and select your file.",
+    width = "100%"
   ),
   uiOutput("xlsheet_text_ui")),
   HTML(
@@ -330,7 +296,7 @@ div(
     "</div>"
   ),
   hr(style = "width:50%"),
-  DT::dataTableOutput("dt_analyze"),
+  DT::DTOutput("dt_analyze"),
     div(
       id = "user_data_block_confirm",
       class = "hiddenBlock",
@@ -895,7 +861,7 @@ results_panel <- bsCollapsePanel_dass(
                     )
     ))
   ),
-  dataTableOutput("dt_results"),
+  DT::DTOutput("dt_results"),
   # br(),
   ## Modals -----
   bsModal(
@@ -1117,7 +1083,7 @@ ui_dass <- fluidPage(
         target = "_blank",
         "Source Code"),
       br(),
-      span("Last updated: 2023-Nov-28")
+      span("Last updated: July 13, 2024")
     )
   )
 )

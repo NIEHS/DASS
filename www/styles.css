@@ -223,13 +223,10 @@ caption-side: bottom;
 white-space:nowrap;
 }
 
-/*
-label[for="fpath"] {
-  height:0;
-  display:block;
-  visibility:hidden;
+#fpath_progress {
+  display:none;
 }
-*/
+
 
 .progress-bar {
   background-color:#234510;
