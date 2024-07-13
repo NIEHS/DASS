@@ -16,15 +16,6 @@ function showNA(row, data) {
   }
 }
 
-function togglePdepl() {
-  const isChecked = $("input[value='pdepl']").is(":checked");
-  if (isChecked) {
-    dpraDep.show();
-  } else {
-    dpraDep.hide();
-  }
-}
-
 function toggleAssaySelect(input_name, assay_value, disable = true) {
   const assay_input = $(`input[name = '${input_name}'][value='${assay_value}']`);
   console.log(assay_input);
@@ -43,15 +34,6 @@ function toggleAssaySelect(input_name, assay_value, disable = true) {
   }
 }
 
-const dpraDep = $("#dpraDepSelect");
-function addDPRAListener() {
-  $("#dpra_call_choice").on("change", () => togglePdepl());
-}
-
-function rmDPRAListener() {
-  $("#dpra_call_choice").off("change", () => togglePdepl());
-}
-
 function resetHidden(hideAll=true) {
   if (hideAll) {
     $(".hiddenBlock").hide();
@@ -60,15 +42,15 @@ function resetHidden(hideAll=true) {
   }
 }
 
-$(document).on('shiny:connected', resetHidden);
-
-
-
-
+$(document).on('shiny:connected', function() {
+  resetHidden();
   
-
+  $("input[name='selected_da'][value='da_2o3']").attr("aria-labelledby", "2o3_radio_label");
+  $("input[name='selected_da'][value='da_its']").attr("aria-labelledby", "its_radio_label");
+  $("input[name='selected_da'][value='da_ke31']").attr("aria-labelledby", "ke31_radio_label");
+    $("#do_da_2o3_bl").attr("aria-labelledby", "2o3_bl_cb_label");
   
-  
+});
 
 /*
 $(document).on('shiny:connected', function() {

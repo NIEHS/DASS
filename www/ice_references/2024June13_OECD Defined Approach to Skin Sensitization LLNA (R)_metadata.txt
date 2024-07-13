@@ -1,0 +1,16 @@
+Field Data 	Description 
+CASRN	"Chemical Abstract Services Registry Number. If the CASRN was not given in the source document, the chemical name and information in the source document was used to identify the most appropriate CASRN using databases such as the EPA Chemistry Dashboard."
+Chemical Name	Name of the chemical  as reported in the source document .
+DTXSID  	Unique chemical identifier in the EPA DSSTox Database. Note not all compounds have a DTXSID.
+Original SMILES	Structural representation of the chemical linked to the CASRN and DTXSID.
+Original InChIKey	A hashed version of the InChI designed to allow easy lookups of the chemical structure generated from the Original SMILES.
+QSAR Ready SMILES	"Structural representation that has been processed and standardized for QSAR modeling. The QSAR Ready SMILES can be used as an input to run OPERA models (https://github.com/NIEHS/OPERA). Processing steps include: desalting, removal of stereochemistry, and standardizing tautomer (among others). Note that chemicals that cannot be predicted (such as metals, inorganics and mixtures) will not have a QSAR Ready SMILES. "
+LLNA Binary hazard reference classification	"LLNA Binary hazard reference classification, see Annex 3 of the Supporting Document to the OECD Guideline 497 on Defined Approaches for Skin Sensitisation"
+LLNA Potency reference subcategorization	"LLNA Potency reference subcategorization, see Annex 3 of the Supporting Document to the OECD Guideline 497 on Defined Approaches for Skin Sensitisation"
+	
+References	
+Supporting Document to the OECD Guideline 497 on Defined Approaches for Skin Sensitisation (No. 336)	https://www.oecd.org/chemicalsafety/testing/series-testing-assessment-publications-number.htm
+OECD Guideline No. 497: Defined Approaches on Skin Sensitisation	https://www.oecd.org/chemicalsafety/guideline-no-497-defined-approaches-on-skin-sensitisation-b92879a4-en.htm
+	
+Metadata for: 2024June13_OECD Defined Approach to Skin Sensitization LLNA (R).txt	
+"Downloaded for DASS App: June 13, 2024"	

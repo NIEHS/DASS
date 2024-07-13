@@ -55,6 +55,7 @@ ui <- fluidPage(
 
 attr(ui, "lang") <- "en"
 
+
 # Read in server files
 server <- function(input, output, session) {
   source("R/server/Step1-Select.R", local = TRUE)
@@ -62,7 +63,7 @@ server <- function(input, output, session) {
   source("R/server/Step3-SelectColumns.R", local = TRUE)
   source("R/server/Step4-ReviewColumns.R", local = TRUE)
   source("R/server/Step5-Results.R", local = TRUE)
-  # source("R/server/Step6-Performance.R", local = TRUE)
+  source("R/server/Step6-Performance.R", local = TRUE)
   # for debugging
   observeEvent(input$browser,{
     browser()

@@ -32,27 +32,30 @@ observeEvent(input$cancel_run, {
 })
 
 # dass_results <- reactiveVal()
-dass_res_template <- list(
-  da_2o3 = list(
-    KE1_call_BL = NULL,
-    KE2_call_BL = NULL,
-    KE3_call_BL = NULL,
-    hazard = NULL,
-    hazard_BL = NULL
-  ),
-  da_its = list(
-    KE1_score = NULL,
-    KE3_score = NULL,
-    insil_score = NULL,
-    total_score = NULL,
-    hazard = NULL,
-    potency = NULL
-  ),
-  da_ke31 = list(
-    hazard = NULL,
-    potency = NULL
+dass_res_template <- reactive({
+  switch(
+    input$selected_da,
+    da_2o3 = list(
+      ke1_call_BL = NULL,
+      ke2_call_BL = NULL,
+      ke3_call_BL = NULL,
+      hazard = NULL,
+      hazard_BL = NULL
+    ),
+    da_its = list(
+      ke1_score = NULL,
+      ke3_score = NULL,
+      insil_score = NULL,
+      total_score = NULL,
+      hazard = NULL,
+      potency = NULL
+    ),
+    da_ke31 = list(
+      hazard = NULL,
+      potency = NULL
+    )
   )
-)
+})
 
 all_out <- reactiveValues(
   result_df = NULL,
@@ -64,7 +67,7 @@ all_out <- reactiveValues(
 
 run_dass <- reactive({
   data_select <- data_select()
-  dass_res <- dass_res_template
+  dass_res <- dass_res_template()
   
   if (ke1_calc_mean()) {
     data_select$ke1_mean_c_l_dep_col$col_name <- "ke1_mean_calculated"
@@ -78,27 +81,23 @@ run_dass <- reactive({
   
   if (ke1_get_call()) {
     data_select$ke1_call_col$col_name <- "ke1_call_calculated"
-    data_select$ke1_call_col$display_name <- paste(
-      data_select$ke1_call_col$display_name, "(Calculated)"
-    )
+    data_select$ke1_call_col$display_name <- paste(data_select$ke1_call_col$display_name, "(Calculated)")
+    
     data_select$ke1_call_col$converted_values <- 
       ke1Call(
         assay = input$ke1_assay_name,
-        mean_C_L_dep = data_select$ke1_mean_c_l_dep_col$converted_values,
-        C_dep = data_select$ke1_c_dep_col$converted_values,
-        L_dep = data_select$ke1_l_dep_col$converted_values
-      )$hazard
+        mean_c_l_dep = data_select$ke1_mean_c_l_dep_col$converted_values,
+        c_dep = data_select$ke1_c_dep_col$converted_values,
+        l_dep = data_select$ke1_l_dep_col$converted_values
+      )$call
   }
 
-  if (input$do_da_2o3) {
-    tmp_2o3 <- da2o3(
+  if (input$selected_da == "da_2o3") {
+    dass_res$hazard <- da2o3(
       assayA_call = data_select$ke1_call_col$converted_values,
       assayB_call = data_select$ke2_call_col$converted_values,
       assayC_call = data_select$ke3_call_col$converted_values
-    )
-    
-    dass_res$da_2o3$hazard <- tmp_2o3$hazard
-    
+    )$hazard
     # if (input$do_da_2o3_BL) {
     #   dass_res$da_2o3$KE1_call_BL <- ke1BL(input$ke1_assay_name, 
     #                                        call = data_select$ke1_call_col$converted_values,
@@ -110,10 +109,12 @@ run_dass <- reactive({
     #   
     #  
     # }
+    dass_res <- data.frame(do.call("cbind", dass_res), check.names = F)
+
   }
   
-  if (input$do_da_its) {
-    tmp_its <- daITS(
+  if (input$selected_da == "da_its") {
+    dass_res <- daITS(
       ke1_assay = input$ke1_assay_name,
       ke1_mean_c_l_dep = data_select$ke1_mean_c_l_dep_col$converted_values, 
       ke1_c_dep = data_select$ke1_c_dep_col$converted_values,
@@ -121,36 +122,18 @@ run_dass <- reactive({
       ke3_value = data_select$ke3_val_col$converted_values,
       insil_prediction = data_select$insil_call_col$converted_values, 
       insil_ad = data_select$insil_ad_col$converted_values
-    )
-    dass_res$da_its <- list(
-      ke1_score = tmp_its$ke1_score,
-      ke3_score = tmp_its$ke3_score,
-      insil_score = tmp_its$insil_score,
-      total_score = tmp_its$total_score,
-      hazard = tmp_its$hazard,
-      potency = tmp_its$potency)
+    )[,names(dass_res)]
   }
   
-  if (input$do_da_ke31) {
-    tmp_ke31 <- daKE31(
+  if (input$selected_da == "da_ke31") {
+    dass_res <- daKE31(
       ke1_call = data_select$ke1_call_col$converted_values,
       ke3_value = data_select$ke3_val_col$converted_values
-    )
-    dass_res$da_ke31 <- list(
-      hazard = tmp_ke31$hazard,
-      potency = tmp_ke31$potency
-    )
+    )[,names(dass_res)]
   }
   
-  by_da <- sapply(dass_res, function(x) !is.null(x))
-  dass_res <- lapply(dass_res[by_da], function(x) {
-    by_col <- sapply(x, function(y) !is.null(y))
-    as.data.frame(x[by_col])
-  })
-  dass_res <- dass_res <- do.call("c", dass_res)
-  dass_res <- as.data.frame(dass_res)
-  # dass_results(dass_res)
-  
+  names(dass_res) <- paste0(input$selected_da, ".", names(dass_res))
+
   da_input <- sapply(data_select, function(x) !is.null(x$converted_values))
   da_input <- lapply(data_select[da_input], function(x) {
     out <- list(x$converted_values)
@@ -430,67 +413,3 @@ create_xl_file <- reactive({
   wb
 
 })
-
-# ## Save -----
-# create_xl_file <- reactive({
-# 
-#   # Create excel workbook
-#   wb <- createWorkbook()
-# 
-#   # Add worksheets
-#   addWorksheet(wb, sheetName = "Key")
-#   addWorksheet(wb, sheetName = "Column Selection")
-#   addWorksheet(wb, sheetName = "Results")
-# 
-#   # Styles
-#   orange_font <- createStyle(fontColour = "#D55E00")
-#   bold_font <- createStyle(textDecoration = "bold")
-#   blue_bg <- createStyle(fgFill = "#56B4E9", halign = "right")
-#   pink_bg <- createStyle(fgFill = "#CC79A7", halign = "right")
-#   yellow_bg <- createStyle(fgFill = "#F0E442")
-#   bold_blue <- createStyle(textDecoration = "bold", fgFill = "#56B4E9", halign = "right")
-# 
-
-# 
-#   writeData(wb, sheet = "Key", key_df, headerStyle = bold_font)
-#   addStyle(wb, sheet = "Key", style = blue_bg, row = 4, col = 1)
-#   addStyle(wb, sheet = "Key", style = pink_bg, row = 3, col = 1)
-#   addStyle(wb, sheet = "Key", style = yellow_bg, row = 2, col = 1)
-# 
-#   # Create column selection worksheet
-#   # Column review table
-#   col_select <- dt_review()
-#   # Replace html
-#   col_select[,Variable := gsub("&trade;", "(TM)", Variable)]
-#   writeData(wb, sheet = "Column Selection", x = col_select, headerStyle = bold_font)
-#   # causes issues when downloading twice:
-#   # setColWidths(wb, sheet = "Column Selection", cols = 1:ncol(col_select), widths = "auto")
-#   # Get row IDs to highlight
-#   flag_row <- col_select[,which(Flag != "")]
-#   if (length(flag_row) > 0) {
-#     flag_row <- flag_row + 1
-#     addStyle(wb, sheet = "Column Selection", style = orange_font,
-#              rows = flag_row, cols = 1:ncol(col_select), gridExpand = T)
-#   }
-# 
-#   # Create results worksheet
-#   res <- dass_res$results
-#   writeData(wb, sheet = "Results", x = res, headerStyle = bold_font, keepNA = TRUE, na.string = "NA")
-# 
-#   usr_cols <- na.omit(match(dass_res$user_select, colnames(res)))
-#   addStyle(wb, sheet = "Results", style = yellow_bg,
-#            rows = 2:(nrow(res) + 1), cols = usr_cols, gridExpand = T)
-#   
-#   in_cols <- na.omit(match(dass_res$da_input, colnames(res)))
-#   addStyle(wb, sheet = "Results", style = pink_bg,
-#            rows = 2:(nrow(res) + 1), cols = in_cols, gridExpand = T)
-#   
-#   dass_cols <- na.omit(match(dass_res$da_output, colnames(res)))
-#   addStyle(wb, sheet = "Results", style = blue_bg,
-#            rows = 2:(nrow(res) + 1), cols = dass_cols, gridExpand = T)
-# 
-#   activeSheet(wb) <- "Results"
-#   wb
-# })
-# 
-

@@ -31,80 +31,49 @@ call1_str <- c("1", "a", "active", "p", "pos", "positive", "sensitizer", "sensit
 ke3_0_str <- c("NI", "Inf", "i", "inactive", "n", "neg", "negative", "non-sensitizer", "non-sensitiser", "nonsensitizer", "nonsensitiser")
 
 observeEvent(input$review_entries, {
+
   # Get required information sources
-  col_req <- NULL
-  data_select <- data_select_template
-  
-  if (input$do_da_2o3) {
-    tmp <- c( "ke2_call_col", "ke3_call_col")
-    if (input$do_da_2o3_BL) tmp <- c(tmp, "ke2_val_col", "ke3_val_col")
-    if (input$ke1_call_interpret) {
-      ke1_get_call(T)
-    } else {
-      tmp <- c(tmp, "ke1_call_col")
+  col_req <- switch(input$selected_da, 
+                    da_2o3 = c("ke2_call_col", "ke3_call_col"),
+                    da_its = c("ke3_val_col", "insil_call_col", "insil_ad_col"),
+                    da_ke31 = c("ke3_val_col"))
+
+  if ((input$selected_da %in% c("da_2o3", "da_ke31")) & !input$ke1_call_interpret) {
+    ke1_get_call(F)
+    col_req <- c(col_req, "ke1_call_col")
+  } else if ((input$selected_da %in% c("da_2o3", "da_ke31")) & input$ke1_call_interpret) {
+    ke1_get_call(T)
+    if (input$ke1_choose_dep) {
+      ke1_calc_mean(T)
+      col_req <- c(col_req, "ke1_c_dep_col", "ke1_l_dep_col")
+    } else if (!input$ke1_choose_dep) {
+      ke1_calc_mean(F)
+      col_req <- c(col_req, "ke1_mean_c_l_dep_col")
     }
-    if (input$ke1_call_interpret | input$do_da_2o3_BL) {
-      if (input$ke1_choose_dep) {
-        tmp <- c(tmp, "ke1_c_dep_col", "ke1_l_dep_col")
-        ke1_calc_mean(T)
-      } else {
-        tmp <- c(tmp, "ke1_mean_c_l_dep_col")
-      }
+  } else if(input$selected_da == "da_its") {
+    if (input$ke1_choose_dep) {
+      ke1_calc_mean(T)
+      col_req <- c(col_req, "ke1_c_dep_col", "ke1_l_dep_col")
+    } else if (!input$ke1_choose_dep) {
+      ke1_calc_mean(F)
+      col_req <- c(col_req, "ke1_mean_c_l_dep_col")
     }
-    data_select[tmp] <- lapply(data_select[tmp], function(x) {
-      x[["da_2o3"]] <- "x"
-      return(x)
-    })
-    col_req <- c(col_req, tmp)
   }
 
-  if (input$do_da_its) {
-    if (input$ke1_choose_dep) {
-      tmp <- c("ke1_c_dep_col", "ke1_l_dep_col", "ke3_val_col", "insil_call_col", "insil_ad_col")
-      ke1_calc_mean(T)
-    } else {
-      tmp <- c("ke1_mean_c_l_dep_col", "ke3_val_col", "insil_call_col", "insil_ad_col")
-    }
-    data_select[tmp] <- lapply(data_select[tmp], function(x) {
-      x[["da_its"]] <- "x"
-      return(x)
-    })
-    col_req <- c(col_req, tmp)
-  }
-  
-  if (input$do_da_ke31) {
-    tmp <- "ke3_val_col"
-    if (input$ke1_call_interpret) {
-      ke1_get_call(T)
-      if (input$ke1_choose_dep | input$do_da_2o3_BL) {
-        tmp <- c(tmp, "ke1_c_dep_col", "ke1_l_dep_col")
-        ke1_calc_mean(T)
-      } else {
-        tmp <- c(tmp, "ke1_mean_c_l_dep_col")
-      }
-    } else {
-      tmp <- c(tmp, "ke1_call_col")
-    }
-    data_select[tmp] <- lapply(data_select[tmp], function(x) {
-      x[["da_ke31"]] <- "x"
-      return(x)
-    })
-    col_req <- c(col_req, tmp)
-  }
-  
-  col_req <- as.character(sort(factor(unique(col_req), levels = names(data_select))))
-  
-  no_select <- any(sapply(col_req, function(x) ifelse(is.null(input[[x]]), T, is.na(input[[x]]) | input[[x]] == "")))
-  if (no_select) {
+  no_select <- all(sapply(col_req, function(x) dt_analyze()[,input[[x]]] != ""))
+  if (!no_select) {
     showNotification(
       type = "error",
       ui = "Missing required column selections.",
       duration = 10
     )
   }
-  req(!no_select)
-  
+  req(no_select)
+
   shinyjs::enable("tab_review_columns")
+  
+  data_select <- data_select_template
+  col_req <- as.character(sort(factor(unique(col_req), levels = names(data_select))))
   
   call_cols <- col_req[col_req %in% check_call_cols]
   if (length(call_cols) > 0) {
@@ -173,12 +142,9 @@ observeEvent(input$review_entries, {
   
   data_select(data_select)
   
-  dt_review <- lapply(data_select[col_req], function(x) x[c("da_2o3", "da_its", "da_ke31", "display_name", "col_name", "flagged")])
+  dt_review <- lapply(data_select[col_req], function(x) x[c("display_name", "col_name", "flagged")])
   dt_review <- do.call("rbind.data.frame", dt_review)
-  names(dt_review) <- c("DA 2o3", "DA ITS", "DA KE3/1", "Endpoint", "Selected Column", "Flagged")
-  rm_col <- colMeans(dt_review[,1:3] == "") == 1
-  rm_col <- names(rm_col)[rm_col]
-  dt_review[rm_col] <- NULL
+  names(dt_review) <- c("Endpoint", "Selected Column", "Flagged")
   dt_review$Flagged <- ifelse(dt_review$Flagged, "FLAG", "")
   
   dt_review(dt_review)
@@ -213,7 +179,6 @@ output$dt_review <- DT::renderDataTable({
             rownames = F,
             escape = F,
             selection = "none",
-            filter = "top",
             options = list(
               autoWidth = TRUE,
               dom = "t",

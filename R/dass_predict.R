@@ -363,7 +363,7 @@ compareCat <- function(pred, ref, predCol = NULL, refCol = NULL) {
   )]
 
   N <- ref_pred[!is.na(comp), .N]
-  acc <- ref_pred[!is.na(comp), mean(ref == pred)]
+  acc <- ref_pred[!is.na(comp), mean(comp %in% c("1A", "1B", "NC"))]
   under <- ref_pred[!is.na(comp), mean(comp == "UP")]
   over <- ref_pred[!is.na(comp), mean(comp == "OP")]
   
@@ -376,7 +376,7 @@ compareCat <- function(pred, ref, predCol = NULL, refCol = NULL) {
   perf_tab <- lapply(perf_tab, function(x) {names(x) <- "Value"; return(x)})
   
   class_perf <- lapply(c("1A", "1B", "NC"), function(i) {
-    sensitivity <- ref_pred[!is.na(comp) & ref == i, mean(pred == ref)]
+    sensitivity <- ref_pred[!is.na(comp) & ref == i, mean(comp %in% c("1A", "1B", "NC"))]
     specificity <- ref_pred[!is.na(comp) & ref != i, mean(pred != i)]
     list(
       Sensitivity = sensitivity,

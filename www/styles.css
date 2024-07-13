@@ -25,14 +25,16 @@ Description: custom style sheet
 body {
   background-color: white;
   color:black;
+  font-size: 16px;
 }
 
 a {
   color:#3E5A8E;
+  text-decoration: underline;
 }
 
 a:focus, a:hover {
-  color:#3E5A8E;
+  color: var(--darkblue);
   text-decoration: underline;
 }
 
@@ -46,9 +48,14 @@ h2 {
   font-weight: bold;
 }
 
-#selectcol_ui .col_assay_endpoint {
-  margin-left: 25px;
-  margin-bottom: 1.25em;
+.sr-only {
+  clip: rect(1px, 1px, 1px, 1px); 
+  clip-path: inset(50%);
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
 }
 
 .external-link::after {
@@ -57,66 +64,75 @@ h2 {
   font-size: x-small;
 }
 
-legend {
-  margin-bottom: 0;
-}
-
-fieldset label {
-  font-weight: normal;
-}
-
-label.disabled {
-  color: #595959;
-}
-
-/* https://css-tricks.com/inclusively-hidden/ */
-.sr-only:not(:focus):not(:active) {
-  clip: rect(0 0 0 0); 
-  clip-path: inset(50%);
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  white-space: nowrap; 
-  width: 1px;
+#selectcol_ui .col_assay_endpoint {
+  margin-left: 25px;
+  margin-bottom: 1.25em;
 }
 
 /* Header */
 .header-row {
-  margin: 2rem 0;
+  margin: 2rem 1em;
   display: flex;
+  gap: 1em;
 }
 
-.title-panel {
+.header-details-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 75%;
+}
+
+.page-title {
+  background-color: var(--darkblue);
+  color: white;
+  border-radius: 10px 10px 0 0;
+  text-align: center;
+  padding: 0.5em;
+}
+
+.page-details {
+  background-color: var(--lightblue);
+  color: black;
+  border-radius: 0 0 10px 10px;
+  padding: 1.5em 3em;
+  flex: 1 1 0;
+}
+
+.link-panel {
   background-color: var(--darkblue);
   text-align: center;
   color: white;
-  border-radius: 10px 0 0 10px;
+  border-radius: 10px;
   padding: 1em 1em;
-  flex: 1 1 40%;
-}
-
-.details-panel {
-  background-color: var(--lightblue);
-  color: black;
-  border-radius: 0 10px 10px 0;
-  padding: 1em 3em;
-  flex: 1 1 60%;
+  flex: 1 1 25%;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.nav-tabs li.disabled {
-  pointer-events: none;
-  font-weight: normal;
-}
+
+
 
 .link-list {
   display: flex;
   flex-direction: column;
   gap: 0.5em;
   padding: 1em;
+  margin: 0;
+  list-style-type: none;
 }
 
+.link-list a {
+  width: 100%;
+}
+
+.shiny-options-group {
+  margin-left: 2rem;
+}
+
+.control-label {
+  font-weight: normal;
+}
 
 /* TABS */
 .nav-tabs {
@@ -147,6 +163,7 @@ label.disabled {
   background-color: transparent !important;
   padding: 0;
   text-align: center;
+  text-decoration: none;
 }
 
 .nav-tabs li:before,
@@ -215,6 +232,10 @@ label.disabled {
 }
 
 /* BUTTONS */
+.btn-default {
+  text-decoration: none;
+}
+
 .btn-default,
 .btn-default:hover,
 .btn-default:active,
@@ -370,9 +391,11 @@ label.disabled {
 }
     
 /* INPUT */
+/*
 .control-label {
   white-space:nowrap;
 }
+*/
 
 /* MODALS */
 .da-diagram {

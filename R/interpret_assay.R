@@ -45,8 +45,8 @@ ke1Call <- function(assay, mean_c_l_dep = NULL, c_dep = NULL, l_dep = NULL) {
   use_c <- is.na(mean_c_l_dep) & !is.na(c_dep)
   
   call <- rep(NA, length(mean_c_l_dep))
-  call[use_mean] <- as.numeric(call[use_mean] < ke1_call_thresholds[[assay]][["mean_c_l_dep"]][["call"]])
-  call[use_c] <- as.numeric(call[use_c] < ke1_call_thresholds[[assay]][["c_dep"]][["call"]])
+  call[use_mean] <- as.numeric(mean_c_l_dep[use_mean] < ke1_call_thresholds[[assay]][["mean_c_l_dep"]][["call"]])
+  call[use_c] <- as.numeric(c_dep[use_c] < ke1_call_thresholds[[assay]][["c_dep"]][["call"]])
   
   return(
     data.frame(

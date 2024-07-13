@@ -19,46 +19,31 @@ demo_data <- reactiveVal()
 xl_sheet <- reactiveVal()
 numeric_data <- reactiveVal()
 
-step_1_done <- reactiveVal(F)
-
 ## Update Tab -----
 observeEvent(input$confirm_da, {
-  check_select <- all(!input$do_da_2o3 &
-                        !input$do_da_its & !input$do_da_ke31)
-  
-  if (check_select) {
-    showNotification(
-      type = "error",
-      ui = "No defined approaches selected.",
-      duration = 10
-    )
-  } 
-  req(!check_select)
-  
-  
-  
+
   # if (!is.null(dass_choice())) {
   #   shinyjs::runjs("resetHidden(false);")
   #   shinyjs::runjs("rmDPRAListener();")
   # }
 
   updateTabsetPanel(inputId = "step_set", selected = "Upload Data")
-  # shinyjs::runjs("$('#step_set')[0].scrollIntoView();")
+  shinyjs::runjs("$('#step_set')[0].scrollIntoView();")
 })
 
 ## Load Demo Data -----
 observeEvent(input$use_demo_data, {
   if (input$use_demo_data) {
-    demo_data(fread("www/dassAppDemoData-fromGL497Annex2.csv"))
+    demo_data(fread("www/dassAppDemoData-fromGL497Annex2.csv", na.strings = c("", "na", "NA")))
     dt_analyze(demo_data())
-    
+
     numeric_data(lapply(dt_analyze(), function(x) {
       if (is.numeric(x)) x
     }))
-  
+
     shinyjs::hide("upload_block")
   }
-  
+
   if (!input$use_demo_data) {
     shinyjs::show("upload_block")
     if (is.null(usr_dt())) {
@@ -170,7 +155,6 @@ observeEvent(dt_analyze(), {
     shinyjs::show("data_block")
   }
   shinyjs::runjs("resetHidden(false);")
-  shinyjs::runjs("rmDPRAListener();")
 }, ignoreNULL = F)
 
 ## Tables -----

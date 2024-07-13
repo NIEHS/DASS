@@ -13,7 +13,7 @@
 # `fpath` - user-supplied path to data file
 read_data <- function(fpath, sheet = 1) {
   if (grepl("txt$|tsv$|csv$", fpath)) {
-    fread(fpath, colClasses = "character", na.strings = c("NA", ""))
+    fread(fpath, colClasses = "character", na.strings = c("", "na", "NA"))
   } else if (grepl("xls$|xlsx$", fpath)) {
     # Read columns in as list to prevent displaying converted floats
     tmp <- data.table(read_excel(fpath, sheet = sheet, na = c("NA", ""), col_types = "list"))
