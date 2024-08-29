@@ -161,7 +161,7 @@ run_dass <- reactive({
   
 })
 
-output$dt_results <- renderDataTable({
+output$dt_resultsx <- renderDataTable({
   req(all_out$result_df)
 
   dt_results <- datatable(

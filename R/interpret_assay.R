@@ -17,82 +17,167 @@ ke1_call_thresholds <- list(
   ),
   dpra = list(
     mean_c_l_dep = c(call = 6.38, bl_ll = 4.95, bl_ul = 8.32),
-    c_dep = c(call = 13.89, bl_ll = 0.56, bl_ul = 18.47)
+    c_dep = c(call = 13.89, bl_ll = 10.56, bl_ul = 18.47)
   )
 )
 
-ke1Call <- function(assay, mean_c_l_dep = NULL, c_dep = NULL, l_dep = NULL) {
-  if (is.null(mean_c_l_dep)) {
-    if (is.null(c_dep)) {
-      stop ("Insufficient arguments supplied.")
+ke1Call <- function(assay, cid, c_dep, l_dep = NULL, only_c = NULL) {
+  
+  if (length(cid) != length(c_dep)) {
+    stop("cid and c_dep vectors must be the same length.")
+  }
+  
+  if (is.null(l_dep)) {
+    l_dep <- mean_c_l_dep <- rep(NA, length(c_dep))
+    
+    if (!is.null(only_c)) {
+      warning("NULL l_dep. Setting only_c to TRUE for all values.")
+    }
+    only_c <- rep(T, length(c_dep))
+    
+  } else {
+    if (length(c_dep) != length(l_dep)) {
+      stop("c_dep and l_dep vectors must be the same length")
     } else {
-      if (is.null(l_dep)) {
-        mean_c_l_dep <- rep(NA, length(c_dep))
-        warning("Calls will be made with only the C_dep parameter.")
+      
+      if (is.null(only_c)) {
+        message("NULL only_c. Setting only_c to TRUE for all values.")
+        only_c <- rep(T, length(c_dep))
+      }
+      
+      mean_c_l_dep <- (c_dep + l_dep)/2
+    }
+  }
+  
+  run_call <- bl_call <- rep(NA, length(c_dep))
+  
+  use_mean <- which(!only_c)
+  use_c <- which(only_c)
+  
+  run_call[use_mean] <- as.numeric(mean_c_l_dep[use_mean] > ke1_call_thresholds[[assay]][["mean_c_l_dep"]][["call"]])
+  bl_call[use_mean] <- as.numeric(
+    mean_c_l_dep[use_mean] > ke1_call_thresholds[[assay]][["mean_c_l_dep"]][["bl_ll"]] & 
+    mean_c_l_dep[use_mean] < ke1_call_thresholds[[assay]][["mean_c_l_dep"]][["bl_ul"]])
+  
+  run_call[use_c] <- as.numeric(c_dep[use_c] > ke1_call_thresholds[[assay]][["c_dep"]][["call"]])
+  bl_call[use_c] <- as.numeric(
+    c_dep[use_c] > ke1_call_thresholds[[assay]][["c_dep"]][["bl_ll"]] & 
+    c_dep[use_c] < ke1_call_thresholds[[assay]][["c_dep"]][["bl_ul"]])
+  
+  run_call[run_call == 0] <- "Negative"
+  run_call[run_call == 1] <- "Positive"
+
+  bl_call[bl_call == 1] <- "Borderline"
+  bl_call[bl_call == 0] <- run_call[bl_call == 0]
+  
+  bl_call_all <- aggregate(bl_call, list(cid), function(x) {
+    if (length(x) == 1) {
+      return(x)
+    } else {
+      n_call <- table(x)
+      max_call <- max(n_call)
+      
+      overall_call <- names(n_call)[n_call == max_call]
+      
+      if (length(overall_call) == 1) {
+        return(overall_call)
       } else {
-        mean_c_l_dep <- (c_dep + l_dep)/2
+        return("Inconclusive")
       }
     }
-  } else {
-    if (is.null(c_dep)) {
-      c_dep <- rep(NA, length(mean_c_l_dep))
-    }
-  }
+  })
+  names(bl_call_all) <- c("chem_id", "ke1_call")
   
-  if (is.null(l_dep)) l_dep <- rep(NA, length(mean_c_l_dep))
-  
-  use_mean <- !is.na(mean_c_l_dep)
-  use_c <- is.na(mean_c_l_dep) & !is.na(c_dep)
-  
-  call <- rep(NA, length(mean_c_l_dep))
-  call[use_mean] <- as.numeric(mean_c_l_dep[use_mean] < ke1_call_thresholds[[assay]][["mean_c_l_dep"]][["call"]])
-  call[use_c] <- as.numeric(c_dep[use_c] < ke1_call_thresholds[[assay]][["c_dep"]][["call"]])
-  
-  return(
-    data.frame(
-      mean_c_l_dep = mean_c_l_dep,
-      c_dep = c_dep,
-      l_dep = l_dep,
-      call = call)
+  run_call_all <- data.frame(
+    chem_id = cid,
+    c_dep = c_dep,
+    l_dep = l_dep,
+    mean_c_l_dep = mean_c_l_dep,
+    cys_only = only_c,
+    run_call = run_call,
+    bl_call = bl_call
   )
-}
 
-ke1BL <- function(assay, call, mean_c_l_dep = NULL, c_dep = NULL) {
-  if (is.null(mean_c_l_dep) & is.null(c_dep)) {
-    stop ("Insufficient arguments supplied.")
-  } else if (is.null(mean_c_l_dep)) {
-    mean_c_l_dep <- rep(NA, length(c_dep))
-  } else if (is.null(c_dep)) {
-    c_dep <- rep(NA, length(mean_c_l_dep))
-  }
-  
-  thresh_ll <- thresh_ul <- rep(NA, length(mean_c_l_dep))
-  thresh_ll[!is.na(mean_c_l_dep)] <- ke1_call_thresholds[[assay]][["mean_c_l_dep"]][["bl_ll"]]
-  thresh_ul[!is.na(mean_c_l_dep)] <- ke1_call_thresholds[[assay]][["mean_c_l_dep"]][["bl_ul"]]
-  thresh_ll[is.na(mean_c_l_dep) & !is.na(c_dep)] <- ke1_call_thresholds[[assay]][["c_dep"]][["bl_ll"]]
-  thresh_ul[is.na(mean_c_l_dep) & !is.na(c_dep)] <- ke1_call_thresholds[[assay]][["c_dep"]][["bl_ul"]]
-
-  call_bl <- as.character(call)
-  call_bl[call > thresh_ll & call <= thresh_ul] <- "BL"
-  
-  return(call_bl)
+  return(list(run_call = run_call_all, overall_call = bl_call_all))
 }
 
 # KE2 -----
-ke2_call_thresholds <- list(
-  keratinosens = c(call = 1.5, bl_ll = 1.35, bl_ul = 1.67),
-  lusens = c(call = 1.5, bl_ll = 1.28, bl_ul = 1.76)
-)
-
-ke2BL <- function(assay, call, value) {
-  thresh_ll <- ke2_call_thresholds[[assay]][["bl_ll"]]
-  thresh_ul <- ke2_call_thresholds[[assay]][["bl_ul"]]
+lusensCall <- function(lusens_df) {
   
-  call_bl <- as.character(call)
-  call_bl[call > thresh_ll & call <= thresh_ul] <- "BL"
+  # Checks
   
-  return(call_bl)
+  lusens_list <- split(lusens_df, list(lusens_df$run, lusens_df$cid), drop = T)
+  run_call_all <- lapply(lusens_list, function(df) {
+    df <- df[order(df$conc),]
+    
+    out <- df[1,c("cid", "run")]
+    out$bl_call <- NA
+    
+    cv70 <- df$cv >= 70
+    
+    pos <- grepl("TRUETRUE", paste0(df$fi[cv70] >= 1.76, collapse = "")) & grepl("TRUETRUE", paste0(df$pval[cv70] <= 0.05, collapse = ""))
+    if (pos) {
+      out$bl_call <- ifelse(sum(!cv70) >= 3, "Positive", "Invalid")
+    } else {
+      neg <- grepl("TRUETRUE", paste0(df$fi[cv70] < 1.28, collapse = ""))
+      
+      if (neg) {
+        out$bl_call <- ifelse(any(!cv70) | ((max(df$conc) >= 2000) & all(cv70)), "Negative", "Invalid")
+      } else {
+        
+        bl <- grepl("TRUETRUE", paste0(df$fi[cv70] >= 1.28 & df$fi[cv70] < 1.76, collapse = "")) & grepl("TRUETRUE", paste0(df$pval[cv70] <= 0.05, collapse = ""))
+        
+        if (bl) {
+          out$bl_call <- ifelse(sum(!cv70) >= 3, "Borderline", "Invalid")
+        } else {
+          out$bl_call <- "Invalid"
+        }
+        
+      }
+      
+    }
+    return(out)
+  })
+  
+  run_call_all <- do.call("rbind", run_call_all)
+  rownames(run_call_all) <- NULL
+  
+  bl_call_all <- aggregate(run_call_all$bl_call, list(run_call_all$cid), function(x) {
+    if (length(x) == 1) {
+      return(x)
+    } else {
+      n_call <- table(x)
+      max_call <- max(n_call)
+      
+      overall_call <- names(n_call)[n_call == max_call]
+      
+      if (length(overall_call) == 1) {
+        return(overall_call)
+      } else {
+        return("Inconclusive")
+      }
+    }
+  })
+  names(bl_call_all) <- c("chem_id", "ke2_call")
+  return(list(run_call = run_call_all, overall_call = bl_call_all))
 }
+
+
+
+# ke2_call_thresholds <- list(
+#   keratinosens = c(call = 1.5, bl_ll = 1.35, bl_ul = 1.67),
+#   lusens = c(call = 1.5, bl_ll = 1.28, bl_ul = 1.76)
+# )
+# 
+# ke2BL <- function(assay, call, value) {
+#   thresh_ll <- ke2_call_thresholds[[assay]][["bl_ll"]]
+#   thresh_ul <- ke2_call_thresholds[[assay]][["bl_ul"]]
+#   
+#   call_bl <- as.character(call)
+#   call_bl[call > thresh_ll & call <= thresh_ul] <- "BL"
+#   
+#   return(call_bl)
+# }
 
 # KE3 -----
 ke3_call_thresholds <- list(

@@ -16,108 +16,90 @@ source("R/modals.R")
 
 # Create page
 # Welcome -----
-welcome_panel <- fluidRow(
-  tags$header(
-    class = "header-row",
-    div(
-      class = "header-details-panel",
-      div(
-        class = "page-title",
-        h1("The DASS App")
+welcome_panel <- fluidRow(tags$header(
+  class = "header-row",
+  div(
+    class = "header-details-panel",
+    div(class = "page-title", h1("The DASS App")),
+    tags$div(class = "page-details", tags$section(
+      p(
+        "The DASS App applies defined approaches on skin sensitization (DASS)",
+        "to predict skin sensitization hazard (sensitizer or non-sensitizer)",
+        "and potency (based on UN GHS categories). The defined approaches (DA)",
+        "generate predictions by integrating data from in vitro assays that",
+        "represent key events in the Adverse Outcome Pathway for Skin",
+        "Sensitization and in silico hazard predictions."
       ),
-      tags$div(
-        class = "page-details",
-        tags$section(
-        p("The DASS App applies defined approaches on skin sensitization (DASS)",
-          "to predict skin sensitization hazard (sensitizer or non-sensitizer)",
-          "and potency (based on UN GHS categories). The defined approaches (DA)",
-          "generate predictions by integrating data from in vitro assays that",
-          "represent key events in the Adverse Outcome Pathway for Skin",
-          "Sensitization and in silico hazard predictions."),
-        p(
-          "For more information about DASS and their regulatory applications, visit the",
-          tags$abbr(title = "NTP Interagency Center for the Evaluation of Alternative Toxicological Methods", "NICEATM"),
-          tags$a(
-            href = "https://ntp.niehs.nih.gov/go/40498",
-            "Defined Approaches to Identify Potential Skin Sensitizers",
-            tags$span(class = "sr-only", "Opens new window.")
-          ), "webpage."
+      p(
+        "For more information about DASS and their regulatory applications, visit the",
+        tags$abbr(title = "NTP Interagency Center for the Evaluation of Alternative Toxicological Methods", "NICEATM"),
+        tags$a(
+          href = "https://ntp.niehs.nih.gov/go/40498",
+          "Defined Approaches to Identify Potential Skin Sensitizers",
+          tags$span(class = "sr-only", "Opens new window.")
         ),
+        "webpage."
+      ),
+    ))
+  ),
+  div(
+    class = "link-panel",
+    h2(class = "sr-only", "Links"),
+    tags$ul(
+      class = "link-list",
+      tags$li(
+        tags$a(
+          class = "btn btn-default external-link",
+          id = "user_guide_button",
+          href = "user_guide.pdf",
+          target = "_blank",
+          "User Guide",
+          tags$span(class = "sr-only", "Opens PDF in new window.")
+        )
+      ),
+      tags$li(
+        tags$a(
+          class = "btn btn-default",
+          href = "mailto:ICE-support@niehs.nih.gov",
+          target = "_blank",
+          "Contact Us",
+          tags$span(class = "sr-only", "Opens default mail client.")
+        )
+      ),
+      tags$li(
+        tags$a(
+          class = "btn btn-default external-link",
+          href = "https://doi.org/10.1186/s12859-023-05617-1",
+          target = "_blank",
+          "Manuscript",
+          tags$span(class = "sr-only", "External link. Opens in new window.")
+        )
+      ),
+      tags$li(
+        tags$a(
+          class = "btn btn-default external-link",
+          href = "https://rstudio.niehs.nih.gov/dass/",
+          target = "_blank",
+          "Launch App in New Window",
+          tags$span(class = "sr-only", "External link.")
         )
       )
     ),
-    div(
-      class = "link-panel",
-      h2(class = "sr-only", "Links"),
-      tags$ul(
-        class = "link-list",
-        tags$li(
-          tags$a(
-            class = "btn btn-default external-link",
-            id = "user_guide_button",
-            href = "user_guide.pdf",
-            target = "_blank",
-            "User Guide",
-            tags$span(
-              class = "sr-only",
-              "Opens PDF in new window."
-            )
-          )
-        ),
-        tags$li(
-          tags$a(
-            class = "btn btn-default",
-            href = "mailto:ICE-support@niehs.nih.gov",
-            target = "_blank",
-            "Contact Us",
-            tags$span(
-              class = "sr-only",
-              "Opens default mail client."
-            )
-          )
-        ),
-        tags$li(
-          tags$a(
-            class = "btn btn-default external-link",
-            href = "https://doi.org/10.1186/s12859-023-05617-1",
-            target = "_blank",
-            "Manuscript",
-            tags$span(
-              class = "sr-only",
-              "External link. Opens in new window."
-            )
-          )
-        ),
-        tags$li(
-          tags$a(
-            class = "btn btn-default external-link",
-            href = "https://rstudio.niehs.nih.gov/dass/",
-            target = "_blank",
-            "Launch App in New Window",
-            tags$span(
-              class = "sr-only",
-              "External link."
-            )
-          )
-        )
+    p(
+      style = "font-size: 12px",
+      tags$a(
+        class = "external-link",
+        style = "color: white",
+        href = "https://github.com/NIEHS/DASS",
+        target = "_blank",
+        "Source Code",
+        tags$span(class = "sr-only", "External link. Opens in new window.")
       ),
-      p(
-        style = "font-size: 12px",
-        tags$a(
-          class = "external-link",
-          style = "color: white",
-          href = "https://github.com/NIEHS/DASS",
-          target = "_blank",
-          "Source Code",
-          tags$span(
-            class = "sr-only",
-            "External link. Opens in new window."
-          )
-        ),          br(),
-           "Last updated: 2023-Oct-20")
+      br(),
+      "Last updated: 2023-Oct-20"
     )
   )
-)
+))
 
 # Step 1: Select DAs -----
 select_da_panel <- tabPanel(
@@ -134,23 +116,33 @@ select_da_panel <- tabPanel(
           label = "To begin, select the DA to be implemented. Click on the information buttons next to the DA names to view a description of the DA and the test methods required to implement the DA.",
           choiceValues = c("da_2o3", "da_its", "da_ke31"),
           choiceNames = list(
-            HTML("<span id = '2o3_radio_label'>2 out of 3 (2o3)</span>", info_button("info_2o3", "2o3 information")),
-            HTML("<span id = 'its_radio_label'>Integrated Testing Strategy (ITS)</span>", info_button("info_its", "ITS information")),
-            HTML("<span id = 'ke31_radio_label'>Key Event 3/1 (KE 3/1) Sequential Testing Strategy (STS)</span>", info_button("info_ke31", "STS information"))
+            HTML(
+              "<span id = '2o3_radio_label'>2 out of 3 (2o3)</span>",
+              info_button("info_2o3", "2o3 information")
+            ),
+            HTML(
+              "<span id = 'its_radio_label'>Integrated Testing Strategy (ITS)</span>",
+              info_button("info_its", "ITS information")
+            ),
+            HTML(
+              "<span id = 'ke31_radio_label'>Key Event 3/1 (KE 3/1) Sequential Testing Strategy (STS)</span>",
+              info_button("info_ke31", "STS information")
+            )
           )
         ),
         conditionalPanel(
           hr(width = "50%"),
           condition = "input.selected_da=='da_2o3'",
           p("Flag borderline results (requires data from individual runs)"),
-          div(
-            style = "margin-left: 2rem",
-          checkboxInput(inputId = "do_da_2o3_bl", 
-                        label = HTML(
-                          "<span id = '2o3_bl_cb_label'>Flag borderline assay results prior to applying DA 2o3.</span>", 
-                                     info_button("info_2o3_bl", "Information about borderline results for DA 2o3.")),
-                        width = "100%")
-        ))
+          checkboxInput(
+            inputId = "do_da_2o3_bl",
+            label = HTML(
+              "<span id = '2o3_bl_cb_label'>Flag borderline assay results prior to applying DA 2o3.</span>",
+              info_button("info_2o3_bl", "Information about borderline results for DA 2o3.")
+            ),
+            width = "100%"
+          )
+        )
       )
     ),
     actionButton(
@@ -158,131 +150,146 @@ select_da_panel <- tabPanel(
       label = "Confirm DA Selection",
       width = "100%"
     )
-  )
-)
+  ))
 
 # Step 2: Upload Data -----
 upload_data_panel <- tabPanel(
-  title = "Upload Data",
+  title = "Upload Data", 
   fluidRow(
-   class = "bordered-panel",
-   column(
-     width = 12,
-     HTML(
-       "<div class='warn-block'>",
-       "<div>",
-       "<i class='glyphicon glyphicon-exclamation-sign' role='presentation'></i>",
-       "</div>",
-       "<div>",
-       "<p style='margin-bottom:0;'>Before uploading your file, ensure that the data meet the",
-       "<a id='show_upload_req' href = 'dassApp-dataRequirements.html' target = '_blank' class = 'action-link' aria-label='data and formatting requirements'>",
-       "<b>data and formatting requirements</b></a>.</p>",
-       "</div>",
-       "</div>"
-     ),
-     br(),
-     p(
-       "A table template is provided in tab-delimited or Excel format.",
-       "The template contains columns for every possible assay endpoint.",
-       "If an assay endpoint will not be used, the corresponding column can be",
-       "deleted but that is not required. Using the template is not required."
-     ),
-     a(
-       href = "DASSApp-dataTemplate.xlsx",
-       "Download Data Template (.xlsx)",
-       download = NA,
-       target = "_blank"
-     ),
-     br(),
-     a(
-       href = "DASSApp-dataTemplate.txt",
-       "Download Data Template (.txt)",
-       download = NA,
-       target = "_blank"
-     ),
-     hr(style = "width:50%"),
-     div(
-       id = "upload_block",
-       div(
-         class = "form-group shiny-input-container",
-         style = "width:100%",
-         tags$label(
-           class = "control-label",
-           `for` = "fpath",
-           # id = "fpath-label",
-           value = "File input",
-           "Click 'Browse' below and select your file."
-         ),
-         div(
-           class = "input-group",
-           tags$label(
-             class = "input-group-btn input-group-prepend",
-             span(
-               class = "btn btn-default btn-file",
-               "Browse...",
-               tags$input(
-                 id = "fpath",
-                 name = "fpath",
-                 type = "file",
-                 style = "position: absolute !important; top: -99999px !important; left: -99999px !important;",
-                 `data-shinyjs-resettable-id` = "fpath",
-                 `data-shinyjs-resettable-type` = "File",
-                 `data-shinyjs-resettable-value` = "",
-                 
-                 `class` = "shinyjs-resettable shiny-bound-input"
-               )
-             )
-           ),
-           tags$input(
-             type = "text",
-             class = "form-control",
-             title = "Form control for file input",
-             style = "border-color:#232b5f; width:100%",
-             placeholder = "No file selected.",
-             readonly = "readonly"
-           )
-         ),
-       ),
-       uiOutput("xl_sheet_text_ui")
-     ),
-     HTML(
-       "<div class='form-group shiny-input-container' style='width:100%;'>",
-       "<div class='checkbox'>",
-       "<label>",
-       "<input id='use_demo_data' type='checkbox'/>",
-       "<span>Use demo data</span>",
-       "</label>",
-       "<button id='info_demo' type='button' class='btn action-link btn-qs' aria-label='demo data info'>",
-       "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-       "</button>",
-       "</div>",
-       "</div>"
-     ),
-     div(
-       class = "hiddenBlock",
-       id = "data_block",
-       hr(style = "width:50%"),
-       DT::dataTableOutput("dt_analyze"),
-       hr(style = "width:50%"),
-       p(
-         "Once you have finished selecting the DAs and uploading your data, click 'Continue' to proceed to the next step."
-       ),
-       actionButton(
-         inputId = "confirm_data",
-         label = "Continue",
-         width = "100%"
-       )
-     )
-   )
- ))
+    class = "bordered-panel",
+    column(
+      width = 12,
+      HTML(
+        "<div class='warn-block'>",
+        "<div>",
+        "<i class='glyphicon glyphicon-exclamation-sign' role='presentation'></i>",
+        "</div>",
+        "<div>",
+        "<p style='margin-bottom:0;'>Before uploading your file, ensure that the data meet the",
+        "<a id='show_upload_req' href = 'dassApp-dataRequirements.html' target = '_blank' class = 'action-link' aria-label='data and formatting requirements'>",
+        "<b>data and formatting requirements</b></a>.</p>",
+        "</div>",
+        "</div>"
+      ),
+      br(),
+      p(
+        "A table template is provided in tab-delimited or Excel format.",
+        "The template contains columns for every possible assay endpoint.",
+        "If an assay endpoint will not be used, the corresponding column can be",
+        "deleted but that is not required. Using the template is not required."
+      ),
+      a(
+        href = "DASSApp-dataTemplate.xlsx",
+        "Download Data Template (.xlsx)",
+        download = NA,
+        target = "_blank"
+      ),
+      br(),
+      a(
+        href = "DASSApp-dataTemplate.txt",
+        "Download Data Template (.txt)",
+        download = NA,
+        target = "_blank"
+      ),
+      hr(style = "width:50%"),
+      div(
+        id = "upload_block",
+        fileInput(
+          inputId = "fpath",
+          label = "Click 'Browse' below and select your file.",
+          width = "100%"
+        ),
+        uiOutput("xl_sheet_text_ui")
+      ),
+      HTML(
+        "<div class='form-group shiny-input-container' style='width:100%;'>",
+        "<div class='checkbox'>",
+        "<label>",
+        "<input id='use_demo_data' type='checkbox'/>",
+        "<span>Use demo data</span>",
+        "</label>",
+        "<button id='info_demo' type='button' class='btn action-link btn-qs' aria-label='demo data info'>",
+        "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+        "</button>",
+        "</div>",
+        "</div>"
+      ),
+      
+      div(
+        # class = "hiddenBlock",
+        id = "blr_data_block",
+        selectInput(
+          inputId = "blr_data_worksheet_select",
+          label = "Select worksheet to view",
+          choices = NULL
+        )
+      ),
+
+      # div(
+      #   # class = "hiddenBlock",
+      #   id = "blr_data_block",
+      #   tags$details(
+      #     open = "open",
+      #     tags$summary("Evaluate Borderlines"),
+      #     div(
+      #       class = "detailsBody",
+      #       p(
+      #         "Describe this section."
+      #       ),
+      #       
+      #       tags$h2(
+      #         "Key Event 1 Assay",
+      #         info_button("info_blr_ke1Assay", "KE1 Assay Information")
+      #       ),
+      #       radioButtons(
+      #         inputId = "blr_ke1_assay",
+      #         label = "Select Assay",
+      #         choiceNames = c("DPRA", "ADRA"),
+      #         choiceValues = c("dpra", "adra"),
+      #         inline = T
+      #       ),
+      #       fluidRow(
+      #       column(
+      #         width = 3,
+      #       selectInput(
+      #         inputId = "blr_ke1_assay_cid_col",
+      #         label = "Select Compound Identifier Column",
+      #         choices = NULL
+      #       ))
+      #       
+      #       )
+      #     )
+      #   )
+      # 
+      # ),
+      
+      
+      div(
+        class = "hiddenBlock",
+        id = "data_block",
+        hr(style = "width:50%"),
+        DT::dataTableOutput("dt_analyze"),
+        hr(style = "width:50%"),
+        p(
+          "Once you have finished selecting the DAs and uploading your data, click 'Continue' to proceed to the next step."
+        ),
+        actionButton(
+          inputId = "confirm_data",
+          label = "Continue",
+          width = "100%"
+        )
+      )
+    )
+  ))
 
 # Step 3: Select Columns -----
 select_columns_panel <- tabPanel(
   title = "Select Data Columns",
-  div(
+  fluidRow(
     id = "select_col_ui",
     class = "bordered-panel hiddenBlock",
-    div(
+    column(
+      width = 12,
       p(
         "The assay endpoints that are required for the selected DAs are shown below.",
         "Use the dropdown lists to select the columns from your data",
@@ -301,7 +308,8 @@ select_columns_panel <- tabPanel(
     ),
     hr(width = "50%"),
     ## KE1 -----
-    div(
+    column(
+      width = 12,
       class = "hiddenBlock",
       id = "ke1_select_ui",
       tags$details(
@@ -329,10 +337,7 @@ select_columns_panel <- tabPanel(
           div(
             id = "ke1_call_select",
             class = "hiddenBlock",
-            tags$h2(
-              "KE1 Call",
-              info_button("info_ke1Call", "KE1 Call information")
-            ),
+            tags$h2("KE1 Call", info_button("info_ke1Call", "KE1 Call information")),
             div(
               class = "col_assay_endpoint",
               checkboxInput(
@@ -397,7 +402,8 @@ select_columns_panel <- tabPanel(
       )
     ),
     ## KE2 -----
-    div(
+    column(
+      width = 12,
       class = "hiddenBlock",
       id = "ke2_select_ui",
       tags$details(
@@ -421,10 +427,7 @@ select_columns_panel <- tabPanel(
                 inline = T
               )
             ),
-            tags$h2(
-              "KE2 Call",
-              info_button("info_ke2Call", "KE2 Call information")
-            ),
+            tags$h2("KE2 Call", info_button("info_ke2Call", "KE2 Call information")),
             div(
               class = "col_assay_endpoint",
               selectInput(
@@ -456,7 +459,8 @@ select_columns_panel <- tabPanel(
       )
     ),
     ## KE3 -----
-    div(
+    column(
+      width = 12,
       class = "hiddenBlock",
       id = "ke3_select_ui",
       tags$details(
@@ -519,7 +523,8 @@ select_columns_panel <- tabPanel(
       )
     ),
     ## In Silico -----
-    div(
+    column(
+      width = 12,
       class = "hiddenBlock",
       id = "insil_select_ui",
       tags$details(
@@ -561,30 +566,34 @@ select_columns_panel <- tabPanel(
 # Step 4: Review Selection -----
 review_selection_panel <- tabPanel(
   title = "Review Selection",
-  div(
+  fluidRow(
     id = "review_contents",
     class = "bordered-panel hiddenBlock",
-    p(
-      "Your selections are summarized below. Review the selected assays and columns.",
-      "When you are done, click 'Run' to run the DASS.",
-      "If you need to change a selected column, return to the 'Select Data Columns'",
-      "page. If you need to upload new or updated data, return to the 'Upload Data' page."
+    column(
+      width = 12,
+      p(
+        "Your selections are summarized below. Review the selected assays and columns.",
+        "When you are done, click 'Run' to run the DASS.",
+        "If you need to change a selected column, return to the 'Select Data Columns'",
+        "page. If you need to upload new or updated data, return to the 'Upload Data' page."
+      )
     ),
-    div(
-      
-    ),
-    div(
+    column(
+      width = 12,
       id = "dupe_col_warning",
       class = "warningText hiddenBlock",
       p(
         strong("Warning: Identical column assigned to more than one endpoint.")
       )
     ),
-    div(
+    column(
+      width = 12,
       id = "flag_col_warning",
       class = "warningText hiddenBlock",
       p(
-        strong("Warning: Selected data columns have been flagged for invalid values."),
+        strong(
+          "Warning: Selected data columns have been flagged for invalid values."
+        ),
         "Invalid values will not be evaluated in the DASS."
       )
     ),
@@ -602,57 +611,62 @@ review_selection_panel <- tabPanel(
 # Step 5: Results -----
 results_panel <- tabPanel(
   title = "Results",
-  div(
+  fluidRow(
     id = "result_contents",
-    class = "bordered-panel hiddenBlock",
-    p(
-      "Results of the DASS App analysis are shown in the table below. Use the",
-      "scroll bar along the bottom of the table to view all the columns.",
-      "The buttons above the table can be used to hide or show columns.",
-      "Use the 'Download Results' button to export your results to an Excel",
-      "spreadsheet or text file, which may allow easier viewing.",
-    ),
-    div(
-      class = "text-block",
-      h2("Table Key", style = "font-size:1.2em; font-weight:bold; margin-top:10px;"),
-      tags$dl(
-        tags$dt("Yellow columns"),
-        tags$dd(
-          "The data columns that you selected in Step 3. The column names are annotated with an asterisk."
-        ),
-        tags$dt(
-          "Pink columns",
-          HTML(
-            "<button id='info_pink' type='button' class='btn action-link btn-qs' aria-label='Information button for details about pink columns'>",
-            "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-            "</button>"
-          )
-        ),
-        tags$dd(
-          "Appended columns showing how your data inputs were interpreted.",
-          "The corresponding column names begin with 'Input'. For values that",
-          "were calculated by the app, the column name will also end with 'Calculated'."
-        ),
-        tags$dt(
-          "Blue columns",
-          HTML(
-            "<button id='info_blue' type='button' class='btn action-link btn-qs' aria-label='Information button for details about blue columns'>",
-            "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-            "</button>"
-          )
-        ),
-        tags$dd(
-          "Appended columns with the DASS predictions. The corresponding column",
-          "names begin with 'DA' and the name of the DA."
-        )
+    # class = "bordered-panel hiddenBlock",
+    class = "bordered-panel",
+    column(
+      width = 12,
+      p(
+        "Results of the DASS App analysis are shown in the table below. Use the",
+        "scroll bar along the bottom of the table to view all the columns.",
+        "The buttons above the table can be used to hide or show columns.",
+        "Use the 'Download Results' button to export your results to an Excel",
+        "spreadsheet or text file, which may allow easier viewing.",
       ),
-      "For more details about the appended columns, see the User Guide.",
+      div(
+        class = "text-block",
+        h2("Table Key", style = "font-size:1.2em; font-weight:bold; margin-top:10px;"),
+        tags$dl(
+          tags$dt("Yellow columns"),
+          tags$dd(
+            "The data columns that you selected in Step 3. The column names are annotated with an asterisk."
+          ),
+          tags$dt(
+            "Pink columns",
+            HTML(
+              "<button id='info_pink' type='button' class='btn action-link btn-qs' aria-label='Information button for details about pink columns'>",
+              "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+              "</button>"
+            )
+          ),
+          tags$dd(
+            "Appended columns showing how your data inputs were interpreted.",
+            "The corresponding column names begin with 'Input'. For values that",
+            "were calculated by the app, the column name will also end with 'Calculated'."
+          ),
+          tags$dt(
+            "Blue columns",
+            HTML(
+              "<button id='info_blue' type='button' class='btn action-link btn-qs' aria-label='Information button for details about blue columns'>",
+              "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+              "</button>"
+            )
+          ),
+          tags$dd(
+            "Appended columns with the DASS predictions. The corresponding column",
+            "names begin with 'DA' and the name of the DA."
+          )
+        ),
+        "For more details about the appended columns, see the User Guide.",
+      )
     ),
     fluidRow(column(
       12,
       div(
         class = "dropdown",
         id = "dlDropdown",
+        style = "margin-bottom: 1em",
         tags$button(
           class = "btn dropbtn btn-default",
           # style = "padding:1vh;",
@@ -675,8 +689,7 @@ results_panel <- tabPanel(
           ),
         )
       ),
-      actionButton(inputId = "goToCompare",
-                   label = "Compare Results")
+      actionButton(inputId = "goToCompare", label = "Compare Results")
     )),
     br(),
     dataTableOutput("dt_results")
@@ -713,9 +726,12 @@ compare_panel <- tabPanel(
           label = "Select DA Prediction",
           choices = ""
         ),
-        tags$h2("Reference Column", info_button("info_perf_ref_col", "Reference Column Information")),
+        tags$h2(
+          "Reference Column",
+          info_button("info_perf_ref_col", "Reference Column Information")
+        ),
         checkboxGroupInput(
-          inputId = "perf_ref_col_source", 
+          inputId = "perf_ref_col_source",
           label = "Choose Reference Source",
           choiceNames = c("My Data", "Integrated Chemical Environment"),
           choiceValues = c("user_data", "ice"),
@@ -727,7 +743,7 @@ compare_panel <- tabPanel(
             inputId = "perf_ref_col",
             label = "Select Reference Column",
             choices = NULL,
-            selectize = T, 
+            selectize = T,
             multiple = T
           )
         ),
@@ -737,8 +753,9 @@ compare_panel <- tabPanel(
             inputId = "perf_ice_ref_cql",
             label = "Select ICE Chemical Quick List",
             choiceNames = c(
-              "OECD Defined Approach to Skin Sensitization: Human (R)", 
-              "OECD Defined Approach to Skin Sensitization: LLNA (R)"),
+              "OECD Defined Approach to Skin Sensitization: Human (R)",
+              "OECD Defined Approach to Skin Sensitization: LLNA (R)"
+            ),
             choiceValues = c("hppt", "llna"),
             width = "100%"
           )
@@ -750,15 +767,27 @@ compare_panel <- tabPanel(
       tags$summary("Select Options for ICE Data"),
       div(
         class = "detailsBody",
-        checkboxInput(inputId = "perf_use_ice_data", 
-                      label = HTML(
-                        "<span id = 'perf_use_ice_data_label'>Load data from ICE for figures</span>", 
-                        info_button("info_perf_use_ice_data", "Information about loading ICE data for figures.")),
-                      width = "100%"),
+        checkboxInput(
+          inputId = "perf_use_ice_data",
+          label = HTML(
+            "<span id = 'perf_use_ice_data_label'>Load data from ICE for figures</span>",
+            info_button(
+              "info_perf_use_ice_data",
+              "Information about loading ICE data for figures."
+            )
+          ),
+          width = "100%"
+        ),
         conditionalPanel(
           condition = "input.perf_ref_col_source.includes('ice')||input.perf_use_ice_data",
           
-          tags$h2("Specify Chemical Identifier", info_button("info_chem_identifier", "Information about selecting chemical identifiers")),
+          tags$h2(
+            "Specify Chemical Identifier",
+            info_button(
+              "info_chem_identifier",
+              "Information about selecting chemical identifiers"
+            )
+          ),
           radioButtons(
             inputId = "perf_ice_identifier_type",
             label = "Select Identifier Type",
@@ -793,8 +822,7 @@ compare_panel <- tabPanel(
           "to select the comparison you would like to view. Use the 'Download' button to open",
           "the download menu."
         ),
-        actionButton(inputId = "download_compare_tables",
-                     label = "Download Tables"),
+        actionButton(inputId = "download_compare_tables", label = "Download Tables"),
         br(),
         fluidRow(
           column(
@@ -838,20 +866,20 @@ compare_panel <- tabPanel(
        </table>"
           )
         ),
-    div(
-      class = "hiddenBlock",
-      id = "potency_defs",
-      h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
-      HTML(
-        "<table class = 'defTab' border=1>
+        div(
+          class = "hiddenBlock",
+          id = "potency_defs",
+          h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
+          HTML(
+            "<table class = 'defTab' border=1>
              <tr> <th> Metric </th> <th> Definition </th>  </tr>
         <tr> <td> N </td> <td> The number of valid reference values </td>  </tr>
         <tr> <td> Accuracy  </td> <td>  The percentage of predicted values equal to reference values </td> </tr>
         <tr> <td> Overpredicted </td> <td>  The percentage of predicted values with a more potent GHS category than the corresponding reference value </td> </tr>
         <tr> <td> Underpredicted  </td> <td>  The percentage of predicted values with a less potent GHS category than the corresponding reference value </td> </tr>
          </table>"
-      )
-    )
+          )
+        )
         
       )
     ),
@@ -887,10 +915,7 @@ compare_panel <- tabPanel(
           choices = NULL,
           multiple = T
         ),
-        actionButton(
-          inputId = "create_perf_figs",
-          label = "Create Figures"
-        ),
+        actionButton(inputId = "create_perf_figs", label = "Create Figures"),
         
         # fluidRow(
         #   column(

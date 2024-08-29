@@ -165,7 +165,7 @@ daITS <- function(
   
   
   ke1_score[ke1_use_c] <- as.numeric(as.character(cut(
-    values$ke1_mean_c_l_dep[ke1_use_mean],
+    values$ke1_c_dep[ke1_use_c],
     breaks = da_its_ke_thresholds$ke1[[ke1_assay]]$c_dep$score_breaks,
     labels = da_its_ke_thresholds$ke1[[ke1_assay]]$c_dep$score)))
   

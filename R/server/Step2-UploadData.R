@@ -12,6 +12,7 @@
 # =============================================================================#
 
 # Step 2: Upload Data -----
+
 ## Reactive Values -----
 usr_dt <- reactiveVal()
 dt_analyze <- reactiveVal()
@@ -27,9 +28,79 @@ observeEvent(input$confirm_da, {
   #   shinyjs::runjs("rmDPRAListener();")
   # }
 
+  ###
+  # Hide/Show UI given 2o3 BLR select
+  ###
+  
   updateTabsetPanel(inputId = "step_set", selected = "Upload Data")
   shinyjs::runjs("$('#step_set')[0].scrollIntoView();")
 })
+
+## Upload User Data -----
+observeEvent(input$fpath, {
+  # Check file extension
+  ext <- unlist(strsplit(input$fpath$name, "[.]"))
+  ext <- ext[length(ext)]
+
+  if (input$selected_da == "da_2o3" & input$do_da_2o3_bl) {
+    ext_ok <- c("xls", "xlsx")
+  } else {
+    ext_ok <- c("csv", "tsv", "txt", "xls", "xlsx")
+  }
+  ext_valid <- grepl(paste(sprintf("^%s$", ext_ok), collapse = "|"), ext)
+
+  if (!ext_valid) {
+    showNotification(
+      type = "error",
+      sprintf("Incorrect file type. Accepted file extensions: %s", paste(ext_ok, collapse = ", ")),
+      duration = 10
+    )
+    req(ext_valid)
+  }
+
+  if (input$selected_da == "da_2o3" & input$do_da_2o3_bl) {
+    # Show UI for Processing
+    sheets <- readxl::excel_sheets(input$fpath$datapath)
+    if (length(sheets) <= 2) {
+      showNotification("Expected at least 3 worksheets in file.", type = "warning")
+    }
+    
+
+    
+    
+  } else {
+    if (grepl("^xls$|^xlsx$", ext)) {
+      sheets <- readxl::excel_sheets(input$fpath$datapath)
+      if (length(sheets) == 1) {
+        xl_sheet(1)
+        load_data()
+      } else if (length(sheets) > 1) {
+        # Render error (workaround to show error with easyclose)
+        sheet_text_ui <- span(
+          span(style = "font-weight:bold;", "Error: No Excel worksheet selected!"),
+          actionLink(inputId = "button_choose_xl_sheet",
+                     label = "Open worksheet selector"),
+        )
+        output$xl_sheet_text_ui <- renderUI({
+          sheet_text_ui
+        })
+        
+        shinyjs::show("xl_sheet_text_ui")
+        
+        # Show excel worksheet selector
+        updateSelectInput(session, "xl_sheet_list", choices = sheets)
+        toggleModal(session, "xl_select_modal", toggle = "open")
+      }
+    }
+    
+    if (grepl("^csv$|^tsv$|^txt$", ext)) {
+      shinyjs::hide("xl_sheet_text_ui")
+      # Data are automatically read in
+      load_data()
+    }
+  }
+
+}, ignoreInit = T)
 
 ## Load Demo Data -----
 observeEvent(input$use_demo_data, {
@@ -65,51 +136,51 @@ load_data <- reactive({
   dt_analyze(usr_dt())
 })
 
-observeEvent(input$fpath, {
-  # Check file extension
-  ext <- unlist(strsplit(input$fpath$name, "[.]"))
-  ext <- ext[length(ext)]
-  ext_valid <- grepl("^csv$|^tsv$|^txt$|^xls$|^xlsx$", ext)
-
-  if (!ext_valid) {
-    showNotification(
-      type = "error",
-      "Incorrect file type. Accepted file extensions: csv, tsv, txt, xlsx",
-      duration = 10
-    )
-    req(ext_valid)
-  }
-
-  if (grepl("^xls$|^xlsx$", ext)) {
-    sheets <- readxl::excel_sheets(input$fpath$datapath)
-    if (length(sheets) == 1) {
-      xl_sheet(1)
-      load_data()
-    } else if (length(sheets) > 1) {
-      # Render error (workaround to show error with easyclose)
-      sheet_text_ui <- span(
-        span(style = "font-weight:bold;", "Error: No Excel worksheet selected!"),
-        actionLink(inputId = "button_choose_xl_sheet",
-                   label = "Open worksheet selector"),
-      )
-      output$xl_sheet_text_ui <- renderUI({
-        sheet_text_ui
-      })
-
-      shinyjs::show("xl_sheet_text_ui")
-
-      # Show excel worksheet selector
-      updateSelectInput(session, "xl_sheet_list", choices = sheets)
-      toggleModal(session, "xl_select_modal", toggle = "open")
-    }
-  }
-
-  if (grepl("^csv$|^tsv$|^txt$", ext)) {
-    shinyjs::hide("xl_sheet_text_ui")
-    # Data are automatically read in
-    load_data()
-  }
-}, ignoreInit = T)
+# observeEvent(input$fpath, {
+#   # Check file extension
+#   ext <- unlist(strsplit(input$fpath$name, "[.]"))
+#   ext <- ext[length(ext)]
+#   ext_valid <- grepl("^csv$|^tsv$|^txt$|^xls$|^xlsx$", ext)
+# 
+#   if (!ext_valid) {
+#     showNotification(
+#       type = "error",
+#       "Incorrect file type. Accepted file extensions: csv, tsv, txt, xlsx",
+#       duration = 10
+#     )
+#     req(ext_valid)
+#   }
+# 
+#   if (grepl("^xls$|^xlsx$", ext)) {
+#     sheets <- readxl::excel_sheets(input$fpath$datapath)
+#     if (length(sheets) == 1) {
+#       xl_sheet(1)
+#       load_data()
+#     } else if (length(sheets) > 1) {
+#       # Render error (workaround to show error with easyclose)
+#       sheet_text_ui <- span(
+#         span(style = "font-weight:bold;", "Error: No Excel worksheet selected!"),
+#         actionLink(inputId = "button_choose_xl_sheet",
+#                    label = "Open worksheet selector"),
+#       )
+#       output$xl_sheet_text_ui <- renderUI({
+#         sheet_text_ui
+#       })
+# 
+#       shinyjs::show("xl_sheet_text_ui")
+# 
+#       # Show excel worksheet selector
+#       updateSelectInput(session, "xl_sheet_list", choices = sheets)
+#       toggleModal(session, "xl_select_modal", toggle = "open")
+#     }
+#   }
+# 
+#   if (grepl("^csv$|^tsv$|^txt$", ext)) {
+#     shinyjs::hide("xl_sheet_text_ui")
+#     # Data are automatically read in
+#     load_data()
+#   }
+# }, ignoreInit = T)
 
 # User confirms a worksheet in the modal
 observeEvent(input$confirm_xl_sheet, {
