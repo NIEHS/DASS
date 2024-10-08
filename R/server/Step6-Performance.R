@@ -1,302 +1,320 @@
-# =============================================================================#
-# File Name: Step6-Performance.R
-# Original Creator: ktto
-# Contact Information: ICE-support@niehs.nih.gov
-# Date Created: 2023-08-03
-# License: MIT
-# Description: server file for module with performance options
-# Required Packages:
-# - data.table, DT
-# - openxlsx
-# - shiny shinyBS shinyjs
-# =============================================================================#
+# Performance and Comparison =====
+observeEvent(input$goToCompare, updateTabsetPanel(inputId = "step_set", selected = "Compare"))
+observeEvent(input$goToCompare_blr, updateTabsetPanel(inputId = "step_set", selected = "Compare"))
 
-# Step 6: Performance -----
-## Reactives -----
-perfTabs <- reactiveVal()
-perfVals <- reactiveVal()
-plotShown <- reactiveVal()
+hppt_ref <- fread("www/ice_references/2024June13_OECD Defined Approach to Skin Sensitization Human (R).txt", data.table = F)
+llna_ref <- fread("www/ice_references/2024June13_OECD Defined Approach to Skin Sensitization LLNA (R).txt", data.table = F)
 
-## Compare -----
-# Update prediction column menu
-observe({
-  req(dass_res$results)
-  switch(input$compareType,
-         Hazard = {
-           daBins = grep("^DA ITS Call$|^DA 2o3 Call$|^DA KE 3/1 STS Call$", names(dass_res$results), value = T)
-           updateSelectInput(inputId = "perfPredCol", choices = daBins)
-           updateSelectInput(inputId = "perfRefRes", choices = c(names(dt_analyze())), selected = "")
-         },
-         Potency = {
-           daPots = grep("^DA ITS Potency$|^DA KE 3/1 STS Potency$", names(dass_res$results), value = T)
-           updateSelectInput(inputId = "perfPredCol", choices = daPots)
-           updateSelectInput(inputId = "perfRefRes", choices = c(names(dt_analyze())), selected = "")
-         })
-})
+# Reactives -----
+perf_ref_data <- reactiveVal()
+perf_tables <- reactiveVal()
+perf_plots <- reactiveVal()
 
-observeEvent(input$compareToRef, {
-  req(dass_res$results)
-  req(input$perfRefRes)
-  req(input$perfPredCol)
+# Comparison -----
+observeEvent(input$do_compare, {
+  ref_user_data <- NULL
+  if (input$perf_use_my_data) {
+    ref_user_data <- as.list(all_out$result_df[,input$perf_ref_col,drop=F])
+  }
+  
+  ref_hppt_data <- NULL
+  ref_llna_data <- NULL
+  if (input$perf_use_ice) {
+    id <- switch(
+      input$perf_ice_identifier_type,
+      dtxsid = "DTXSID",
+      casrn = "CASRN",
+      smiles = "QSAR Ready SMILES"
+    )
+    
+    if ("hppt" %in% input$perf_ice_ref_cql) {
+      rcol <- switch(
+        input$perf_pred_col,
+        Hazard = grep_ci("binary hazard", names(hppt_ref), value = T),
+        Potency = grep_ci("potency", names(hppt_ref), value = T)
+      )
+      ref_hppt_data <- as.list(hppt_ref[match(all_out$result_df[[input$perf_ice_user_identifier]], hppt_ref[[id]]), rcol, drop = F])
+    }
+    
+    if ("llna" %in% input$perf_ice_ref_cql) {
+      rcol <- switch(
+        input$perf_pred_col,
+        Hazard = grep_ci("binary hazard", names(llna_ref), value = T),
+        Potency = grep_ci("potency", names(llna_ref), value = T)
+      )
+      ref_llna_data <- as.list(llna_ref[match(all_out$result_df[[input$perf_ice_user_identifier]], llna_ref[[id]]), rcol, drop = F])
+    }
+  }
+  perf_ref_data(c(ref_user_data, ref_hppt_data, ref_llna_data))
+
   switch(
-    input$compareType,
-    Hazard = binaryCompare(),
-    Potency = catCompare()
+    input$perf_pred_col,
+    Hazard = binary_compare(),
+    Potency = cat_compare()
   )
-  shinyjs::show("perfBlock")
 })
 
-### Binary -----
-binaryCompare <- reactive({
-  # Set up data for analysis
-  data_compare <- data.table(
-    dt_analyze()[,.SD, .SDcols = input$perfRefRes],
-    dass_res$results[,.SD,.SDcols = input$perfPredCol]
-  )
+# Binary -----
+binary_compare <- reactive({
+  pred <- all_out$result_df[all_out$dass_results]
+  pred <- pred[,grep_ci("hazard", names(pred))]
+  pred <- factor(pred, levels = c("Positive", "Negative", "Inconclusive"), c("1", "0", "Inconclusive"))
+  pred_noMiss <- (!is.na(pred)) & (pred != "Inconclusive")
   
-  allComps <- lapply(input$perfRefRes, function(refCol) {
-    # Get selected columns
-    ref_tmp <- data_compare[,.SD,.SDcols = c(refCol, input$perfPredCol)]
-    
+  all_comps <- lapply(perf_ref_data(), function(x) NULL)
+  ref_cols <- names(all_comps)
+  
+  for (i in ref_cols) {
+    ref <- perf_ref_data()[[i]]
+
+  # Check for invalid values
+  ref_warn <- any(!grepl_ci(concatOrString(c(call1_str, call0_str)), na.omit(ref)))
+
+  # Convert to 1/0
+  ref[grepl_ci(concatOrString(call1_str), ref)] <- 1
+  ref[grepl_ci(concatOrString(call0_str), ref)] <- 0
+  ref <- factor(ref, levels = c("1","0"))
+
+  # Count missing after 0/1
+  ref_noMiss <- !is.na(ref)
+  ref_error <- sum(ref_noMiss) < 5
+
+  if (ref_error) {
+    out <- list(ref_error = ref_error)
+  } else if (!ref_error) {
+    pred_error <- sum(ref_noMiss & pred_noMiss) < 5
+
+  out <- list(
+    ref_col = i,
+    ref_dat = ref,
+    ref_plot = factor(ref, levels = c("1", "0"), labels = c("Positive", "Negative")),
+    pred_col = input$perf_pred_col,
+    pred_dat = pred,
+    pred_plot = factor(pred, levels = c("1", "0", "Inconclusive"), labels = c("Positive", "Negative", "Inconclusive")),
+    id = gsub("\\s+|[.]+", "", tolower(paste(i, input$perf_pred_col, sep = "_"))),
+    label = paste(i, input$perf_pred_col, sep = " vs. "),
+    ref_warn = ref_warn,
+    pred_error = pred_error
+  )
+
+  if (!pred_error) {
+    perf <- compareBinary(
+      pred = pred,
+      ref = ref,
+      predCol = input$perf_pred_col,
+      refCol = i
+    )
+    out <- append(out, perf)
+
+    base_plot_data <- data.frame(table(perf$indiv))
+    base_plot_data$Var1 <- factor(base_plot_data$Var1 , levels = c("True Positive", "True Negative", "False Positive", "False Negative", "NA"))
+    base_plot_data$tt_text <- sprintf("Prediction Type = %s\nCount = %i", base_plot_data$Var1, base_plot_data$Freq)
+
+    da_lab <- switch(input$selected_da,
+           da_2o3 = "Two-out-of-Three DA",
+           da_its = "Integrated Testing Strategy DA",
+           da_ke31 = "Key Event 3/1 STS DA")
+
+
+    bp_title <- sprintf("Hazard Comparison\n%s vs. %s", da_lab, i)
+
+    base_plot <- ggplot(base_plot_data, aes(x = Var1, y = Freq, text = tt_text)) +
+      geom_bar(stat = "identity") +
+      labs(x = "Prediction Type", y = "Count", title = bp_title) +
+      theme_bw()
+    out$base_plot <- base_plot
+
+  }
+  }
+   all_comps[[i]] <- out
+  }
+
+   updateSelectInput(session = session, inputId = "reference_perf_1", choices = ref_cols, selected = ref_cols[1])
+
+  if (length(ref_cols) > 1) {
+    shinyjs::show(id = "perf_table_block_2")
+    updateSelectInput(session = session, inputId = "reference_perf_2", choices = ref_cols, selected = ref_cols[2])
+    shinyjs::addClass(id = "perf_table_block_1",class = "col-sm-6")
+    shinyjs::removeClass(id = "perf_table_block_1",class = "col-sm-12")
+  } else {
+    shinyjs::hide(id = "perf_table_block_2")
+    updateSelectInput(session = session, inputId = "reference_perf_2", choices = NULL)
+    shinyjs::addClass(id = "perf_table_block_1",class = "col-sm-12")
+    shinyjs::removeClass(id = "perf_table_block_1",class = "col-sm-6")
+  }
+
+  updateCheckboxGroupInput(
+    session = session,
+    inputId = "perf_table_choices",
+    choiceValues = unname(sapply(all_comps, function(x) x[["ref_col"]])),
+    choiceNames = unname(sapply(all_comps, function(x) x[["label"]])))
+
+  shinyjs::show("compare_explore_standard")
+  shinyjs::show("binary_defs")
+  shinyjs::hide("potency_defs")
+  perf_tables(all_comps)
+})
+
+# Categorical -----
+cat_compare <- reactive({
+  pred <- all_out$result_df[all_out$dass_results]
+  pred <- pred[,grep_ci("potency", names(pred))]
+  pred <- factor(pred, levels = c("1A", "1B", "NC", "Inconclusive"))
+  pred_noMiss <- (!is.na(pred)) & (pred != "Inconclusive")
+
+  all_comps <- lapply(perf_ref_data(), function(x) NULL)
+  ref_cols <- names(all_comps)
+
+  for (i in ref_cols) {
+    ref <- perf_ref_data()[[i]]
+
     # Check for invalid values
-    refWarn <- ref_tmp[
-      !is.na(get(refCol)),
-      any(!grepl_ci(concatOrString(c(call1_str, call0_str)), get(refCol)))]
-    
-    # Convert to 1/0
-    ref_tmp[,(refCol) := fcase(
-      grepl_ci(concatOrString(call1_str), get(refCol)), 1,
-      grepl_ci(concatOrString(call0_str), get(refCol)), 0
-    )]
-    
+    ref_warn <- any(!grepl_ci(concatOrString(c("1A", "1B", "NC")), na.omit(ref)))
+
+    # Convert to all caps
+    ref[grepl_ci("^1A$", ref)] <- "1A"
+    ref[grepl_ci("^1B$", ref)] <- "1B"
+    ref[grepl_ci("^NC$", ref)] <- "NC"
+    ref <- factor(ref, levels = c("1A","1B", "NC"))
+
     # Count missing
-    ref_noMiss <- ref_tmp[,!is.na(get(refCol))]
-    refError <- ref_tmp[ref_noMiss,.N < 5]
+    ref_noMiss <- !is.na(ref)
+    ref_error <- sum(ref_noMiss) < 5
 
-    if (refError) {
-      id <- sprintf("%s_error", refCol)
-      perf <- data.frame(id = id, label = id, refCol = refCol, refWarn = refWarn, refError = refError)
-      perfFig <- arrangeGrob(
-        grobs = list(
-          textGrob(label = "Confusion Matrix and Performance Metrics", gp = gpar(font = 2, cex = 1.25)),
-          textGrob(label = paste("Reference Column: ", refCol)),
-          textGrob(label = "Error: Fewer than 5 valid reference values provided.", gp = gpar(col = "#D55E00"))
-        ))
-      perfFig$id <- id
-      
+    if (ref_error) {
+      out <- list(ref_error = ref_error)
+    } else if (!ref_error) {
+      pred_error <- sum(ref_noMiss & pred_noMiss) < 5
+
       out <- list(
-        vals = perf,
-        figs = perfFig
+        ref_col = i,
+        ref_dat = ref,
+        pred_col = input$perf_pred_col,
+        pred_dat = pred,
+        id = gsub("\\s+|[.]+", "", tolower(paste(i, input$perf_pred_col, sep = "_"))),
+        label = paste(i, input$perf_pred_col, sep = " vs. "),
+        ref_warn = ref_warn,
+        pred_error = pred_error
       )
-      return(list(out))
-    } else {
-      # ref_tmp <- ref_tmp[,lapply(.SD, function(x) factor(x, levels = c("1", "0")))]
-      ref_tmp[,(input$perfPredCol) := lapply(.SD, function(x) factor(x, levels = c("1", "0", "Inconclusive"))), .SDcols = input$perfPredCol]
-      
-      oneOut <- lapply(input$perfPredCol, function(predCol) {
-        pred_noMiss <- ref_tmp[,!is.na(get(predCol))]
-        predError <- ref_tmp[ref_noMiss & pred_noMiss & (get(predCol) != "Inconclusive"), .N < 5]
-        predOut <- list(
-          id = gsub("\\s+|[.]+", "", tolower(paste(refCol, predCol, sep = "_"))),
-          label = paste(refCol, predCol, sep = " vs. "),
-          refCol = refCol, 
-                   predCol = predCol,
-                   refWarn = refWarn,
-                   refError = refError,
-                   predError = predError)
-        
-        if (predError) {
-          return(predOut)
-        } else {
-          perf <- compareBinary(
-            pred = ref_tmp[ref_noMiss & pred_noMiss,get(predCol)],
-            ref = ref_tmp[ref_noMiss & pred_noMiss,get(refCol)])
-          
-          # nGrob <- 5 + refWarn
-          
-          perfFig <- arrangeGrob(
-            grobs = list(
-              textGrob(label = "Confusion Matrix and Performance Metrics", gp = gpar(font = 2, cex = 1.25)),
-              textGrob(label = paste("Reference Column: ", predOut$refCol)),
-              textGrob(label = paste("Prediction Column:", predOut$predCol)),
-              perf$figs[[1]],
-              perf$figs[[2]]), layout_matrix  = matrix(c(1,2,3,rep(4, 6), rep(5, 10)))
-          )
-          perfFig$id <- predOut$id
-          
-          out <- list(
-            vals = as.data.frame(list(predOut, perf$vals)),
-            figs = perfFig)
-          
-          return(out)
-        }
-      })
-      return(oneOut)
+
+      if (!pred_error) {
+        perf <- compareCat(
+          pred = pred,
+          ref = ref,
+          predCol = input$perf_pred_col,
+          refCol = i
+        )
+        out <- append(out, perf)
+
+        base_plot_data <- data.frame(
+          ref = ref,
+          pred = pred,
+          pred_type = perf$indiv,
+          val = 1
+        )
+
+        base_plot_data <- aggregate(val ~ ref + pred + pred_type, data = base_plot_data, sum)
+        base_plot_data$tt_text <- sprintf("Prediction Type = %s\nPrediction = %s\nReference = %s\nCount = %i",
+                                          base_plot_data$pred_type, base_plot_data$pred, base_plot_data$ref, base_plot_data$val)
+        base_plot_data$ref <- sprintf("Reference = %s", base_plot_data$ref)
+
+        da_lab <- switch(input$selected_da,
+                         da_2o3 = "Two-out-of-Three DA",
+                         da_its = "Integrated Testing Strategy DA",
+                         da_ke31 = "Key Event 3/1 STS DA")
+
+        bp_title <- sprintf("Potency Comparison\n%s vs. %s", da_lab, i)
+
+        base_plot <- ggplot(base_plot_data, aes(x = pred, y = val, text = tt_text)) +
+          geom_bar(stat = "identity") +
+          facet_grid(.~ref) +
+          labs(x = "Potency Prediction", y = "Count", title = bp_title) +
+          theme_bw()
+        out$base_plot <- base_plot
+      }
     }
-  })
-  
-  allCompVals <- lapply(allComps, function(oneOut) {
-    lapply(oneOut, function(x) {
-      x$vals
-    })
-  })
-  
-  allCompVals <- do.call("c", allCompVals) |> rbindlist(fill = T)
-  perfVals(allCompVals)
-  
-  allCompTabs <- lapply(allComps, function(oneOut) {
-    lapply(oneOut, function(x) {
-      x$figs
-    })
-  })
-  allCompTabs <- do.call("c", allCompTabs)
-  names(allCompTabs) <- sapply(allCompTabs, function(x) x$id)
+    all_comps[[i]] <- out
+  }
 
-  perfTabs(allCompTabs)
-  updateSelectInput(inputId = "perfList", choices = names(allCompTabs))
-  updateCheckboxGroupInput(inputId = "tableChoices", choices = names(allCompTabs))
-  shinyjs::show("binaryDefs")
-  shinyjs::hide("potencyDefs")
+  updateSelectInput(session = session, inputId = "reference_perf_1", choices = ref_cols, selected = ref_cols[1])
+
+  if (length(ref_cols) > 1) {
+    shinyjs::show(id = "perf_table_block_2")
+    updateSelectInput(session = session, inputId = "reference_perf_2", choices = ref_cols, selected = ref_cols[2])
+    shinyjs::addClass(id = "perf_table_block_1",class = "col-sm-6")
+    shinyjs::removeClass(id = "perf_table_block_1",class = "col-sm-12")
+  } else {
+    shinyjs::hide(id = "perf_table_block_2")
+    updateSelectInput(session = session, inputId = "reference_perf_2", choices = NULL)
+    shinyjs::addClass(id = "perf_table_block_1",class = "col-sm-12")
+    shinyjs::removeClass(id = "perf_table_block_1",class = "col-sm-6")
+  }
+
+  updateCheckboxGroupInput(
+    session = session,
+    inputId = "perf_table_choices",
+    choiceValues = unname(sapply(all_comps, function(x) x[["ref_col"]])),
+    choiceNames = unname(sapply(all_comps, function(x) x[["label"]])))
+
+  shinyjs::show("compare_explore_standard")
+  shinyjs::hide("binary_defs")
+  shinyjs::show("potency_defs")
+  perf_tables(all_comps)
 })
 
-### Categorical -----
-catCompare <- reactive({
-  # Set up data for analysis
-  data_compare <- data.table(
-    dt_analyze()[,.SD, .SDcols = input$perfRefRes],
-    dass_res$results[,.SD,.SDcols = input$perfPredCol]
-  )
-  
-  allComps <- lapply(input$perfRefRes, function(refCol) {
-    # Get selected columns
-    ref_tmp <- data_compare[,.SD,.SDcols = c(refCol, input$perfPredCol)]
-    
-    # Check for invalid values
-    refWarn <- ref_tmp[
-      !is.na(get(refCol)),
-      any(!grepl_ci(concatOrString(c("1A", "1B", "NC")), get(refCol)))]
-    
-    # Convert to caps
-    ref_tmp[,(refCol) := fcase(
-      grepl_ci("^1A$", get(refCol)), "1A",
-      grepl_ci("^1B$", get(refCol)), "1B",
-      grepl_ci("^NC$", get(refCol)), "NC"
-    )]
-    
-    # Count missing
-    ref_noMiss <- ref_tmp[,!is.na(get(refCol))]
-    refError <- ref_tmp[ref_noMiss,.N < 5]
-    
-    if (refError) {
-      id <- sprintf("%s_error", refCol)
-      perf <- data.frame(id = id, label = id, refCol = refCol, refWarn = refWarn, refError = refError)
-      perfFig <- arrangeGrob(
-        grobs = list(
-          textGrob(label = "Confusion Matrix and Performance Metrics", gp = gpar(font = 2, cex = 1.25)),
-          textGrob(label = paste("Reference Column: ", refCol)),
-          textGrob(label = "Error: Fewer than 5 valid reference values provided.", gp = gpar(col = "#D55E00"))
-        ))
-      perfFig$id <- id
-      
-      out <- list(
-        vals = perf,
-        figs = perfFig
-      )
-      return(list(out))
-    } else {
-      ref_tmp[,(input$perfPredCol) := lapply(.SD, function(x) factor(x, levels = c("1A", "1B", "NC", "Inconclusive"))), .SDcols = input$perfPredCol]
-      oneOut <- lapply(input$perfPredCol, function(predCol) {
-        pred_noMiss <- ref_tmp[,!is.na(get(predCol))]
-        predError <- ref_tmp[ref_noMiss & pred_noMiss & (get(predCol) != "Inconclusive"), .N < 5]
-        predOut <- list(
-          id = gsub("\\s+|[.]+", "", tolower(paste(refCol, predCol, sep = "_"))),
-          label = paste(refCol, predCol, sep = " vs. "),
-          refCol = refCol, 
-          predCol = predCol,
-          refWarn = refWarn,
-          refError = refError,
-          predError = predError)
-        
-        if (predError) {
-          return(predOut)
-        } else {
-          perf <- compareCat(
-            pred = ref_tmp[ref_noMiss & pred_noMiss,get(predCol)],
-            ref = ref_tmp[ref_noMiss & pred_noMiss,get(refCol)])
-          
-          perfFig <- arrangeGrob(
-            grobs = list(
-              textGrob(label = "Confusion Matrix and Performance Metrics", gp = gpar(font = 2, cex = 1.25)),
-              textGrob(label = paste("Reference Column: ", predOut$refCol)),
-              textGrob(label = paste("Prediction Column:", predOut$predCol)),
-              perf$figs[[1]],
-              perf$figs[[2]]),  layout_matrix  = matrix(c(1,2,3,rep(4, 5), rep(5, 6)))
-          )
-          perfFig$id <- predOut$id
-          
-          out <- list(
-            vals = as.data.frame(list(predOut, perf$vals[-1])),
-            figs = perfFig)
-          
-          return(out)
-        }
-      })
-    }
-  })
-  
-  allCompVals <- lapply(allComps, function(oneOut) {
-    lapply(oneOut, function(x) {
-      x$vals
-    })
-  })
+# Tables -----
+ref_error_grob <- textGrob("Error: Fewer than 5 valid reference values.", gp = gpar(col = "#D55E00"))
+pred_error_grob <- textGrob("Error: Fewer than 5 conclusive prediction values.", gp = gpar(col = "#D55E00"))
 
-  allCompVals <- do.call("c", allCompVals) |> rbindlist(fill = T)
-  perfVals(allCompVals)
-  
-  allCompTabs <- lapply(allComps, function(oneOut) {
-    lapply(oneOut, function(x) {
-      x$figs
-    })
-  })
-  
-  allCompTabs <- do.call("c", allCompTabs)
-  names(allCompTabs) <- sapply(allCompTabs, function(x) x$id)
-  
-  perfTabs(allCompTabs)
-  updateSelectInput(inputId = "perfList", choices = names(allCompTabs))
-  updateCheckboxGroupInput(inputId = "tableChoices", choices = names(allCompTabs))
-  
-  shinyjs::hide("binaryDefs")
-  shinyjs::show("potencyDefs")
-})
-
-observeEvent(input$perfList, {
-  plotShown(perfTabs()[[input$perfList]])
-})
-
-output$perfFigure <- renderPlot({grid.draw(plotShown())})
-
-## Download -----
-
-observeEvent(input$perfAll, {
-  updateCheckboxGroupInput(inputId = "tableChoices", selected = names(perfTabs()))
-})
-
-observeEvent(input$perfNone, {
-  updateCheckboxGroupInput(inputId = "tableChoices", selected = NA)
-})
+table_shown_1 <- reactiveVal()
+table_shown_2 <- reactiveVal()
 
 observe({
-  if (is.null(input$tableChoices)) {
-    shinyjs::disable("dlPerf")
+  req(input$reference_perf_1)
+  res <- isolate(perf_tables()[[input$reference_perf_1]])
+
+  if (!is.null(res[["ref_error"]])) {
+    table_shown_1(ref_error_grob)
   } else {
-    shinyjs::enable("dlPerf")
+    if (res$pred_error) {
+      table_shown_1(pred_error_grob)
+    } else {
+      table_shown_1(res$fig)
+    }
   }
 })
 
-output$dlPerf <- downloadHandler(
+output$perf_table_1 <- renderPlot(grid.draw(table_shown_1()), width = "auto")
+
+observe({
+  req(input$reference_perf_2)
+  res <- isolate(perf_tables()[[input$reference_perf_2]])
+
+  if (!is.null(res[["ref_error"]])) {
+    table_shown_2(ref_error_grob)
+  } else {
+    if (res$pred_error) {
+      table_shown_2(pred_error_grob)
+    } else {
+      table_shown_2(res$fig)
+    }
+  }
+})
+
+output$perf_table_2 <- renderPlot(grid.draw(table_shown_2()), width = "auto")
+
+# Download -----
+observeEvent(input$perf_table_all, {
+  updateCheckboxGroupInput(inputId = "perf_table_choices", selected = names(perf_tables()))
+})
+
+observeEvent(input$perf_table_none, {
+  updateCheckboxGroupInput(inputId = "perf_table_choices", selected = NA)
+})
+
+output$dl_perf_tables <- downloadHandler(
   filename = function() {
-    if (input$useDemoData) {
+    if (input$use_demo_data) {
       fname <- "DemoData"
     } else {
       fname <- unlist(strsplit(input$fpath$name, "[.]"))
@@ -305,21 +323,21 @@ output$dlPerf <- downloadHandler(
     paste0(fname, "_DASSResults_Performance_", format.Date(Sys.time(), "%Y%m%d-%H%M%S"), ".pdf")
   },
   content = function(con) {
-    tabChoice <- input$tableChoices
+    table_choice <- input$perf_table_choices
     pdf(con)
-    for (i in tabChoice) {
-      grid.draw(perfTabs()[[i]])
-      if (i != tabChoice[length(tabChoice)]) grid.newpage()
+    for (i in table_choice) {
+      grid.draw(perf_tables()[[i]][["fig"]])
+      if (i != table_choice[length(table_choice)]) grid.newpage()
       }
     dev.off()
   }
 )
 
-outputOptions(output, "dlPerf", suspendWhenHidden = FALSE)
+outputOptions(output, "dl_perf_tables", suspendWhenHidden = FALSE)
 
-output$perfFlat_xl <- downloadHandler(
+output$perf_table_flat_xl <- downloadHandler(
   filename = function() {
-    if (input$useDemoData) {
+    if (input$use_demo_data) {
       fname <- "DemoData"
     } else {
       fname <- unlist(strsplit(input$fpath$name, "[.]"))
@@ -328,20 +346,28 @@ output$perfFlat_xl <- downloadHandler(
     paste0(fname, "_DASSResults_Performance_", format.Date(Sys.time(), "%Y%m%d-%H%M%S"), ".xlsx")
   },
   content = function(con) {
-    outCols <- setdiff(names(perfVals()), c("id", "label"))
-    
+    ws_data <- lapply(perf_tables(), function(res) {
+      data.frame(
+        Reference = res$ref_col,
+        DA = res$pred_col,
+        res$perf_list,
+        check.names = F
+      )
+    })
+    ws_data <- do.call("rbind.data.frame", ws_data)
+
     wb <- createWorkbook()
     addWorksheet(wb, sheetName = "DASSPerformance")
-    writeData(wb, sheet = "DASSPerformance", perfVals()[,.SD,.SDcols = outCols])
+    writeData(wb, sheet = "DASSPerformance", ws_data)
     saveWorkbook(wb = wb, file = con)
   }
 )
 
-outputOptions(output, "perfFlat_xl", suspendWhenHidden = FALSE)
+outputOptions(output, "perf_table_flat_xl", suspendWhenHidden = FALSE)
 
-output$perfFlat_txt <- downloadHandler(
+output$perf_table_flat_txt <- downloadHandler(
   filename = function() {
-    if (input$useDemoData) {
+    if (input$use_demo_data) {
       fname <- "DemoData"
     } else {
       fname <- unlist(strsplit(input$fpath$name, "[.]"))
@@ -350,9 +376,128 @@ output$perfFlat_txt <- downloadHandler(
     paste0(fname, "_DASSResults_Performance_", format.Date(Sys.time(), "%Y%m%d-%H%M%S"), ".txt")
   },
   content = function(con) {
-    outCols <- setdiff(names(perfVals()), c("id", "label"))
-    write.table(x =  perfVals()[,.SD,.SDcols = outCols], file = con, quote = F, row.names = F, sep = "\t")
+    ws_data <- lapply(perf_tables(), function(res) {
+      data.frame(
+        Reference = res$ref_col,
+        DA = res$pred_col,
+        res$perf_list,
+        check.names = F
+      )
+    })
+    ws_data <- do.call("rbind.data.frame", ws_data)
+
+    write.table(x =  ws_data, file = con, quote = F, row.names = F, sep = "\t")
   }
 )
 
-outputOptions(output, "perfFlat_txt", suspendWhenHidden = FALSE)
+outputOptions(output, "perf_table_flat_txt", suspendWhenHidden = FALSE)
+
+# Figures -----
+observe({
+  req(perf_tables())
+  updateSelectInput(
+    inputId = "perf_fig_comparison",
+    choices = names(perf_tables()))
+  
+  updateSelectInput(
+    inputId = "perf_fig_quant_col",
+    choices = c("None", names(dt_analyze()))
+  )
+  
+})
+
+perf_plot_error_pred <- plot_ly(
+  x = 0, 
+  y = 0, 
+  type = "scatter", 
+  mode = "text", 
+  text = "Error: No comparison to plot.",
+  textfont = list(color = "#C25400", size = 14))
+perf_plot_error_pred$x$layout$xaxis <- list(visible = F)
+perf_plot_error_pred$x$layout$yaxis <- list(visible = F)
+perf_plot_error_pred$x$config$staticPlot <- T
+
+perf_plot_error_quant <- plot_ly(
+  x = 0, 
+  y = 0, 
+  type = "scatter", 
+  mode = "text", 
+  text = "Error: Plots can only be generated for quantitative data.",
+  textfont = list(color = "#C25400", size = 14))
+
+perf_plot_error_quant$x$layout$xaxis <- list(visible = F)
+perf_plot_error_quant$x$layout$yaxis <- list(visible = F)
+perf_plot_error_quant$x$config$staticPlot <- T
+
+perf_shown <- reactive({
+  perf_table <- perf_tables()[[input$perf_fig_comparison]]
+  if (!is.null(perf_table[["ref_error"]])) {
+    perf_plot_error_pred
+  } else if (perf_table$pred_error) {
+    perf_plot_error_pred
+  } else {
+    if (input$perf_fig_quant_col == "None") {
+      plot_out <- ggplotly(perf_tables()[[input$perf_fig_comparison]][["base_plot"]])
+      plot_out$x$layout$margin$t <- plot_out$x$layout$title$font$size*3
+      plot_out
+    } else {
+      quant_val <- suppressWarnings(as.numeric(dt_analyze()[[input$perf_fig_quant_col]]))
+      if (all(is.na(quant_val))) {
+        perf_plot_error_quant
+      } else {
+        etypes <- c("True Positive", "True Negative", "False Positive", "False Negative", NA)
+        
+        cols <- c(
+          "#882255",
+          "#117733",
+          "#88CCEE",
+          "#332288",
+          "#999999"
+        )
+        
+        pt_text <- sprintf(
+          "%s\n%s=%.2f",
+          perf_table$indiv,
+          input$perf_fig_quant_col,
+          quant_val
+        )
+        
+        pt_plt <- ggplot() + 
+          geom_point(aes(x = quant_val, y = perf_table$indiv, color = perf_table$indiv, text = pt_text), position = position_jitter(width = 0)) +
+          scale_color_manual(name = "Comparison", breaks = etypes, values = cols) + 
+          labs(
+            title = sprintf("DA %s %s Prediction vs. %s", abbrev[input$selected_da], input$perf_pred_col, input$perf_fig_comparison),
+            y = NULL,
+            x = input$perf_fig_quant_col) +
+          theme_bw()
+        pt_plt <- ggplotly(pt_plt, tooltip = "text")
+        
+        dens_plt <- ggplot() + 
+          geom_density(aes(x = quant_val, fill = perf_table$indiv, 
+                           text = after_stat(sprintf("%s\n%s = %.2f\nDensity = %.2f", fill, input$perf_fig_quant_col, x, density))), alpha = 0.6, color = "#303030") +
+          scale_fill_manual(name = "Comparison", breaks = etypes, values = cols) + 
+          labs(y = "Density", x = input$perf_fig_quant_col) + 
+          theme_bw()
+        dens_plt <- ggplotly(dens_plt, tooltip = "text")
+        dens_plt$x$data <- lapply(dens_plt$x$data, function(val) {
+          val$hoverlabel <- list(bgcolor = val$fillcolor)
+          val
+        })
+        
+        joint_plot <- subplot(pt_plt, dens_plt, nrows = 2, heights = c(0.35,0.65), shareX = T, titleX = T, titleY = T)
+        joint_plot$x$data <- lapply(joint_plot$x$data, function(val) {
+          if (val$mode == "lines") val$showlegend <- F
+          return(val)
+        })
+        
+        joint_plot
+        
+      }
+    }
+  }
+})
+
+output$perf_fig <- renderPlotly({
+  req(perf_tables())
+  perf_shown()
+})

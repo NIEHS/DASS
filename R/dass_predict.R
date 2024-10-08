@@ -10,391 +10,257 @@
 # - readxl
 # ============================================================================#
 
-# Function to read in data
-# `fpath` - user-supplied path to data file
-read_data <- function(fpath, sheet = 1) {
-  if (grepl("txt$|tsv$|csv$", fpath)) {
-    fread(fpath, colClasses = "character", na.strings = c("NA", ""))
-  } else if (grepl("xls$|xlsx$", fpath)) {
-    # Read columns in as list to prevent displaying converted floats
-    tmp <- data.table(read_excel(fpath, sheet = sheet, na = c("NA", ""), col_types = "list"))
-    tmp[,lapply(.SD, function(x) as.character(unlist(x)))]
-  } else {
-    stop("Incorrect file extension.")
-  }
-}
+#' Apply the 2 out of 3 defined approach
+#'
+#' Predict skin sensitization hazard using the 2o3 method.
+#' @param assayA_call A numeric vector containing the assay call from the first
+#' assay; 0 indicates a negative call and 1 indicates a positive call.
+#' @param assayB_call A numeric vector containing the assay call from the second
+#' assay; 0 indicates a negative call and 1 indicates a positive call.
+#' @param assayC_call A numeric vector containing the assay call from the third
+#' assay; 0 indicates a negative call and 1 indicates a positive call.
+#'
+#' @return Skin sensitization hazard prediction.
 
-# grep functions for case-insensitive matching
-grep_ci <- function(str, x, ...) grep(pattern = str, x = x, ignore.case = T, ...)
-grepl_ci <- function(str, x, ...) grepl(pattern = str, x = x, ignore.case = T, ...)
-
-# Function to produce the columns needed to calculate the predictions
-# the user has requested.
-# `dass` - a vector or character string to indicate which defined approaches
-#          will be calculated
-# `ks_call_method` - a character string that indicates if KeratinoSens Call
-#                    will be provided as a call value or if call needs to be
-#                    derived from iMax
-# `dpra_call_method` - a character string that indicates if DPRA Call will
-#                      be provided as a call value or if call needs to be
-#                      derived from % depletion values
-# Output: Returns a vector with the column labels for columns required
-#         to implement the selected defined approaches
-check_cols <- function(dass = c("da_2o3", "da_its", "da_ke31"),
-                       ks_call_method = NULL,
-                       dpra_call_method = NULL) {
-  # Create list to store column labels
-  cols_to_check <- vector(mode = "list", length = 3)
-  names(cols_to_check) <- c("da_2o3", "da_its", "da_ke31")
-  # 2o3 requires KeratinoSens Call and DPRA Call
-  if ("da_2o3" %in% dass) {
-    cols_to_check[["da_2o3"]] <- "hclat_call"
-    if (ks_call_method == "call") {
-      cols_to_check[["da_2o3"]] <- c(cols_to_check[["da_2o3"]], "ks_call")
-    } else if (ks_call_method == "imax") {
-      cols_to_check[["da_2o3"]] <- c(cols_to_check[["da_2o3"]], "ks_imax")
-    }
-
-    if (dpra_call_method == "call") {
-      cols_to_check[["da_2o3"]] <- c(cols_to_check[["da_2o3"]], "dpra_call")
-    } else if (dpra_call_method == "pdepl") {
-      cols_to_check[["da_2o3"]] <- c(cols_to_check[["da_2o3"]], "dpra_pC", "dpra_pK")
-    }
-  }
-  # ITS requires h-CLAT MIT, dpra %C-depletion, DPRA %K-depletion,
-  # in silico hazard identification and applicablity domain
-  if ("da_its" %in% dass) {
-    cols_to_check[["da_its"]] <- c("hclat_mit", "dpra_pC", "dpra_pK", "insilico_call", "insilico_ad")
-  }
-
-  # KE 3/1 STS requires h-CLAT MIT and DPRA Call
-  if ("da_ke31" %in% dass) {
-    cols_to_check[["da_ke31"]] <- "hclat_mit"
-    if (dpra_call_method == "call") {
-      cols_to_check <- c(cols_to_check, "dpra_call")
-    } else if (dpra_call_method == "pdepl") {
-      cols_to_check <- c(cols_to_check, "dpra_pC", "dpra_pK")
-    }
+da2o3 <- function(assayA_call, assayB_call, assayC_call = NULL) {
+  if (is.null(assayC_call)) {
+    assayC_call <- rep(0, length(assayB_call))
   }
   
-  # Returns character vector
-  sort(unique(unlist(cols_to_check)))
-}
-
-# Function that performs the requested DASS by calling the functions for each
-# individual DASS
-# `dt` - A data table containing all required columns for the requested DASS.
-#        Column names must be the column labels used throughout the app:
-#        'dpra_pC' = DPRA %C-Depletion (numeric)
-#        'dpra_pK' = DPRA %K-Depletion (numeric)
-#        'dpra_call' = DPRA Hazard ID (0 or 1)
-#        'hclat_call' = h-CLAT Hazard ID (0 or 1)
-#        'hclat_mit' = h-CLAT MIT (character)
-#        'ks_call' = KeratinoSens Hazard ID (0 or 1)
-#        'ks_imax' = KeratinoSens iMax (quantitative)
-#        'insilico_call' = In silico Hazard ID (0 or 1) from OECD QSAR Toolbox or Derek Nexus
-#        'insilico_ad' = In silico Applicability Domain (0 or 1) from OECD QSAR Toolbox or Derek Nexus
-# `dass` - a vector or character string to indicate which defined approaches
-#          will be calculated
-# `ks_call_method` - a character string that indicates if KeratinoSens Call
-#                    will be provided as a call value or if call needs to be
-#                    derived from iMax
-# `dpra_call_method` - a character string that indicates if DPRA Call will
-#                      be provided as a call value or if call needs to be
-#                      derived from % depletion values
-# Output: Returns a data table with rows corresponding to rows in
-#         the original user data and `dt`. Data table contains DASS
-#         predictions
-dass_predict <- function(dt, dass = c("da_2o3", "da_its", "da_ke31"),
-                         ks_call_method = NULL,
-                         dpra_call_method = NULL) {
-  # Set KS Call based on user selection
-  if (!is.null(ks_call_method)) {
-    if (ks_call_method == "call") {
-      ks_call <- dt$ks_call
-    } else if (ks_call_method == "imax") {
-      ks_call <- ifelse(dt$ks_imax >= 1.5, 1, 0)
-      dt[, ks_call_calculated := ks_call]
-    }
+  # Are inputs the same length?
+  if ((length(assayA_call) != length(assayB_call)) |
+      (length(assayB_call) != length(assayC_call))) {
+    stop("Input vectors must be the same length.")
   }
-
-  # Calculate DPRA mean
-  if ("da_its" %in% dass) {
-    dt[, id := 1:.N]
-    dt[!is.na(dpra_pC) & !is.na(dpra_pK),
-      dpra_mean_calculated := mean(c(max(0, dpra_pC), max(0, dpra_pK))),
-      by = id
-    ]
-    dt[, id := NULL]
+  
+  # Is there anything that is not a 0 or 1?
+  if (
+    !all(na.omit(assayA_call) %in% c(0,1)) |
+    !all(na.omit(assayB_call) %in% c(0,1)) |
+    !all(na.omit(assayC_call) %in% c(0,1))
+  ) {
+    warning("Values not equal to 0 or 1 will be treated as missing data.")
   }
-
-  # Set DPRA Call based on user selection
-  if (!is.null(dpra_call_method)) {
-    if (dpra_call_method == "call") {
-      dpra_call <- dt[, dpra_call]
-    } else if (dpra_call_method == "pdepl") {
-      # Calculate dpra mean if not already calculated
-      if (!"da_its" %in% dass) {
-        dt[, id := 1:.N]
-        dt[!is.na(dpra_pC) & !is.na(dpra_pK),
-          dpra_mean_calculated := mean(c(max(0, dpra_pC), max(0, dpra_pK))),
-          by = id
-        ]
-        dt[, id := NULL]
+  
+  assayA_call[!assayA_call %in% c(0,1)] <- NA
+  assayB_call[!assayB_call %in% c(0,1)] <- NA
+  assayC_call[!assayC_call %in% c(0,1)] <- NA
+  
+  tmp <- data.frame(
+    assayA_call, assayB_call, assayC_call
+  )
+  
+  tmp$hazard <- apply(tmp, 1, function(x) {
+    x <- na.omit(x)
+    out <- NA
+    if (length(x) >= 2) {
+      if (sum(x == 1) >= 2) {
+        out <- "Positive"
+      } else if (sum(x == 0) >= 2) {
+        out <- "Negative"
+      } else {
+        out <- "Inconclusive"
       }
-
-      # Call is set as a variable
-      dpra_call <- dt[, fcase(
-        # If %C-dep is not given, then no evaluation
-        is.na(dpra_pC), as.numeric(NA),
-        # If %K-dep is not given, use %C-dep
-        is.na(dpra_pK), fifelse(dpra_pC <= 13.89, 0, 1),
-        # If both %C and %K dep given, use mean
-        !is.na(dpra_pC) & !is.na(dpra_pK), fifelse(dpra_mean_calculated <= 6.38, 0, 1)
-      )]
-      dt[, dpra_call_calculated := ..dpra_call]
     }
-  }
-
-  # Set up list of results
-  res_list <- vector(mode = "list", length = 0)
-  if ("da_2o3" %in% dass) {
-    temp <- da_2o3(
-      ks_call = ks_call,
-      hclat_call = dt[, hclat_call],
-      dpra_call = dpra_call
-    )
-    res_list$DA_2o3 <- data.table(DA_2o3_Call = temp)
-  }
-
-  if ("da_its" %in% dass) {
-    temp <- da_its(
-      hclat_mit = dt[, hclat_mit],
-      dpra_pC = dt[, dpra_pC],
-      dpra_pK = dt[, dpra_pK],
-      dpra_mean = dt[, dpra_mean_calculated],
-      insilico_call = dt[, insilico_call],
-      insilico_domain = dt[, insilico_ad]
-    )
-    res_list$DA_IT2 <- data.table(
-      ITS_hCLAT_Score = temp$ITS_hCLAT_Score,
-      ITS_DPRA_Score = temp$ITS_DPRA_Score,
-      ITS_inSilico_Score = temp$ITS_inSilico_Score,
-      ITS_TotalScore = temp$ITS_TotalScore,
-      DA_ITS_Call = temp$ITS_Call,
-      DA_ITS_Potency = temp$ITS_Potency
-    )
-  }
-
-  if ("da_ke31" %in% dass) {
-    temp <- da_ke31(
-      hclat_mit = dt[, hclat_mit],
-      dpra_call = dpra_call
-    )
-    res_list$DA_KE31STS <- data.table(
-      DA_KE31STS_Call = temp$KE31STS_Call,
-      DA_KE31STS_Potency = temp$KE31STS_Potency
-    )
-  }
-  # Merge results into datatable
-  names(res_list) <- NULL
-  res <- do.call("cbind", res_list)
-  dt_names <- sort(colnames(dt))
-  dt <- dt[, ..dt_names]
-  cbind(dt, res)
+    return(out)
+  })
+  
+  return(tmp)
 }
 
-# Performs DASS 2 out of 3
-# `ks_call` - a numeric vector for KeratinoSens call, where '0' indicates a
-#             negative call and '1' indicates a positive call
-# `hclat_call` - a numeric vector for h-CLAT call, where '0' indicates a
-#                negative call and '1' indicates a positive call
-# `dpra_call` - a numeric vector for DPRA call, where '0' indicates a
-#               negative call and '1' indicates a positive call
-da_2o3 <- function(ks_call, hclat_call, dpra_call) {
-  # Combine data
-  temp <- data.table(ks_call, hclat_call, dpra_call)
-  temp[, id := 1:nrow(temp)]
-  # Count the number of positive, negative, and missing
-  temp[, n_pos := sum(ks_call == 1, hclat_call == 1, dpra_call == 1, na.rm = T), by = id]
-  temp[, n_neg := sum(ks_call == 0, hclat_call == 0, dpra_call == 0, na.rm = T), by = id]
-  temp[, n_miss := sum(is.na(ks_call), is.na(hclat_call), is.na(dpra_call)), by = id]
-  temp[, DA_2o3_Call := fcase(
-    n_miss >= 2, as.character(NA),
-    n_pos >= 2, "1",
-    n_neg >= 2, "0",
-    n_pos < 2 & n_neg < 2, "Inconclusive"
-  ), by = id]
+#' Apply the Integrated Testing Strategy defined approach
+#' 
+#' Score KE1 Assay results
+#' @param C_dep A numeric vector corresponding to cysteine or cysteine derivative depletion.
+#' @param L_dep A numeric vector corresponding to lysine or lysine derivative depletion.
+#' @param mean_C_L_dep A numeric vector with the mean cysteine and lysine depletion values.
+#' @param assay "adra" or "dpra"
+#'
+#' @return Scores quantiative results from DPRA or ADRA using the ITS scoring scheme. Returns a data frame.
 
-  temp[, DA_2o3_Call]
-}
-
-# Performs DASS ITS
-# `hclat_mit` - numeric vector containing MIT values. Negative results are 'Inf'
-# `dpra_pC` - numeric vector for %C-depletion
-# `dpra_pK` - numeric vector for %K-depletion
-# `dpra_mean` - numeric vector with the average of `dpra_pc` and `dpra_pk`
-# `insilico_call` - a numeric vector for in silico call prediction from either oecd
-#               qsar toolbox or derek nexus. '0' indicates a
-#               negative call and '1' indicates a positive call
-# `insilico_domain` - a numeric vector for in silico applicability domain from either
-#                 oecd qsar toolbox or derek nexus.
-#                 '0' indicates a prediction outside the
-#                 applicability domain and '1' indicates a prediction within
-#                 the applicability domain
-# Returns a Call and Potency prediction
-
-da_its <- function(hclat_mit, dpra_pC, dpra_pK, dpra_mean, insilico_call, insilico_domain) {
-  temp <- data.table(hclat_mit, dpra_pC, dpra_pK, dpra_mean, insilico_call, insilico_domain)
-  temp[, id := 1:nrow(temp)]
-
-  # Calculate h-CLAT score
-  temp[, hclat_score := fcase(
-    hclat_mit == Inf, 0,
-    is.na(hclat_mit), as.numeric(NA),
-    hclat_mit <= 10, 3,
-    hclat_mit > 10 & hclat_mit <= 150, 2,
-    hclat_mit > 150 & hclat_mit <= 5000, 1
-  ), by = id]
-
-  # Calculate DPRA score
-  temp[, dpra_score := fcase(
-    # No %C-dep
-    is.na(dpra_pC), as.numeric(NA),
-    # No %K-dep
-    is.na(dpra_pK), fcase(
-      dpra_pC >= 98.24, 3,
-      dpra_pC >= 23.09, 2,
-      dpra_pC >= 13.89, 1,
-      dpra_pC < 13.89, 0
+da_its_ke_thresholds <- list(
+  ke1 = list(
+    adra = list(
+      mean_c_l_dep = list(
+        score_breaks = c(-Inf, 4.9, 15.5, 46.4, Inf),
+        score = 0:3
+      ),
+      c_dep = list(
+        score_breaks = c(-Inf, 5.6, 17.5, 67.4, Inf),
+        score = 0:3
+      )
     ),
-    # Both given
-    !is.na(dpra_pC) & !is.na(dpra_pK), fcase(
-      dpra_mean >= 42.47, 3,
-      dpra_mean >= 22.62, 2,
-      dpra_mean >= 6.38, 1,
-      dpra_mean < 6.38, 0
+    dpra = list(
+      mean_c_l_dep = list(
+        score_breaks = c(-Inf, 6.38, 22.62, 42.47, Inf),
+        score = 0:3
+      ),
+      c_dep = list(
+        score_breaks = c(-Inf, 13.89, 23.09, 98.24, Inf),
+        score = 0:3
+      )
     )
-  ), by = id]
-
-  # Calculate in silico tool SCORE
-  temp[, insilico_score := fcase(
-    # outside AD
-    insilico_domain == 0, as.numeric(NA),
-    # no information provided
-    is.na(insilico_call) | is.na(insilico_domain), as.numeric(NA),
-    # Positive
-    insilico_call == 1, 1,
-    # Negative
-    insilico_call == 0, 0
-  ), by = id]
-
-  # Different scoring schemes are used depending on available data sources
-  # Label each row based on available data
-  temp[, flow := fcase(
-    # All 3
-    all(!is.na(c(hclat_score, dpra_score, insilico_score))), "all",
-    # No in silico prediction
-    all(!is.na(hclat_score) & !is.na(dpra_score) & is.na(insilico_score)), "no_ins",
-    # Only h-CLAT and in silico
-    all(!is.na(c(hclat_score, insilico_score))) & is.na(dpra_score), "ins",
-    # Only DPRA and in silico
-    all(!is.na(c(dpra_score, insilico_score))) & is.na(hclat_score), "ins"
-  ), by = id]
-
-  # Calculate total ITS score if at least 2 of 3 assays have data
-  temp[(is.na(hclat_score) + is.na(dpra_score) + is.na(insilico_score)) < 2,
-    its_score := sum(c(hclat_score, dpra_score, insilico_score), na.rm = T),
-    by = id
-  ]
-
-  # Get potency scores
-  # All assays available
-  temp[flow == "all", its_cat := fcase(
-    its_score %in% 6:7, "1A",
-    its_score %in% 2:5, "1B",
-    its_score %in% 0:1, "NC"
-  )]
-  # DPRA, h-CLAT, but no in silico
-  temp[flow == "no_ins", its_cat := fcase(
-    its_score == 6, "1A",
-    its_score == 5, "1*",
-    its_score %in% 2:4, "1B",
-    its_score == 1, "Inconclusive",
-    its_score == 0, "NC"
-  )]
-  # in silico and (DPRA or h-CLAT), with either (DPRA or h-CLAT) not available
-  temp[flow == "ins", its_cat := fcase(
-    its_score %in% 3:4, "1*",
-    its_score == 2, "1B",
-    its_score %in% 0:1, "Inconclusive"
-  )]
-
-  # Use potency scores to derive calls
-  temp[, its_call := fcase(
-    its_cat %in% c("1A", "1*", "1B"), "1",
-    its_cat == "Inconclusive", "Inconclusive",
-    its_cat == "NC", "0"
-  )]
-
-  # Update potency score for 1*
-  temp[its_cat == "1*", its_cat := "Inconclusive"]
-
-  list(
-    ITS_hCLAT_Score = temp$hclat_score,
-    ITS_DPRA_Score = temp$dpra_score,
-    ITS_inSilico_Score = temp$insilico_score,
-    ITS_TotalScore = temp$its_score,
-    ITS_Call = temp$its_call,
-    ITS_Potency = temp$its_cat
+  ),
+  ke3 = list(
+    gardskin = list(
+      score_breaks = c(-Inf, 13.03, 56.44, .Machine$integer.max, Inf),
+      score = 3:0
+    ),
+    hclat = list(
+      score_breaks = c(-Inf, 10, 150, 5000, Inf),
+      score = 3:0
+    ),
+    usens = list(
+      score_breaks = c(-Inf, 3, 35, 200, Inf),
+      score = 3:0
+    )
   )
-}
-# Performs DASS KE 3/1 STS
-# `hclat_mit` - numeric vector containing MIT values. Negative results are 'Inf'
-# `dpra_call` - a numeric vector for DPRA call, where '0' indicates a
-#               negative call and '1' indicates a positive call
-# Returns a Call and Potency prediction
-da_ke31 <- function(hclat_mit, dpra_call) {
-  # Combine data
-  temp <- data.table(hclat_mit, dpra_call)
-  temp[, id := 1:nrow(temp)]
+)
 
-  temp[, KE31STS_Call := fcase(
-    hclat_mit == Inf, dpra_call, # if negative h-clat, use dpra
-    is.na(hclat_mit), as.numeric(NA), # if no h-clat, NA
-    !is.na(hclat_mit), 1 # if MIT exists and != Inf, positive
-  ), by = id]
+#' Assign call and potency using ITS scores
+#' @param ke1_score A numeric vector of integers from 0-3 corresponding to ITS scores for KE1 assays
+#' @param ke3_score A numeric vector of integers from 0-3 corresponding to ITS scores for KE3 assays
+#' @param is_score A numeric vector of 0s and 1s corresponding to ITS scores for in silico predictions
+#'
+#' @return Call and Potency
 
-  temp[, KE31STS_Potency := fcase(
-    is.na(hclat_mit), as.character(NA), # if no h-clat, NA
-    hclat_mit == Inf & dpra_call == 1, "1B", # if neg hclat and pos dpra, weak sensitizer
-    hclat_mit == Inf & dpra_call == 0, "NC", # if neg hclat and neg dpra, not classified(?)
-    hclat_mit == Inf & is.na(dpra_call), as.character(NA), # if neg hclat and no dpra, NA
-    hclat_mit <= 10, "1A", # strong sensitizer
-    hclat_mit > 10 & hclat_mit < 5000, "1B" # weak sensitizer
-  ), by = id]
+daITS <- function(
+    ke1_assay, ke1_mean_c_l_dep = NULL, ke1_c_dep = NULL,
+    ke3_assay, ke3_value = NULL,
+    insil_prediction = NULL, insil_ad = NULL) {
+  
+  values <- list(ke1_mean_c_l_dep = ke1_mean_c_l_dep, 
+                 ke1_c_dep = ke1_c_dep,
+                 ke3_value = ke3_value, 
+                 insil_prediction = insil_prediction, 
+                 insil_ad = insil_ad)
+  arg_len <- sapply(values, length)
+  nonzero <- arg_len[arg_len != 0]
+  
+  if (length(nonzero) == 0) {
+    stop ("Insufficient assay data.")
+  }
+  
+  if (length(unique(nonzero)) > 1) {
+    stop ("Inputs should be the same length.")
+  }
+  
+  nz <- nonzero[1]
+  
+  values <- lapply(values, function(x) {
+    if (is.null(x)) {
+      rep(NA, nz)
+    } else {
+      x
+    }
+  })
+  
+  ke1_use_mean <- !is.na(values$ke1_mean_c_l_dep)
+  ke1_use_c <- is.na(values$ke1_mean_c_l_dep) & !is.na(values$ke1_c_dep)
+  ke1_score <- rep(NA, nz)
+  
+  if (any(ke1_use_mean)) {
+    ke1_score[ke1_use_mean] <- as.numeric(as.character(cut(
+      values$ke1_mean_c_l_dep[ke1_use_mean],
+      breaks = da_its_ke_thresholds$ke1[[ke1_assay]]$mean_c_l_dep$score_breaks,
+      labels = da_its_ke_thresholds$ke1[[ke1_assay]]$mean_c_l_dep$score)))
+  }
+  
+  if (any(ke1_use_c)) {
+    ke1_score[ke1_use_c] <- as.numeric(as.character(cut(
+      values$ke1_c_dep[ke1_use_c],
+      breaks = da_its_ke_thresholds$ke1[[ke1_assay]]$c_dep$score_breaks,
+      labels = da_its_ke_thresholds$ke1[[ke1_assay]]$c_dep$score)))
+  }
 
-  list(
-    KE31STS_Call = temp$KE31STS_Call,
-    KE31STS_Potency = temp$KE31STS_Potency
+  if (!all(is.na(values$ke3_value))) {
+    ke3_score <- as.numeric(as.character(cut(
+      values$ke3_value,
+      breaks = da_its_ke_thresholds$ke3[[ke3_assay]]$score_breaks,
+      labels = da_its_ke_thresholds$ke3[[ke3_assay]]$score)))
+  }
+
+  insil_score <- values$insil_prediction
+  insil_score[is.na(values$insil_ad) | values$insil_ad == 0] <- NA
+  
+  scores <- data.frame(ke1_score, ke3_score, insil_score)
+  scores$total_score<- rowSums(scores, na.rm = T)
+  
+  scores$total_score[sum(!is.na(scores$total_score)) < 2] <- NA
+  scores$hazard <- NA
+  scores$potency <- NA
+  
+  score_1 <- !is.na(ke1_score) & !is.na(ke3_score) & !is.na(insil_score)  
+  score_2 <- !is.na(ke1_score) & !is.na(ke3_score) & is.na(insil_score)  
+  score_3 <- (is.na(ke1_score) & !is.na(ke3_score) & !is.na(insil_score)) | (!is.na(ke1_score) & is.na(ke3_score) & !is.na(insil_score))  
+  
+  scores$potency[score_1] <- as.character(cut(
+    scores$total_score[score_1],
+    breaks = c(0,2,6,7),
+    labels = c("NC", "1B", "1A"),
+    include.lowest = T,
+    right = F
+  ))
+  
+  scores$potency[score_2] <- as.character(cut(
+    scores$total_score[score_2],
+    breaks = c(0,1,2,5,6,6.01),
+    labels = c("NC", "Inconclusive", "1B", "1*", "1A"),
+    include.lowest = T,
+    right = F
+  ))
+  
+  scores$potency[score_3] <- as.character(cut(
+    scores$total_score[score_3],
+    breaks = c(0,2,3,5),
+    labels = c("Inconclusive", "1B", "1*"),
+    include.lowest = T,
+    right = F
+  ))
+
+  scores$hazard[scores$potency == "NC"] <- "Negative"
+  scores$hazard[scores$potency %in% c("1A", "1B", "1*")] <- "Positive"
+  scores$hazard[scores$potency == "Inconclusive"] <- "Inconclusive"
+  scores$potency[scores$potency == "1*"] <- "Inconclusive"
+
+  out <- data.frame(
+    as.data.frame(values),
+    scores
   )
+  
+  return(out)
 }
 
-# Creates exact match for multiple strings for grepping
-# `vector` - character vector
-# Returns a query string for mattching multiple patterns
-concatOrString <- function(vector) {
-  paste(sprintf("^%s$", vector), collapse = "|")
-}
-
-roundPercent <- function(x, digits = 0) {
-  paste0(round(x * 100, digits = digits), "%")
+#' Apply the Key Event 3/1 Sequential Testing Strategy defined approach
+#'
+#'ke1_call
+#'ke3_value
+#'
+#' @return Skin sensitization hazard and potency prediction.
+daKE31 <- function(ke1_call, ke3_value) {
+  
+  out <- data.frame(
+    ke1_call,
+    ke3_value,
+    hazard = NA,
+    potency = NA
+  )
+  
+  out$potency[ke3_value >= 9999 & ke1_call == 0] <- "NC"
+  out$potency[ke3_value >= 9999 & ke1_call == 1] <- "1B"
+  out$potency[ke3_value <= 10] <- "1A"
+  out$potency[ke3_value > 10 & ke3_value < 9999] <- "1B"
+  
+  out$hazard[out$potency == "NC"] <- "Negative"
+  out$hazard[out$potency %in% c("1A", "1B")] <- "Positive"
+  
+  return(out)
 }
 
 # `pred` - factor vector with 0/1
 # `ref` - factor vector with 0/1. reference for comparing against pred
 # Calculates binary performance metrics
-compareBinary <- function(pred, ref) {
+compareBinary <- function(pred, ref, predCol = NULL, refCol = NULL) {
   if (!all(na.omit(pred) %in% c(0,1, "Inconclusive"))) {
     stop("`pred` should be a factor with levels = c(0,1, Inconclusive)")
   }
@@ -405,71 +271,70 @@ compareBinary <- function(pred, ref) {
     stop("`pred` and `ref` should be the same length")
   }
   
-  # Keep only cases with reference data
-  refNA <- is.na(ref)
-  ref <- ref[!refNA]
-  pred <- pred[!refNA]
-  
-  # Check number of pairs
-  n <- length(ref)
+  # Count non-missing
+  anyMiss <- is.na(ref) | is.na(pred)
+  n <- sum(!anyMiss)
   if (n < 5) {
     stop("Fewer than 5 non-missing pairs")
   }
-
+  
   pred <- factor(pred, levels = c("1", "0", "Inconclusive"), labels = c("Positive", "Negative", "Inconclusive"))
   pred <- droplevels(pred)
   ref <- factor(ref, levels = c("1", "0"), labels = c("Positive", "Negative"))
   ref <- droplevels(ref)
   
-  cm <- table(pred, ref, useNA = "ifany")
-  cm_dt <- data.table(cm)
-  tp <- cm_dt[pred == "Positive" & ref == "Positive", sum(N, na.rm = T)]
-  fp <- cm_dt[pred == "Positive" & ref == "Negative", sum(N, na.rm = T)]
-  tn <- cm_dt[pred == "Negative" & ref == "Negative", sum(N, na.rm = T)]
-  fn <- cm_dt[pred == "Negative" & ref == "Positive", sum(N, na.rm = T)]
-
-  acc <- (tp + tn)/n
-  tpr <- tp/(sum(ref == "Positive"))
-  fpr <- fp/(sum(ref == "Negative"))
-  tnr <- tn/(sum(ref == "Negative"))
-  fnr <- fn/(sum(ref == "Positive"))
-  balAcc <- (tpr + tnr)/2
+  ref_pred_comp <- fcase(
+    ref == "Positive" & pred == "Positive", "TP",
+    ref == "Negative" & pred == "Positive", "FP",
+    ref == "Positive" & pred == "Negative", "FN",
+    ref == "Negative" & pred == "Negative", "TN"
+  )
+  
+  
+  N <- sum(!is.na(ref_pred_comp))
+  tp <- sum(na.omit(ref_pred_comp == "TP"))
+  fp <- sum(na.omit(ref_pred_comp == "FP"))
+  fn <- sum(na.omit(ref_pred_comp == "FN"))
+  tn <- sum(na.omit(ref_pred_comp == "TN"))
+  
+  acc <- (tp + tn)/N
+  sens <- tp/(tp + fn)
+  spec <- tn/(tn + fp)
+  balAcc <- (sens + spec)/2
   f1 <- (2*tp)/((2*tp) + fp + fn)
   
-  vals <- list(
-    N = sum(cm),
-    truePositive = tp,
-    falsePositive = fp,
-    trueNegative = tn,
-    falseNegative = fn,
-    accuracy = acc,
-    balancedAccuracy = balAcc,
-    f1Score = f1,
-    truePositiveRate = tpr,
-    falsePositiveRate = fpr,
-    trueNegativeRate = tnr,
-    falseNegativeRate = fnr
+  perf_tab <- list(
+    N = N, 
+    `True Positive` = tp,
+    `False Positive` = fp,
+    `False Negative` = fn,
+    `True Negative` = tn,
+    Sensitivity = sens,
+    Specificity = spec,
+    `Balanced Accuracy` = balAcc,
+    Accuracy = acc,
+    `F1 Score` = f1
   )
-  
-  figs <- list(
-    cm = draw_CM(cm),
-    mets = draw_metTab(list(
-      N = sum(cm),
-      accuracy = roundPercent(acc),
-      balancedAccuracy = roundPercent(balAcc),
-      f1Score = roundPercent(f1),
-      truePositiveRate = roundPercent(tpr),
-      falsePositiveRate = roundPercent(fpr),
-      trueNegativeRate = roundPercent(tnr),
-      falseNegativeRate = roundPercent(fnr)))
-  )
+  perf_tab <- lapply(perf_tab, function(x) {names(x) <- "Value"; return(x)})
 
-  return(list(vals = vals, figs = figs))
+  cm <- draw_CM(table(pred, ref))
+  perf_fig <- draw_metTab(perf_tab)
+  ref_pred_comp <- factor(ref_pred_comp, levels = c("NA", "TP", "TN", "FP", "FN"), labels = c("NA", "True Positive", "True Negative", "False Positive", "False Negative"))
+  ref_pred_comp[is.na(ref_pred_comp)] <- "NA"
+  ref_pred_comp <- droplevels(ref_pred_comp)
+   return(list(
+    indiv = ref_pred_comp,
+    perf_list = perf_tab,
+    fig = tableArrange(tab_list = list(cm, perf_fig),
+                       refCol = refCol,
+                       predCol = predCol)
+  ))
 }
+
 # `pred` - factor vector with 1A/1B/NC
 # `ref` - factor vector with 1A/1B/NC. reference for comparing against pred
 # Calculates categorical performance metrics
-compareCat <- function(pred, ref) {
+compareCat <- function(pred, ref, predCol = NULL, refCol = NULL) {
   if (!all(na.omit(pred) %in% c("1A", "1B", "NC", "Inconclusive"))) {
     stop("`pred` should be a factor with levels = c('1A', '1B', 'NC', 'Inconclusive')")
   }
@@ -480,50 +345,76 @@ compareCat <- function(pred, ref) {
     stop("`pred` and `ref` should be the same length")
   }
   
-  # Keep only cases with reference data
-  refNA <- is.na(ref)
-  ref <- ref[!refNA]
-  pred <- pred[!refNA]
-  
-  # Check number of pairs
-  n <- length(ref)
-  if (n <= 5) {
+  # Count non-missing
+  anyMiss <- is.na(ref) | is.na(pred)
+  n <- sum(!anyMiss)
+  if (n < 5) {
     stop("Fewer than 5 non-missing pairs")
   }
   
-  if (!is.ordered(pred)) pred <- factor(pred, levels = c("1A", "1B", "NC", "Inconclusive"), ordered = T)
-  if (!is.ordered(ref)) ref <- factor(ref, levels = c("1A", "1B", "NC"), ordered = T)
+  # pred <- factor(pred, levels = c("1A", "1B", "NC", "Inconclusive"))
+  # pred <- droplevels(pred)
+  # ref  <- factor(ref, levels = c("1A", "1B", "NC"))
+  # ref <- droplevels(ref)
 
-  predLev <- factor(pred, levels = c("1A", "1B", "NC"), ordered = T)
-  
-  acc <- mean(predLev == ref, na.rm = T)
-  under <- mean(predLev > ref, na.rm = T)
-  over <- mean(predLev < ref, na.rm = T)
+  ref_pred <- data.table(pred, ref)
+  ref_pred[,comp := fcase(
+    ref == "1A" & pred == "1A", "1A",
+    ref == "1A" & (pred == "1B" | pred == "NC"), "UP",
+    ref == "1B" & pred == "1B", "1B",
+    ref == "1B" & pred == "NC", "UP",
+    ref == "1B" & pred == "1A", "OP",
+    ref == "NC" & pred == "NC", "NC",
+    ref == "NC" & (pred == "1A" | pred == "1B"), "OP"
+  )]
 
-  pred <- droplevels(pred)
-  ref <- droplevels(ref)
+  N <- ref_pred[!is.na(comp), .N]
+  acc <- ref_pred[!is.na(comp), mean(comp %in% c("1A", "1B", "NC"))]
+  under <- ref_pred[!is.na(comp), mean(comp == "UP")]
+  over <- ref_pred[!is.na(comp), mean(comp == "OP")]
   
-  cm <- table(pred, ref)
+  perf_tab <- list(
+    N = N,
+    Accuracy = acc,
+    Overpredicted = over,
+    Underpredicted = under
+  )
+  perf_tab <- lapply(perf_tab, function(x) {names(x) <- "Value"; return(x)})
   
-  vals <- list(
-    confusionMatrix = cm,
-    N = n,
-    accuracy = acc,
-    overpredicted = over,
-    underpredicted = under
+  class_perf <- lapply(c("1A", "1B", "NC"), function(i) {
+    sensitivity <- ref_pred[!is.na(comp) & ref == i, mean(comp %in% c("1A", "1B", "NC"))]
+    specificity <- ref_pred[!is.na(comp) & ref != i, mean(pred != i)]
+    list(
+      Sensitivity = sensitivity,
+      Specificity = specificity,
+      `Balanced Accuracy` = (sensitivity + specificity)/2
+    )
+  })
+  names(class_perf) <- c("1A", "1B", "NC")
+  class_perf <- list(Sensitvity = sapply(class_perf, function(x) x[["Sensitivity"]]),
+                     Specificity = sapply(class_perf, function(x) x[["Specificity"]]),
+                     `Balanced Accuracy` = sapply(class_perf, function(x) x[["Balanced Accuracy"]]))
+  
+  cm <- draw_CM(table(pred, ref))
+  perf_fig <- draw_metTab(perf_tab)
+  perf_class_fig <- draw_metTab(class_perf)
+  
+  ref_pred_comp <- factor(ref_pred[["comp"]], levels = c("NA", "NC", "1B", "1A", "OP", "UP"), labels = c("NA", "True NC", "True 1B", "True 1A", "Overpredicted", "Underpredicted"))
+  ref_pred_comp[is.na(ref_pred_comp)] <- "NA"
+  ref_pred_comp <- droplevels(ref_pred_comp)
+  
+  return(
+    list(
+      indiv = ref_pred_comp,
+      perf_list = perf_tab,
+      fig = tableArrange(
+        tab_list = list(cm, perf_fig, perf_class_fig),
+        refCol = refCol,
+        predCol = predCol
+      )
+    )
   )
   
-  figs <- list(
-    cm = draw_CM(cm),
-    mets = draw_metTab(list(
-      N = n,
-      accuracy = roundPercent(acc),
-      overpredicted = roundPercent(over),
-      underpredicted = roundPercent(under)
-    ))
-  )
-
-  return(list(vals = vals, figs = figs))
 }
 
 draw_CM <- function(cm) {
@@ -594,16 +485,31 @@ draw_CM <- function(cm) {
 }
 
 draw_metTab <- function(named_list, fixNames = T) {
-  metricLabels <- gsub("([[:upper:]])", "_\\1", names(named_list)) |>
-    strsplit(split = "_")
-  metricLabels <- sapply(X = metricLabels, paste, collapse = " ")
-  metricLabels <- gsub("^(.){1}", "\\U\\1", x = metricLabels, perl = T) |>
-    trimws()
+  metricLabels <- names(named_list)
+  if (fixNames) {
+    metricLabels <- gsub("([[:upper:]])", "_\\1", metricLabels) |>
+      strsplit(split = "_")
+    metricLabels <- sapply(X = metricLabels, paste, collapse = " ")
+    metricLabels <- gsub("^(.){1}", "\\U\\1", x = metricLabels, perl = T) |>
+      trimws()
+  }
   
-  df <- data.frame(Metric = metricLabels, Value = unlist(named_list))
-  tab <- tableGrob(df, rows = NULL, cols = c("Metric", "Value"))
+  named_list <- lapply(names(named_list), function(x) {
+    tmp <- named_list[[x]]
+    x_names <- names(tmp)
+    if (typeof(tmp) == "double") tmp <- roundPercent(tmp)
+    tmp <- structure(as.character(tmp), names = x_names)
+    return(c(Metric = x, tmp))
+  })
+  
+  
+  # df <- data.frame(Metric = metricLabels, Value = unlist(named_list))
+  df <- data.frame(do.call("rbind", named_list), check.names = F)
+  
+  tab <- tableGrob(df, rows = NULL, cols = names(df))
+  
+  
   metCol <- tab$layout$l == 1 & tab$layout$t != 1
-  valCol <- tab$layout$r == 2 & tab$layout$t != 1
   header <- tab$layout$t == 1
   
   rectCells <- sapply(tab$grobs, function(x) grepl("rect", x))
@@ -618,7 +524,7 @@ draw_metTab <- function(named_list, fixNames = T) {
     return(x)
   })
   
-  tab$grobs[valCol & rectCells] <- lapply(tab$grobs[valCol & rectCells], function(x) {
+  tab$grobs[!(header | metCol) & rectCells] <- lapply(tab$grobs[!(header | metCol) & rectCells], function(x) {
     x$gp$fill <- "white"
     return(x)
   })
@@ -626,11 +532,26 @@ draw_metTab <- function(named_list, fixNames = T) {
   return(tab)
 }
 
+tableArrange <- function(tab_list, refCol = NULL, predCol = NULL) {
+  if (is.null(refCol)) refCol <- "Reference Column"
+  if (is.null(predCol)) predCol <- "Prediction Column"
+  
+  
+  lay_mat <- unlist(lapply(1:length(tab_list), function(x) {
+    rep(x, ceiling(length(tab_list[[x]]$heights) * 1.5))
+  }))
+  lay_mat <- matrix(c(1:3, lay_mat + 3))
 
-
-
-
-
-
-
-
+  tabFig <- arrangeGrob(
+    grobs =   c(
+      list(
+        textGrob(label = "Confusion Matrix and Performance Metrics", gp = gpar(font = 2, cex = 1.25)),
+        textGrob(label = paste("Reference Column: ", refCol)),
+        textGrob(label = paste("Prediction Column:", predCol))
+      ), tab_list
+    ),
+      layout_matrix = lay_mat
+  )
+  
+  return(tabFig)
+}

@@ -22,6 +22,7 @@ require(ggplot2)
 require(grid)
 require(gridExtra)
 require(openxlsx)
+require(plotly)
 require(readxl)
 require(shiny)
 require(shinyBS)
@@ -30,6 +31,8 @@ require(shinyjs)
 
 # Load functions
 source("R/dass_predict.R")
+source("R/interpret_assay.R")
+source("R/utils.R")
 
 # Load ui from file
 source("R/ui_obj.R")
@@ -44,7 +47,7 @@ ui <- fluidPage(
   htmltools::findDependencies(icon("box", lib = "font-awesome")),
   ui_dass,
   # for debugging
-  # div(style = "position: fixed; top: 0;", actionButton("browser", "browser")),
+  div(style = "position: fixed; top: 0;", actionButton("browser", "browser")),
   tags$footer(
     tags$script(src = "js.js")
   )
@@ -52,19 +55,18 @@ ui <- fluidPage(
 
 attr(ui, "lang") <- "en"
 
+
 # Read in server files
 server <- function(input, output, session) {
-  source("R/server/Step1-Select.R", local = TRUE)
   source("R/server/Step2-UploadData.R", local = TRUE)
   source("R/server/Step3-SelectColumns.R", local = TRUE)
   source("R/server/Step4-ReviewColumns.R", local = TRUE)
   source("R/server/Step5-Results.R", local = TRUE)
   source("R/server/Step6-Performance.R", local = TRUE)
-
   # for debugging
-  # observeEvent(input$browser,{
-  #   browser()
-  # })
+  observeEvent(input$browser,{
+    browser()
+  })
 }
 
 # Create App -----
