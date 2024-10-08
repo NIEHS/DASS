@@ -11,16 +11,12 @@
 
 # Function to read in data
 # `fpath` - user-supplied path to data file
-read_data <- function(fpath, sheet = 1) {
-  if (grepl("txt$|tsv$|csv$", fpath)) {
-    fread(fpath, colClasses = "character", na.strings = c("", "na", "NA"))
-  } else if (grepl("xls$|xlsx$", fpath)) {
-    # Read columns in as list to prevent displaying converted floats
-    tmp <- data.table(read_excel(fpath, sheet = sheet, na = c("NA", ""), col_types = "list"))
-    tmp[,lapply(.SD, function(x) as.character(unlist(x)))]
-  } else {
-    stop("Incorrect file extension.")
-  }
+read_excel_dass <- function(fpath, sheet = 1) {
+  # Read columns in as list to prevent displaying converted floats
+  tryCatch({
+    tmp <- read_excel(fpath, sheet = sheet, na = c("NA","na", ""), col_types = "list")
+    data.frame(lapply(tmp, unlist))
+  }, error = function(e) {e})
 }
 
 # grep functions for case-insensitive matching
@@ -48,4 +44,19 @@ info_button <- function(button_id,
       aria_label
     )
   )
+}
+
+
+showHide <- function(show = NULL, hide = NULL) {
+  if (!is.null(show)) {
+    for (i in show) {
+      shinyjs::show(i)
+    }
+  }
+  
+  if (!is.null(hide)) {
+    for (i in hide) {
+      shinyjs::hide(i)
+    }
+  }
 }

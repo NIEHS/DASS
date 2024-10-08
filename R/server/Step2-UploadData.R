@@ -1,48 +1,54 @@
-# =============================================================================#
-# File Name: Step2-UploadData.R
-# Original Creator: ktto
-# Contact Information: ICE-support@niehs.nih.gov
-# Date Created: 2021-02-10
-# License: MIT
-# Description: server file that sets up reactive values and loads user data
-# Required Packages:
-# - data.table, DT
-# - readxl
-# - shiny shinyjs
-# =============================================================================#
-
-# Step 2: Upload Data -----
-
+# UPLOAD DATA =====
 ## Reactive Values -----
+blr <- reactiveVal(FALSE)
+blrSheets <- reactiveVal()
 usr_dt <- reactiveVal()
 dt_analyze <- reactiveVal()
 demo_data <- reactiveVal()
-xl_sheet <- reactiveVal()
-numeric_data <- reactiveVal()
 
 ## Update Tab -----
 observeEvent(input$confirm_da, {
-
-  # if (!is.null(dass_choice())) {
-  #   shinyjs::runjs("resetHidden(false);")
-  #   shinyjs::runjs("rmDPRAListener();")
-  # }
-
-  ###
-  # Hide/Show UI given 2o3 BLR select
-  ###
+  for (i in tabNames[3:6]) shinyjs::runjs(sprintf("resetHiddenTab('%s');", i))
+  shinyjs::reset(id = "select_col_ui_all")
+  shinyjs::reset(id = "compare_setup_standard")
   
   updateTabsetPanel(inputId = "step_set", selected = "Upload Data")
-  shinyjs::runjs("$('#step_set')[0].scrollIntoView();")
+  shinyjs::show("upload_data_ui")
+  
+  if (input$selected_da == "da_2o3" & !is.null(input$do_da_2o3_bl)) {
+    if (!blr()) { 
+      dt_analyze(NULL)
+      shinyjs::reset(id = "upload_data_ui")
+    }
+    blr(TRUE)
+    showHide(
+      show = c("upload_blr_data_text", "blr_data_worksheet_select_block", "upload_block"),
+      hide = c("upload_data_text", "use_demo_data_cb")
+    )
+  } else {
+    if (blr()) { 
+      dt_analyze(NULL)
+      shinyjs::reset(id = "upload_data_ui")
+      shinyjs::reset(id = "do_da_2o3_bl")
+    }
+    blr(FALSE)
+    showHide(
+      show = c("upload_data_text", "use_demo_data_cb"),
+      hide = c("upload_blr_data_text", "blr_data_worksheet_select_block")
+    )
+  }
 })
 
 ## Upload User Data -----
 observeEvent(input$fpath, {
+  usr_dt(NULL)
+  dt_analyze(NULL)
+  
   # Check file extension
   ext <- unlist(strsplit(input$fpath$name, "[.]"))
   ext <- ext[length(ext)]
 
-  if (input$selected_da == "da_2o3" & input$do_da_2o3_bl) {
+  if (input$selected_da == "da_2o3" & blr()) {
     ext_ok <- c("xls", "xlsx")
   } else {
     ext_ok <- c("csv", "tsv", "txt", "xls", "xlsx")
@@ -52,28 +58,36 @@ observeEvent(input$fpath, {
   if (!ext_valid) {
     showNotification(
       type = "error",
-      sprintf("Incorrect file type. Accepted file extensions: %s", paste(ext_ok, collapse = ", ")),
-      duration = 10
+      sprintf("Invalid file type. Accepted file extensions: %s", paste(ext_ok, collapse = ", ")),
+      duration = Inf
     )
     req(ext_valid)
   }
-
-  if (input$selected_da == "da_2o3" & input$do_da_2o3_bl) {
-    # Show UI for Processing
+  
+  if (blr()) {
     sheets <- readxl::excel_sheets(input$fpath$datapath)
     if (length(sheets) <= 2) {
-      showNotification("Expected at least 3 worksheets in file.", type = "warning")
+      shinyjs::show(id = "blr_ws_warn")
+    } else {
+      shinyjs::hide(id = "blr_ws_warn")
     }
-    
+    updateSelectInput(inputId = "blr_data_worksheet_select", choices = sheets)
 
+    blr_sheets <- lapply(sheets, function(sheet) {
+      read_excel_dass(input$fpath$datapath, sheet = sheet)
+    })
+    names(blr_sheets) <- sheets
+    blrSheets(blr_sheets)
     
+    shinyjs::show("blr_data_worksheet_select")
     
   } else {
-    if (grepl("^xls$|^xlsx$", ext)) {
+    if (grepl("^xls|^xlsx", ext)) {
       sheets <- readxl::excel_sheets(input$fpath$datapath)
       if (length(sheets) == 1) {
-        xl_sheet(1)
-        load_data()
+        updateSelectInput(inputId = "xl_sheet_list", selected = "1")
+        usr_dt(read_excel_dass(fpath = input$fpath$datapath, sheet = 1))
+        dt_analyze(usr_dt())
       } else if (length(sheets) > 1) {
         # Render error (workaround to show error with easyclose)
         sheet_text_ui <- span(
@@ -84,103 +98,25 @@ observeEvent(input$fpath, {
         output$xl_sheet_text_ui <- renderUI({
           sheet_text_ui
         })
-        
-        shinyjs::show("xl_sheet_text_ui")
-        
+
         # Show excel worksheet selector
         updateSelectInput(session, "xl_sheet_list", choices = sheets)
         toggleModal(session, "xl_select_modal", toggle = "open")
+        
+        shinyjs::show("xl_sheet_text_ui")
       }
+    } 
+      
+    if (grepl("^csv$|^tsv$|^txt$", ext)) {
+      usr_dt(data.frame(fread(input$fpath$datapath, colClasses = "character", na.strings = c("", "na", "NA"))))
+      dt_analyze(usr_dt())
+      
+      shinyjs::hide("xl_sheet_text_ui")
     }
     
-    if (grepl("^csv$|^tsv$|^txt$", ext)) {
-      shinyjs::hide("xl_sheet_text_ui")
-      # Data are automatically read in
-      load_data()
-    }
+    shinyjs::hide("blr_data_worksheet_select")
   }
-
-}, ignoreInit = T)
-
-## Load Demo Data -----
-observeEvent(input$use_demo_data, {
-  if (input$use_demo_data) {
-    demo_data(fread("www/dassAppDemoData-fromGL497Annex2.csv", na.strings = c("", "na", "NA")))
-    dt_analyze(demo_data())
-
-    numeric_data(lapply(dt_analyze(), function(x) {
-      if (is.numeric(x)) x
-    }))
-
-    shinyjs::hide("upload_block")
-  }
-
-  if (!input$use_demo_data) {
-    shinyjs::show("upload_block")
-    if (is.null(usr_dt())) {
-      dt_analyze(NULL)
-      numeric_data(NULL)
-    } else {
-      dt_analyze(usr_dt())
-      numeric_data(lapply(dt_analyze(), function(x) {
-        check_num <- sum(grepl("^[-]{0,1}[0-9]{0,}.{0,1}[0-9]{1,}[eE]{0,1}[-]{0,1}[0-9]{0,1}$", x), na.rm = T)
-        if (check_num >= 5) x
-      }))
-    }
-  }
-})
-
-## Upload User Data -----
-load_data <- reactive({
-  usr_dt(read_data(input$fpath$datapath, sheet = xl_sheet()))
-  dt_analyze(usr_dt())
-})
-
-# observeEvent(input$fpath, {
-#   # Check file extension
-#   ext <- unlist(strsplit(input$fpath$name, "[.]"))
-#   ext <- ext[length(ext)]
-#   ext_valid <- grepl("^csv$|^tsv$|^txt$|^xls$|^xlsx$", ext)
-# 
-#   if (!ext_valid) {
-#     showNotification(
-#       type = "error",
-#       "Incorrect file type. Accepted file extensions: csv, tsv, txt, xlsx",
-#       duration = 10
-#     )
-#     req(ext_valid)
-#   }
-# 
-#   if (grepl("^xls$|^xlsx$", ext)) {
-#     sheets <- readxl::excel_sheets(input$fpath$datapath)
-#     if (length(sheets) == 1) {
-#       xl_sheet(1)
-#       load_data()
-#     } else if (length(sheets) > 1) {
-#       # Render error (workaround to show error with easyclose)
-#       sheet_text_ui <- span(
-#         span(style = "font-weight:bold;", "Error: No Excel worksheet selected!"),
-#         actionLink(inputId = "button_choose_xl_sheet",
-#                    label = "Open worksheet selector"),
-#       )
-#       output$xl_sheet_text_ui <- renderUI({
-#         sheet_text_ui
-#       })
-# 
-#       shinyjs::show("xl_sheet_text_ui")
-# 
-#       # Show excel worksheet selector
-#       updateSelectInput(session, "xl_sheet_list", choices = sheets)
-#       toggleModal(session, "xl_select_modal", toggle = "open")
-#     }
-#   }
-# 
-#   if (grepl("^csv$|^tsv$|^txt$", ext)) {
-#     shinyjs::hide("xl_sheet_text_ui")
-#     # Data are automatically read in
-#     load_data()
-#   }
-# }, ignoreInit = T)
+}, ignoreInit = TRUE)
 
 # User confirms a worksheet in the modal
 observeEvent(input$confirm_xl_sheet, {
@@ -197,8 +133,8 @@ observeEvent(input$confirm_xl_sheet, {
     sheet_text_ui
   })
 
-  xl_sheet(input$xl_sheet_list)
-  load_data()
+  usr_dt(read_excel_dass(fpath = input$fpath$datapath, sheet = input$xl_sheet_list))
+  dt_analyze(usr_dt())
 
   shinyjs::show("xl_sheet_text_ui")
   toggleModal(session, "xl_select_modal", toggle = "close")
@@ -219,14 +155,11 @@ observeEvent(input$button_choose_xl_sheet, {
   toggleModal(session, "xl_select_modal", toggle = "open")
 })
 
-observeEvent(dt_analyze(), {
-  if (is.null(dt_analyze())) {
-    shinyjs::hide("data_block")
-  } else {
-    shinyjs::show("data_block")
-  }
-  shinyjs::runjs("resetHidden(false);")
-}, ignoreNULL = F)
+# Borderline table selector
+observeEvent(input$blr_data_worksheet_select, {
+  req(blr())
+  dt_analyze(blrSheets()[[input$blr_data_worksheet_select]])
+})
 
 ## Tables -----
 output$dt_analyze <- DT::renderDataTable({
@@ -235,8 +168,38 @@ output$dt_analyze <- DT::renderDataTable({
             options = list(
               scrollY = TRUE,
               scrollX = TRUE,
-              rowCallback = JS("showNA")
+              rowCallback = JS(sprintf("function(row, data) {%s}", showNA_js))
             ),
             callback = JS("$('#dt_analyze .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))")
   )
+})
+
+observeEvent(dt_analyze(), {
+  if (is.null(dt_analyze())) {
+    shinyjs::hide("data_block")
+  } else {
+    shinyjs::show("data_block")
+  }
+  # shinyjs::runjs("resetHidden(false);")
+}, ignoreNULL = F)
+
+## Load Demo Data -----
+observeEvent(input$use_demo_data, {
+  if (input$use_demo_data) {
+    if (is.null(demo_data())) {
+      demo_data(data.frame(fread("www/DASS_demo_data.csv", na.strings = c("", "na", "NA"))))
+    }
+    
+    dt_analyze(demo_data())
+    shinyjs::hide("upload_block")
+  }
+
+  if (!input$use_demo_data) {
+    shinyjs::show("upload_block")
+    if (is.null(usr_dt())) {
+      dt_analyze(NULL)
+    } else {
+      dt_analyze(usr_dt())
+    }
+  }
 })

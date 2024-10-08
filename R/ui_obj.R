@@ -1,18 +1,72 @@
-# =============================================================================#
-# File Name: ui.R
-# Original Creator: Kim To
-# Contact Information: ICE-support@niehs.nih.gov
-# Date Created: 2021-12-03
-# License: MIT
-# Description: Builds UI
-# Required Packages:
-# - data.table, DT
-# - htmltools
-# - shiny shinyBS shinyjs
-# =============================================================================#
-
-source("R/modifyCollapses.R")
 source("R/modals.R")
+
+abbrev <- c(
+  da_2o3 = "2o3",
+  da_its = "ITS",
+  da_ke31 = "KE 3/1 STS",
+  
+  adra = "ADRA",
+  dpra = "DPRA",
+  ks = "KeratinoSens",
+  lusens = "LuSens",
+  gard = "GARDskin",
+  hclat = "h-CLAT",
+  il8 = "IL-8 Luc",
+  usens = "U-SENS"
+)
+
+column_text_labels <- c(
+  ke1_call_col = "KE1 Call",
+  ke1_mean_c_l_dep_col = "KE1 Mean Depletion",
+  ke1_c_dep_col = "KE1 Cys/NAC Depletion",
+  ke1_l_dep_col = "KE1 Lys/NAL Depletion",
+  ke2_call_col = "KE2 Call",
+  ke3_call_col = "KE3 Call",
+  ke3_val_col = "KE3 Quantiative Value",
+  insil_call_col = "In Silico Call",
+  insil_ad_col = "In Silico Applicability Domain",
+  
+  ke1_blr_cid_col = "Chemical Identifier",
+  ke1_blr_c_dep_col = "Cys/NAC Depletion (%)",
+  ke1_blr_l_dep_col = "Lys/NAL Depletion (%)",
+  ke1_blr_c_only_col = "Cys-Only Indicator",
+  
+  ke2_blr_cid_col = "Chemical Identifier",
+  ke2_blr_ks_call_col = "KeratinoSens Outcome",
+  ke2_blr_run_col = "Run Identifier",
+  ke2_blr_conc_col = "Concentration",
+  ke2_blr_fi_col = "Fold Induction",
+  ke2_blr_cv_col = "Cell Viability (%)",
+  ke2_blr_p_col = "T Test p-value",
+  
+  ke3_blr_cid_col = "Chemical Identifier",
+  
+  ke3_blr_gard_meanDV_col = "GARDSkin Mean DV",
+  ke3_blr_run_col = "Run Identifier",
+  ke3_blr_conc_col = "Concentration",
+  ke3_blr_hclat_cd54_col = "H-CLAT CD54 RFI",
+  ke3_blr_hclat_cd86_col = "H-CLAT CD86 RFI",
+  ke3_blr_hclat_cv_col = "H-CLAT Viability (%)",
+  
+  ke3_blr_il8_ind_col = "IL-8 Luc Ind-IL8LA",
+  ke3_blr_il8_indLCL_col = "IL-8 Luc Ind-IL8LA LCL",
+  ke3_blr_il8_inh_col = "IL-8 Luc Inh-GAPLA",
+  ke3_blr_il8_ws_col = "IL-8 Luc Solubility",
+  
+  ke3_blr_usens_cd86_col = "U-SENS CD86 SI",
+  ke3_blr_usens_cv_col = "U-SENS Viability (%)"
+)
+
+tabNames <- c(
+  "Select Defined Approach",
+  "Upload Data",
+  "Select Data Columns",
+  "Review Selection",
+  "Results",
+  "Compare"
+)
+
+showNA_js <- "for (let i=0; i < data.length; i++) {if (data[i]===null) {$(this.api().cell(row, i).node()).html('NA')}}"
 
 # Create page
 # Welcome -----
@@ -103,7 +157,7 @@ welcome_panel <- fluidRow(tags$header(
 
 # Step 1: Select DAs -----
 select_da_panel <- tabPanel(
-  title = "Select Defined Approach",
+  title = tabNames[1],
   fluidRow(
     class = "bordered-panel",
     column(
@@ -133,13 +187,16 @@ select_da_panel <- tabPanel(
         conditionalPanel(
           hr(width = "50%"),
           condition = "input.selected_da=='da_2o3'",
-          p("Flag borderline results (requires data from individual runs)"),
-          checkboxInput(
+          checkboxGroupInput(
             inputId = "do_da_2o3_bl",
-            label = HTML(
-              "<span id = '2o3_bl_cb_label'>Flag borderline assay results prior to applying DA 2o3.</span>",
-              info_button("info_2o3_bl", "Information about borderline results for DA 2o3.")
+            label = "2o3 Borderline Evaluation",
+            choiceNames = tagList(
+              HTML(
+                "<span id = '2o3_bl_cb_label'>Flag borderline assay results prior to applying DA 2o3 (Requires data from individual runs)</span>",
+                info_button("info_2o3_bl", "Information about borderline results for DA 2o3.")
+              )
             ),
+            choiceValues = T,
             width = "100%"
           )
         )
@@ -154,9 +211,10 @@ select_da_panel <- tabPanel(
 
 # Step 2: Upload Data -----
 upload_data_panel <- tabPanel(
-  title = "Upload Data", 
+  title = tabNames[2],
   fluidRow(
-    class = "bordered-panel",
+    id = "upload_data_ui",
+    class = "bordered-panel hiddenBlock",
     column(
       width = 12,
       HTML(
@@ -171,175 +229,153 @@ upload_data_panel <- tabPanel(
         "</div>",
         "</div>"
       ),
-      br(),
-      p(
-        "A table template is provided in tab-delimited or Excel format.",
-        "The template contains columns for every possible assay endpoint.",
-        "If an assay endpoint will not be used, the corresponding column can be",
-        "deleted but that is not required. Using the template is not required."
+    ),
+    br(),
+    ## Hidden - Data Text -----
+    column(
+      width = 12,
+      div(
+        class = "hiddenBlock",
+        id = "upload_data_text",
+        p(
+          "A table template is provided in tab-delimited or Excel format.",
+          "The template contains columns for every possible assay endpoint.",
+          "If an assay endpoint will not be used, the corresponding column can be",
+          "deleted but that is not required. Using the template is not required."
+        ),
+        a(
+          href = "DASSApp-dataTemplate.xlsx",
+          "Download Data Template (.xlsx)",
+          download = NA,
+          target = "_blank"
+        ),
+        br(),
+        a(
+          href = "DASSApp-dataTemplate.txt",
+          "Download Data Template (.txt)",
+          download = NA,
+          target = "_blank"
+        )
       ),
-      a(
-        href = "DASSApp-dataTemplate.xlsx",
-        "Download Data Template (.xlsx)",
-        download = NA,
-        target = "_blank"
+      div(
+        class = "hiddenBlock",
+        id = "upload_blr_data_text",
+        p(
+          "A data template is provided in Excel format.",
+          "The template contains one worksheet template for every assay",
+          "and each worksheet shows the information needed to perform",
+          "the borderline evaluation."
+        ),
+        a(
+          href = "DASSApp-dataTemplate-borderline.xlsx",
+          "Download Data Template (.xlsx)",
+          download = NA,
+          target = "_blank"
+        )
       ),
-      br(),
-      a(
-        href = "DASSApp-dataTemplate.txt",
-        "Download Data Template (.txt)",
-        download = NA,
-        target = "_blank"
+      hr(width = "50%")
+    ),
+    column(
+      width = 12,
+      id = "upload_block",
+      fileInput(
+        inputId = "fpath",
+        label = "Click 'Browse' below and select your file.",
+        width = "100%"
       ),
+      uiOutput("xl_sheet_text_ui")
+    ),
+    column(
+      width = 12,
+      div(
+        class = "hiddenBlock",
+        id = "use_demo_data_cb",
+        HTML(
+          "<div class='form-group shiny-input-container' style='width:100%;'>",
+          "<div class='checkbox'>",
+          "<label>",
+          "<input id='use_demo_data' type='checkbox'/>",
+          "<span>Use demo data</span>",
+          "</label>",
+          "<button id='info_demo' type='button' class='btn action-link btn-qs' aria-label='demo data info'>",
+          "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+          "</button>",
+          "</div>",
+          "</div>"
+        )
+      )
+    ),
+    column(
+      width = 12,
+      id = "data_block",
+      class = "hiddenBlock",
       hr(style = "width:50%"),
       div(
-        id = "upload_block",
-        fileInput(
-          inputId = "fpath",
-          label = "Click 'Browse' below and select your file.",
-          width = "100%"
+        class = "hiddenBlock",
+        id = "blr_data_worksheet_select_block",
+        span(
+          id = "blr_ws_warn",
+          class = "warningText",
+          tags$strong("WARNING: Expected at least three worksheets in file.")
         ),
-        uiOutput("xl_sheet_text_ui")
-      ),
-      HTML(
-        "<div class='form-group shiny-input-container' style='width:100%;'>",
-        "<div class='checkbox'>",
-        "<label>",
-        "<input id='use_demo_data' type='checkbox'/>",
-        "<span>Use demo data</span>",
-        "</label>",
-        "<button id='info_demo' type='button' class='btn action-link btn-qs' aria-label='demo data info'>",
-        "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-        "</button>",
-        "</div>",
-        "</div>"
-      ),
-      
-      div(
-        # class = "hiddenBlock",
-        id = "blr_data_block",
         selectInput(
           inputId = "blr_data_worksheet_select",
           label = "Select worksheet to view",
           choices = NULL
         )
       ),
-
-      # div(
-      #   # class = "hiddenBlock",
-      #   id = "blr_data_block",
-      #   tags$details(
-      #     open = "open",
-      #     tags$summary("Evaluate Borderlines"),
-      #     div(
-      #       class = "detailsBody",
-      #       p(
-      #         "Describe this section."
-      #       ),
-      #       
-      #       tags$h2(
-      #         "Key Event 1 Assay",
-      #         info_button("info_blr_ke1Assay", "KE1 Assay Information")
-      #       ),
-      #       radioButtons(
-      #         inputId = "blr_ke1_assay",
-      #         label = "Select Assay",
-      #         choiceNames = c("DPRA", "ADRA"),
-      #         choiceValues = c("dpra", "adra"),
-      #         inline = T
-      #       ),
-      #       fluidRow(
-      #       column(
-      #         width = 3,
-      #       selectInput(
-      #         inputId = "blr_ke1_assay_cid_col",
-      #         label = "Select Compound Identifier Column",
-      #         choices = NULL
-      #       ))
-      #       
-      #       )
-      #     )
-      #   )
-      # 
-      # ),
-      
-      
-      div(
-        class = "hiddenBlock",
-        id = "data_block",
-        hr(style = "width:50%"),
-        DT::dataTableOutput("dt_analyze"),
-        hr(style = "width:50%"),
-        p(
-          "Once you have finished selecting the DAs and uploading your data, click 'Continue' to proceed to the next step."
-        ),
-        actionButton(
-          inputId = "confirm_data",
-          label = "Continue",
-          width = "100%"
-        )
+      DT::dataTableOutput("dt_analyze"),
+      hr(style = "width:50%"),
+      p(
+        "Once you have finished selecting the DAs and uploading your data, click 'Continue' to proceed to the next step."
+      ),
+      actionButton(
+        inputId = "confirm_data",
+        label = "Continue",
+        width = "100%"
       )
     )
-  ))
+  )
+)
 
 # Step 3: Select Columns -----
 select_columns_panel <- tabPanel(
-  title = "Select Data Columns",
+  title = tabNames[3],
   fluidRow(
-    id = "select_col_ui",
+    id = "select_col_ui_all",
     class = "bordered-panel hiddenBlock",
+    column(12, uiOutput("data_da_header")),
+    ## Standard -----
     column(
+      id = "select_col_ui",
       width = 12,
       p(
-        "The assay endpoints that are required for the selected DAs are shown below.",
-        "Use the dropdown lists to select the columns from your data",
-        "that correspond to the given endpoints. Columns are automatically selected for an endpoint",
-        "if the column name matches the corresponding column name in the data template.",
-        "A column must be selected for each",
-        "endpoint shown. When you are finished, click 'Done'."
+        "Below, there are sections corresponding to the information sources",
+        "required for your selected DA. Within each section, use the",
+        "dropdown lists to select the columns containing the data for",
+        "the endpoint shown. Columns are automatically selected for an",
+        "endpoint if the column name matches the corresponding column name",
+        "in the data template. A column must be selected for each endpoint",
+        "shown. When you are finished, click \"Done\"."
       ),
       p(
-        "Click on the information buttons next to the assay endpoint names to view",
-        "information about the endpoints and data formatting requirements.",
-        "Values that are incorrectly formatted or invalid",
-        "will be treated as missing data and may affect the results. More details are given",
-        "in the User Guide."
-      )
-    ),
-    hr(width = "50%"),
-    ## KE1 -----
-    column(
-      width = 12,
-      class = "hiddenBlock",
-      id = "ke1_select_ui",
-      tags$details(
+        "Click on the information buttons next to the dropdown list label",
+        "to view information about the required data and formatting.",
+        "Values that are incorrectly formatted or invalid will be treated as",
+        "missing data and may affect the results.",
+        "More details are given in the User Guide."
+      ),
+      ### KE1 -----
+      div(id = "ke1_select_ui", tags$details(
         open = "open",
-        tags$summary("Key Event 1 Assay"),
+        tags$summary("Key Event 1"),
         div(
           class = "detailsBody",
           div(
-            id = "ke1_assay_select",
-            tags$h2(
-              "KE1 Assay",
-              info_button("info_ke1Assay", "KE1 Assay Information")
-            ),
-            div(
-              class = "col_assay_endpoint",
-              radioButtons(
-                inputId = "ke1_assay_name",
-                label = "Select KE1 Assay",
-                choiceNames = c("ADRA", "DPRA"),
-                choiceValues = c("adra", "dpra"),
-                inline = T
-              )
-            )
-          ),
-          div(
             id = "ke1_call_select",
-            class = "hiddenBlock",
             tags$h2("KE1 Call", info_button("info_ke1Call", "KE1 Call information")),
             div(
-              class = "col_assay_endpoint",
+              class = "sub-ind",
               checkboxInput(
                 inputId = "ke1_call_interpret",
                 label = "Derive call from quantiative data.",
@@ -353,147 +389,93 @@ select_columns_panel <- tabPanel(
               )
             )
           ),
+          # Keep separate to hide for KE 3/1 STS
+          div(
+            id = "ke1_assay_select",
+            tags$h2(
+              "KE1 Assay",
+              info_button("info_ke1AssayName", "KE1 Assay Information")
+            ),
+            div(
+              class = "sub-ind",
+              radioButtons(
+                inputId = "ke1_assay_name",
+                label = "Select KE1 Assay",
+                choiceNames = c("ADRA", "DPRA"),
+                choiceValues = c("adra", "dpra"),
+                inline = T
+              )
+            )
+          ),
+          
           div(
             id = "ke1_dep_select",
-            class = "hiddenBlock",
             tags$h2(
               "KE1 Mean Depletion Value",
               info_button("info_ke1DepValue", "KE1 Mean Depletion Value Information")
             ),
             div(
-              class = "col_assay_endpoint",
+              class = "sub-ind",
               checkboxInput(
                 inputId = "ke1_choose_dep",
                 label = "Derive mean depletion value from data.",
                 value = F
               ),
-              fluidRow(
-                column(
-                  width = 4,
-                  selectInput(
-                    inputId = "ke1_mean_c_l_dep_col",
-                    label = "Mean Depletion Column",
-                    choices = NULL,
-                    selectize = F
-                  )
-                ),
-                column(
-                  width = 4,
-                  selectInput(
-                    inputId = "ke1_c_dep_col",
-                    label = "Cys/NAC Depletion Column",
-                    choices = NULL,
-                    selectize = F
-                  )
-                ),
-                column(
-                  width = 4,
-                  selectInput(
-                    inputId = "ke1_l_dep_col",
-                    label = "Lys/NAL Depletion Column",
-                    choices = NULL,
-                    selectize = F
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    ),
-    ## KE2 -----
-    column(
-      width = 12,
-      class = "hiddenBlock",
-      id = "ke2_select_ui",
-      tags$details(
-        open = "open",
-        tags$summary("Key Event 2 Assay"),
-        div(
-          class = "detailsBody",
-          div(
-            id = "ke2_assay_select",
-            tags$h2(
-              "KE2 Assay",
-              info_button("info_ke2Assay", "KE2 Assay Information")
-            ),
-            div(
-              class = "col_assay_endpoint",
-              radioButtons(
-                inputId = "ke2_assay_name",
-                label = "Select KE2 Assay",
-                choiceNames = c("KeratinoSens", "LuSens"),
-                choiceValues = c("keratinosens", "lusens"),
-                inline = T
-              )
-            ),
-            tags$h2("KE2 Call", info_button("info_ke2Call", "KE2 Call information")),
-            div(
-              class = "col_assay_endpoint",
               selectInput(
-                inputId = "ke2_call_col",
-                label = "Call Column",
+                inputId = "ke1_mean_c_l_dep_col",
+                label = "Mean Depletion Column",
+                choices = NULL,
+                selectize = F
+              ),
+              selectInput(
+                inputId = "ke1_c_dep_col",
+                label = "Cys/NAC Depletion Column",
+                choices = NULL,
+                selectize = F
+              ),
+              selectInput(
+                inputId = "ke1_l_dep_col",
+                label = "Lys/NAL Depletion Column",
                 choices = NULL,
                 selectize = F
               )
-            ),
-            div(
-              id = "ke2_value_select",
-              class = "hiddenBlock",
-              tags$h2(
-                "KE2 Quantitative Endpoint",
-                info_button("info_ke2Value", "KE2 Value information")
-              ),
-              div(
-                class = "col_assay_endpoint",
-                selectInput(
-                  inputId = "ke2_val_col",
-                  label = "Quantitative Endpoint Column",
-                  choices = NULL,
-                  selectize = F
-                )
-              )
             )
           )
+          
         )
-      )
-    ),
-    ## KE3 -----
-    column(
-      width = 12,
-      class = "hiddenBlock",
-      id = "ke3_select_ui",
-      tags$details(
+      )),
+      ### KE2 -----
+      div(id = "ke2_select_ui", tags$details(
         open = "open",
-        tags$summary("Key Event 3 Assay"),
+        tags$summary("Key Event 2"),
+        div(class = "detailsBody", div(
+          id = "ke2_call_select",
+          tags$h2("KE2 Call", info_button("info_ke2Call", "KE2 Call information")),
+          div(
+            class = "sub-ind",
+            selectInput(
+              inputId = "ke2_call_col",
+              label = "Call Column",
+              choices = NULL
+            )
+          )
+          
+        ))
+      )),
+      ### KE3 -----
+      div(id = "ke3_select_ui", tags$details(
+        open = "open",
+        tags$summary("Key Event 3"),
         div(
           class = "detailsBody",
           div(
-            id = "ke3_assay_select",
-            tags$h2(
-              "KE3 Assay",
-              info_button("info_ke3_assay", "KE3 Assay Information")
-            ),
-            div(
-              class = "col_assay_endpoint",
-              radioButtons(
-                inputId = "ke3_assay_name",
-                label = "Select KE3 Assay",
-                choiceNames = c("GARDskin", "h-CLAT", "IL-8 Luc", "U-SENS"),
-                choiceValues = c("gardskin", "hclat", "il8luc", "usens"),
-                inline = T
-              )
-            )
-          ),
-          div(
             id = "ke3_call_select",
-            class = "hiddenBlock",
             tags$h2(
               "KE3 Call",
               info_button("info_ke3_call", "KE3 Call information")
             ),
             div(
-              class = "col_assay_endpoint",
+              class = "sub-ind",
               selectInput(
                 inputId = "ke3_call_col",
                 label = "Call Column",
@@ -504,16 +486,66 @@ select_columns_panel <- tabPanel(
           ),
           div(
             id = "ke3_val_select",
-            class = "hiddenBlock",
-            tags$h2(
-              "KE3 Quantitative Endpoint",
-              info_button("info_ke3_value", "KE3 Value information")
+            div(
+              id = "ke3_assay_select",
+              tags$h2(
+                "KE3 Assay",
+                info_button("info_ke3_assayName", "KE3 Assay Information")
+              ),
+              div(
+                class = "sub-ind",
+                radioButtons(
+                  inputId = "ke3_assay_name",
+                  label = "Select KE3 Assay",
+                  choiceNames = c("GARDskin", "h-CLAT", "U-SENS"),
+                  choiceValues = c("gardskin", "hclat", "usens"),
+                  inline = T
+                )
+              )
             ),
             div(
-              class = "col_assay_endpoint",
+              id = "ke3_quant_ui",
+              tags$h2(
+                "KE3 Quantitative Endpoint",
+                info_button("info_ke3_value", "KE3 Value information")
+              ),
+              div(
+                class = "sub-ind",
+                selectInput(
+                  inputId = "ke3_val_col",
+                  label = "Quantitative Endpoint Column",
+                  choices = NULL,
+                  selectize = F
+                )
+              )
+            )
+          )
+        )
+      )),
+      ### In Silico -----
+      div(
+        id = "insil_select_ui",
+        class = "ui_is",
+        tags$details(
+          open = "open",
+          tags$summary("In Silico Model"),
+          div(
+            class = "detailsBody",
+            tags$h2(
+              "In Silico Call Prediction",
+              info_button("info_insil_pred", "In Silico Prediction information")
+            ),
+            div(
+              class = "sub-ind",
               selectInput(
-                inputId = "ke3_val_col",
-                label = "Quantitative Endpoint Column",
+                inputId = "insil_call_col",
+                label = "Call Prediction Column",
+                choices = NULL,
+                selectize = F
+              ),
+              selectInput(
+                inputId = "insil_ad_col",
+                label = "Applicability Domain Column",
                 choices = NULL,
                 selectize = F
               )
@@ -522,83 +554,306 @@ select_columns_panel <- tabPanel(
         )
       )
     ),
-    ## In Silico -----
+    ## Borderline -----
     column(
+      id = "select_blr_col_ui",
       width = 12,
-      class = "hiddenBlock",
-      id = "insil_select_ui",
-      tags$details(
+      p(
+        "Below, there are three sections corresponding to the three key events that underly the 2o3 DA. Within each section, specify the assay for which you are providing data and use the dropdown list to select the worksheet that contains the data for the selected assay. Dropdown lists will be displayed for the data columns required for the specific assay. The dropdown lists will be populated with column names from the selected worksheet. Use these dropdown lists to specify the columns containing data for the endpoints shown. When you are finished, click \"Done\""
+      ),
+      p(
+        "Click on the information buttons to view information about the required data and formatting. Values that are incorrectly formatted or invalid will be treated as missing data and may affect the results. More details are given in the User Guide."
+      ),
+      ### KE1 -----
+      div(id = "ke1_select_blr_ui", tags$details(
         open = "open",
-        tags$summary("In Silico Model"),
+        tags$summary("Key Event 1"),
         div(
           class = "detailsBody",
-          tags$h2(
-            "In Silico Call Prediction",
-            info_button("info_insil_pred", "In Silico Prediction information")
-          ),
           div(
-            class = "col_assay_endpoint",
-            selectInput(
-              inputId = "insil_call_col",
-              label = "Call Prediction Column",
-              choices = NULL,
-              selectize = F
+            id = "ke1_assay_select_blr",
+            tags$h2(
+              "KE1 Assay",
+              info_button("info_blr_ke1AssayName", "KE1 Assay Information")
             ),
-            selectInput(
-              inputId = "insil_ad_col",
-              label = "Applicability Domain Column",
-              choices = NULL,
-              selectize = F
+            div(
+              class = "sub-ind",
+              radioButtons(
+                inputId = "ke1_blr_assay_name",
+                label = "Select KE1 Assay",
+                choiceNames = c("ADRA", "DPRA"),
+                choiceValues = c("adra", "dpra"),
+                inline = T
+              ),
+              selectInput(
+                inputId = "ke1_blr_ws",
+                label = "KE1 Worksheet",
+                choices = NULL
+              )
+            ),
+            tags$h2(
+              "KE1 Data Columns",
+              info_button("info_blr_ke1Columns", "KE1 Data Column Information")
+            ),
+            div(
+              class = "sub-ind",
+              selectInput(
+                inputId = "ke1_blr_cid_col",
+                label = "Chemical Identifier Column",
+                choices = NULL
+              ),
+              selectInput(
+                inputId = "ke1_blr_c_dep_col",
+                label = "Cys/NAC Depletion (%) Column",
+                choices = NULL
+              ),
+              selectInput(
+                inputId = "ke1_blr_l_dep_col",
+                label = "Lys/NAL Depletion (%) Column",
+                choices = NULL
+              ),
+              selectInput(
+                inputId = "ke1_blr_c_only_col",
+                label = "Cys-Only Indicator Column",
+                choices = NULL
+              )
             )
           )
         )
-      )
+      )),
+      ### KE2 -----
+      div(id = "ke2_select_blr_ui", tags$details(
+        open = "open",
+        tags$summary("Key Event 2"),
+        div(
+          class = "detailsBody",
+          div(
+            id = "ke2_assay_select_blr",
+            tags$h2(
+              "KE2 Assay",
+              info_button("info_blr_ke2AssayName", "KE2 Assay Information")
+            ),
+            div(
+              class = "sub-ind",
+              radioButtons(
+                inputId = "ke2_blr_assay_name",
+                label = "KE2 Assay",
+                choiceNames = c("KeratinoSens", "LuSens"),
+                choiceValues = c("ks", "lusens"),
+                inline = T
+              ),
+              selectInput(
+                inputId = "ke2_blr_ws",
+                label = "KE2 Worksheet",
+                choices = NULL
+              )
+            ),
+            tags$h2(
+              "KE2 Data Columns",
+              info_button("info_blr_ke2Columns", "KE2 Data Column Information")
+            ),
+            div(
+              class = "sub-ind",
+              selectInput(
+                inputId = "ke2_blr_cid_col",
+                label = "Chemical Identifier Column",
+                choices = NULL
+              ),
+              selectInput(
+                inputId = "ke2_blr_ks_call_col",
+                label = "KeratinoSens Outcome Column",
+                choices = NULL
+              ),
+              div(
+                id = "ke2_blr_lusens_col_select",
+                selectInput(
+                  inputId = "ke2_blr_run_col",
+                  label = "Run Identifier Column",
+                  choices = NULL
+                ),
+                selectInput(
+                  inputId = "ke2_blr_conc_col",
+                  label = "Concentration Column",
+                  choices = NULL
+                ),
+                selectInput(
+                  inputId = "ke2_blr_fi_col",
+                  label = "Fold Induction Column",
+                  choices = NULL
+                ),
+                selectInput(
+                  inputId = "ke2_blr_cv_col",
+                  label = "Cell Viability (%) Column",
+                  choices = NULL
+                ),
+                selectInput(
+                  inputId = "ke2_blr_p_col",
+                  label = "T Test p-value Column",
+                  choices = NULL
+                )
+              )
+            )
+          )
+        )
+      )),
+      ### KE3 -----
+      div(id = "ke3_select_blr_ui", tags$details(
+        open = "open",
+        tags$summary("Key Event 3"),
+        div(
+          class = "detailsBody",
+          div(
+            id = "ke3_assay_select_blr",
+            tags$h2(
+              "KE3 Assay",
+              info_button("info_blr_ke3AssayName", "KE3 Assay Information")
+            ),
+            div(
+              class = "sub-ind",
+              radioButtons(
+                inputId = "ke3_blr_assay_name",
+                label = "KE3 Assay",
+                choiceNames = c("GARDskin", "h-CLAT", "IL-8 Luc", "U-SENS"),
+                choiceValues = c("gard", "hclat", "il8", "usens"),
+                inline = T
+              ),
+              selectInput(
+                inputId = "ke3_blr_ws",
+                label = "KE3 Worksheet",
+                choices = NULL
+              )
+            ),
+            tags$h2(
+              "KE3 Data Columns",
+              info_button("info_blr_ke3Columns", "KE3 Data Column Information")
+            ),
+            div(
+              class = "sub-ind",
+              selectInput(
+                inputId = "ke3_blr_cid_col",
+                label = "Chemical Identifier Column",
+                choices = NULL
+              ),
+              
+              selectInput(
+                inputId = "ke3_blr_run_col",
+                label = "Run Identifier Column",
+                choices = NULL
+              ),
+              selectInput(
+                inputId = "ke3_blr_conc_col",
+                label = "Concentration Column",
+                choices = NULL
+              ),
+              selectInput(
+                inputId = "ke3_blr_gard_meanDV_col",
+                label = "GARDSkin Mean DV Column",
+                choices = NULL
+              ),
+              div(
+                id = "ke3_blr_hclat_col_select",
+                selectInput(
+                  inputId = "ke3_blr_hclat_cd54_col",
+                  label = "H-CLAT CD54 RFI Column",
+                  choices = NULL
+                ),
+                selectInput(
+                  inputId = "ke3_blr_hclat_cd86_col",
+                  label = "H-CLAT CD86 RFI Column",
+                  choices = NULL
+                ),
+                selectInput(
+                  inputId = "ke3_blr_hclat_cv_col",
+                  label = "H-CLAT Viability (%) Column",
+                  choices = NULL
+                )
+              ),
+              div(
+                id = "ke3_blr_usens_col_select",
+                selectInput(
+                  inputId = "ke3_blr_usens_cd86_col",
+                  label = "U-SENS CD86 SI Column",
+                  choices = NULL
+                ),
+                selectInput(
+                  inputId = "ke3_blr_usens_cv_col",
+                  label = "U-SENS Viability (%) Column",
+                  choices = NULL
+                )
+              ),
+              div(
+                id = "ke3_blr_il8_col_select",
+                selectInput(
+                  inputId = "ke3_blr_il8_ind_col",
+                  label = "IL-8 Luc Ind-IL8LA Column",
+                  choices = NULL
+                ),
+                selectInput(
+                  inputId = "ke3_blr_il8_indLCL_col",
+                  label = "IL-8 Luc Ind-IL8LA LCL Column",
+                  choices = NULL
+                ),
+                selectInput(
+                  inputId = "ke3_blr_il8_inh_col",
+                  label = "IL-8 Luc Inh-GAPLA Column",
+                  choices = NULL
+                ),
+                selectInput(
+                  inputId = "ke3_blr_il8_ws_col",
+                  label = "IL-8 Luc Solubility Column",
+                  choices = NULL
+                )
+              )
+            )
+          )
+        )
+      ))
     ),
-    actionButton(
-      inputId = "review_entries",
-      label = "Done",
-      width = "100%"
+    fluidRow(
+      actionButton(
+        inputId = "review_entries",
+        label = "Done",
+        width = "100%"
+      )
     )
   )
 )
 
-
 # Step 4: Review Selection -----
 review_selection_panel <- tabPanel(
-  title = "Review Selection",
+  title = tabNames[4],
   fluidRow(
-    id = "review_contents",
+    id = "review_contents_ui",
     class = "bordered-panel hiddenBlock",
-    column(
-      width = 12,
-      p(
-        "Your selections are summarized below. Review the selected assays and columns.",
-        "When you are done, click 'Run' to run the DASS.",
-        "If you need to change a selected column, return to the 'Select Data Columns'",
-        "page. If you need to upload new or updated data, return to the 'Upload Data' page."
-      )
-    ),
-    column(
-      width = 12,
-      id = "dupe_col_warning",
-      class = "warningText hiddenBlock",
-      p(
-        strong("Warning: Identical column assigned to more than one endpoint.")
-      )
-    ),
-    column(
-      width = 12,
-      id = "flag_col_warning",
-      class = "warningText hiddenBlock",
-      p(
-        strong(
-          "Warning: Selected data columns have been flagged for invalid values."
+    fluidRow(
+      id = "review_contents",
+      class = "hiddenBlock",
+      column(
+        width = 12,
+        p(
+          "Your selections are summarized below. When you are done reviewing your selections, click 'Run' to run the DASS. If you need to change a selected column, return to the 'Select Data Columns' page. If you need to upload new or updated data, return to the 'Upload Data' page."
         ),
-        "Invalid values will not be evaluated in the DASS."
+        uiOutput("review_contents_standard_ui")
       )
     ),
-    dataTableOutput("dt_review"),
-    br(),
+    ## Borderline -----
+    fluidRow(
+      id = "review_contents_blr",
+      class = "hiddenBlock",
+      column(
+        width = 12,
+        p(
+          "Your selections are summarized below. The KE assay sections show a table with your data column selections. Values in these columns are checked against formatting requirements and flagged if any issues are identified. Chemical identifier columns are flagged if any chemical identifiers do not have enough data to perform the 2o3."
+        ),
+        p(
+          "The last section lists the unique chemical identifiers from your data and indicates which worksheets contain those identifiers. The identifier is flagged if it does not have valid values in at least two worksheets."
+        ),
+        p(
+          "Review your selections. When you are done, click 'Run' to run the DASS. If you need to change a selection, return to the 'Select Data Columns' page. If you need to upload new or updated data, return to the 'Upload Data' page."
+        ),
+        uiOutput("review_contents_blr_ui")
+      )
+    ),
     actionButton(
       inputId = "run_dass",
       width = "100%",
@@ -607,356 +862,304 @@ review_selection_panel <- tabPanel(
   )
 )
 
-
 # Step 5: Results -----
 results_panel <- tabPanel(
-  title = "Results",
+  title = tabNames[5],
   fluidRow(
     id = "result_contents",
-    # class = "bordered-panel hiddenBlock",
-    class = "bordered-panel",
-    column(
-      width = 12,
-      p(
-        "Results of the DASS App analysis are shown in the table below. Use the",
-        "scroll bar along the bottom of the table to view all the columns.",
-        "The buttons above the table can be used to hide or show columns.",
-        "Use the 'Download Results' button to export your results to an Excel",
-        "spreadsheet or text file, which may allow easier viewing.",
-      ),
-      div(
-        class = "text-block",
-        h2("Table Key", style = "font-size:1.2em; font-weight:bold; margin-top:10px;"),
-        tags$dl(
-          tags$dt("Yellow columns"),
-          tags$dd(
-            "The data columns that you selected in Step 3. The column names are annotated with an asterisk."
-          ),
-          tags$dt(
-            "Pink columns",
-            HTML(
-              "<button id='info_pink' type='button' class='btn action-link btn-qs' aria-label='Information button for details about pink columns'>",
-              "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-              "</button>"
-            )
-          ),
-          tags$dd(
-            "Appended columns showing how your data inputs were interpreted.",
-            "The corresponding column names begin with 'Input'. For values that",
-            "were calculated by the app, the column name will also end with 'Calculated'."
-          ),
-          tags$dt(
-            "Blue columns",
-            HTML(
-              "<button id='info_blue' type='button' class='btn action-link btn-qs' aria-label='Information button for details about blue columns'>",
-              "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-              "</button>"
-            )
-          ),
-          tags$dd(
-            "Appended columns with the DASS predictions. The corresponding column",
-            "names begin with 'DA' and the name of the DA."
-          )
-        ),
-        "For more details about the appended columns, see the User Guide.",
-      )
-    ),
-    fluidRow(column(
-      12,
-      div(
-        class = "dropdown",
-        id = "dlDropdown",
-        style = "margin-bottom: 1em",
-        tags$button(
-          class = "btn dropbtn btn-default",
-          # style = "padding:1vh;",
-          "Download Results",
-          HTML("<i class='fas fa-caret-down' role='presentation'> </i>")
+    class = "bordered-panel hiddenBlock",
+    div(
+      id = "result_contents_standard",
+      class = "hiddenBlock",
+      column(
+        width = 12,
+        p(
+          "Results of the DASS App analysis are shown in the table below. Use the",
+          "scroll bar along the bottom of the table to view all the columns.",
+          "The buttons above the table can be used to hide or show columns.",
+          "Use the 'Download Results' button to export your results to an Excel",
+          "spreadsheet or text file, which may allow easier viewing.",
         ),
         div(
-          class = "dropdown-content",
-          downloadButton(
-            outputId = "downloadres_xl",
-            "Excel (.xlsx)",
-            icon = icon("file-excel"),
-            class = "btn-dl"
+          class = "text-block",
+          h2("Table Key", style = "font-size:1.2em; font-weight:bold; margin-top:10px;"),
+          tags$dl(
+            tags$dt("Yellow columns"),
+            tags$dd(
+              "The data columns that you selected in Step 3. The column names are annotated with an asterisk."
+            ),
+            tags$dt(
+              "Pink columns",
+              HTML(
+                "<button id='info_pink' type='button' class='btn action-link btn-qs' aria-label='Information button for details about pink columns'>",
+                "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+                "</button>"
+              )
+            ),
+            tags$dd(
+              "Appended columns showing how your data inputs were interpreted.",
+              "The corresponding column names begin with 'Input'. For values that",
+              "were calculated by the app, the column name will also end with 'Calculated'."
+            ),
+            tags$dt(
+              "Blue columns",
+              HTML(
+                "<button id='info_blue' type='button' class='btn action-link btn-qs' aria-label='Information button for details about blue columns'>",
+                "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
+                "</button>"
+              )
+            ),
+            tags$dd(
+              "Appended columns with the DASS predictions. The corresponding column",
+              "names begin with 'DA' and the name of the DA."
+            )
           ),
-          downloadButton(
-            outputId = "downloadres_txt",
-            "Tab-Delimited (.txt)",
-            icon = icon("file-alt"),
-            class = "btn-dl"
-          ),
+          "For more details about the appended columns, see the User Guide.",
         )
       ),
-      actionButton(inputId = "goToCompare", label = "Compare Results")
-    )),
-    br(),
-    dataTableOutput("dt_results")
+      fluidRow(column(
+        12,
+        div(
+          class = "dropdown",
+          id = "dlDropdown",
+          style = "margin-bottom: 1em",
+          tags$button(
+            class = "btn dropbtn btn-default",
+            # style = "padding:1vh;",
+            "Download Results",
+            HTML("<i class='fas fa-caret-down' role='presentation'> </i>")
+          ),
+          div(
+            class = "dropdown-content",
+            downloadButton(
+              outputId = "downloadres_xl",
+              "Excel (.xlsx)",
+              icon = icon("file-excel"),
+              class = "btn-dl"
+            ),
+            downloadButton(
+              outputId = "downloadres_txt",
+              "Tab-Delimited (.txt)",
+              icon = icon("file-alt"),
+              class = "btn-dl"
+            ),
+          )
+        ),
+        actionButton(inputId = "goToCompare", label = "Compare Results")
+      )),
+      br(),
+      dataTableOutput("dt_results")
+    ),
+    div(
+      id = "result_contents_blr",
+      class = "hiddenBlock",
+      fluidRow(column(
+        width = 12,
+        p(
+          "Results of the DASS App analysis are shown below. The first table shows overall outcomes from each assay and the 2o3 hazard prediction based on those outcomes. The remaining tables show outcomes from individual runs."
+        ),
+        p(
+          "Use the \"Download Results\" button to export your results to an Excel Spreadsheet which may allow easier viewing. "
+        ),
+        downloadButton(
+          outputId = "downloadres_blr_xl",
+          "Download Results (.xlsx)",
+          icon = icon("file-excel"),
+          class = "btn-dl"
+        )
+      )),
+      fluidRow(
+        tags$details(
+          open = "open",
+          tags$summary("2o3 Results"),
+          div(
+            class = "detailsBody",
+            dataTableOutput("dass_results_blr", width = "fit-content")
+          )
+        ),
+        tags$details(
+          open = "open",
+          tags$summary("KE1 Assay Run Outcomes"),
+          div(
+            class = "detailsBody",
+            dataTableOutput("ke1_blr_indiv", width = "fit-content")
+          )
+        ),
+        tags$details(
+          open = "open",
+          tags$summary("KE2 Assay Run Outcomes"),
+          div(
+            class = "detailsBody",
+            p(id = "ks_run_text", "No run outcomes for KeratinoSens input."),
+            dataTableOutput("ke2_blr_indiv", width = "fit-content")
+          )
+        ),
+        tags$details(
+          open = "open",
+          tags$summary("KE3 Assay Run Outcomes"),
+          div(
+            class = "detailsBody",
+            dataTableOutput("ke3_blr_indiv", width = "fit-content")
+          )
+        )
+      )
+    )
   )
 )
 
 # Compare -----
 compare_panel <- tabPanel(
-  title = "Compare",
+  title = tabNames[6],
   div(
-    id = "compareText",
-    class = "bordered-panel",
-    # class = "bordered-panel hiddenBlock",
-    p(
-      "This section allows you to compare the DA outcomes to reference data.",
-      "The reference data should be provided in your uploaded data file."
-    ),
-    p(
-      "Use the dropdown lists to select the DA predictions you want to evaluate and specify ",
-      "the columns containing your reference data. You may select more than one prediction or",
-      "reference column. Click 'Compare' to generate a confusion matrix and accuracy metrics.",
-      "Comparisons will only be performed if there are valid values",
-      "for at least five prediction-reference pairs."
-    ),
-    hr(width = "50%"),
-    tags$details(
-      open = "open",
-      tags$summary("Select Data to Compare"),
+    id = "compare_ui_all",
+    fluidRow(
+      id = "compare_setup_standard",
+      class = "bordered-panel hiddenBlock",
+      tags$h1("Input"),
+      p(
+        "This section allows you to compare the DA outcomes to reference data. The reference data should be provided in your uploaded data file."
+      ),
+      p(
+        "Use the dropdown lists to select the DA predictions you want to evaluate and specify the columns containing your reference data. You may select more than one prediction or reference column. Click 'Compare' to generate a confusion matrix and accuracy metrics. Comparisons will only be performed if there are valid values for at least five prediction-reference pairs."
+      ),
+      radioButtons(
+        inputId = "perf_pred_col",
+        label = h2("Select DA Prediction"),
+        choices = ""
+      ),
       div(
-        class = "detailsBody",
-        tags$h2("DA Prediction"),
-        radioButtons(
-          inputId = "perf_pred_col",
-          label = "Select DA Prediction",
-          choices = ""
-        ),
         tags$h2(
-          "Reference Column",
-          info_button("info_perf_ref_col", "Reference Column Information")
-        ),
-        checkboxGroupInput(
-          inputId = "perf_ref_col_source",
-          label = "Choose Reference Source",
-          choiceNames = c("My Data", "Integrated Chemical Environment"),
-          choiceValues = c("user_data", "ice"),
-          selected = "user_data"
-        ),
-        conditionalPanel(
-          condition = "input.perf_ref_col_source.includes('user_data')",
-          selectInput(
-            inputId = "perf_ref_col",
-            label = "Select Reference Column",
-            choices = NULL,
-            selectize = T,
-            multiple = T
+          "My Reference Data",
+          info_button(
+            "info_perf_ref_select",
+            "Select Reference Columns from My Data Information"
           )
         ),
-        conditionalPanel(
-          condition = "input.perf_ref_col_source.includes('ice')",
-          checkboxGroupInput(
-            inputId = "perf_ice_ref_cql",
-            label = "Select ICE Chemical Quick List",
-            choiceNames = c(
-              "OECD Defined Approach to Skin Sensitization: Human (R)",
-              "OECD Defined Approach to Skin Sensitization: LLNA (R)"
+        div(
+          class = "sub-ind",
+          checkboxInput(
+            inputId = "perf_use_my_data",
+            label = "Use reference data from my data.",
+            value = TRUE
+          ),
+          conditionalPanel(
+            condition = "input.perf_use_my_data",
+            selectInput(
+              inputId = "perf_ref_col",
+              label = "Select Reference Column(s)",
+              choices = NULL,
+              selectize = T,
+              multiple = T
+            )
+          )
+        )
+      ),
+      div(
+        tags$h2(
+          "ICE Reference Data",
+          info_button(
+            "info_perf_ice_select",
+            "Use Reference Data from ICE Information"
+          )
+        ),
+        div(
+          class = "sub-ind",
+          checkboxInput(inputId = "perf_use_ice", label = "Use reference data from ICE"),
+          conditionalPanel(
+            condition = "input.perf_use_ice",
+            checkboxGroupInput(
+              inputId = "perf_ice_ref_cql",
+              label = "Select ICE Chemical Quick List",
+              choiceNames = c(
+                "OECD Defined Approach to Skin Sensitization: Human (R)",
+                "OECD Defined Approach to Skin Sensitization: LLNA (R)"
+              ),
+              choiceValues = c("hppt", "llna"),
+              width = "100%"
             ),
-            choiceValues = c("hppt", "llna"),
-            width = "100%"
+            radioButtons(
+              inputId = "perf_ice_identifier_type",
+              label = "Select Identifier Type",
+              choiceNames = c("DTSXID", "CASRN", "QSAR-Ready SMILES"),
+              choiceValues = c("dtsxid", "casrn", "smiles")
+            ),
+            selectInput(
+              inputId = "perf_ice_user_identifier",
+              label = "Select Chemical Identifier Column",
+              choices = NULL,
+              selectize = T
+            )
           )
         )
+      ),
+      actionButton(
+        inputId = "do_compare",
+        label = "Compare Data",
+        width = "100%"
       )
     ),
-    tags$details(
-      open = "open",
-      tags$summary("Select Options for ICE Data"),
-      div(
-        class = "detailsBody",
-        checkboxInput(
-          inputId = "perf_use_ice_data",
-          label = HTML(
-            "<span id = 'perf_use_ice_data_label'>Load data from ICE for figures</span>",
-            info_button(
-              "info_perf_use_ice_data",
-              "Information about loading ICE data for figures."
-            )
-          ),
-          width = "100%"
+    fluidRow(
+      id = "compare_explore_standard",
+      class = "bordered-panel hiddenBlock",
+      tags$h1("Output"),
+      column(
+        width = 12,
+        style = "margin-bottom: 1em;",
+        tags$h2(
+          "Tables",
+          info_button("info_perf_table", "Performance Metrics Information")
         ),
-        conditionalPanel(
-          condition = "input.perf_ref_col_source.includes('ice')||input.perf_use_ice_data",
-          
-          tags$h2(
-            "Specify Chemical Identifier",
-            info_button(
-              "info_chem_identifier",
-              "Information about selecting chemical identifiers"
-            )
-          ),
-          radioButtons(
-            inputId = "perf_ice_identifier_type",
-            label = "Select Identifier Type",
-            choiceNames = c("DTSXID", "CASRN", "QSAR-Ready SMILES"),
-            choiceValues = c("dtsxid", "casrn", "smiles")
-          ),
-          selectInput(
-            inputId = "perf_ice_user_identifier",
-            label = "Select Chemical Identifier Column",
-            choices = NULL,
-            selectize = T
-          )
-        )
-      )
-    ),
-    actionButton(
-      inputId = "do_compare",
-      label = "Compare Data",
-      width = "100%"
-    )
-  ),
-  bsCollapse_dass(
-    multiple = T,
-    open = c("Tables", "Figures"),
-    bsCollapsePanel_dass(
-      title = "Tables",
-      div(
-        class = "hiddenBlock",
-        id = "compare_table_body",
         p(
-          "Confusion matrices and performance metrics are shown below. Use the dropdown list",
-          "to select the comparison you would like to view. Use the 'Download' button to open",
-          "the download menu."
+          "Confusion matrices and performance metrics are shown below. Use the dropdown list to select the comparison you would like to view. Use the 'Download' button to open the download menu."
         ),
-        actionButton(inputId = "download_compare_tables", label = "Download Tables"),
-        br(),
-        fluidRow(
-          column(
-            id = "perf_table_block_1",
-            width = 12,
-            selectInput(
-              inputId = "reference_perf_1",
-              label = "Select Reference",
-              choices = NULL
-            ),
-            plotOutput("perf_table_1")
-          ),
-          column(
-            id = "perf_table_block_2",
-            class = "hiddenBlock",
-            width = 6,
-            selectInput(
-              inputId = "reference_perf_2",
-              label = "Select Reference",
-              choices = NULL
-            ),
-            plotOutput("perf_table_2")
-          )
+        actionButton(inputId = "download_compare_tables", label = "Download Tables")
+      ),
+      column(
+        id = "perf_table_block_1",
+        width = 12,
+        selectInput(
+          inputId = "reference_perf_1",
+          label = "Select Reference",
+          choices = NULL
         ),
-        hr(width = "50%"),
-        div(
-          class = "hiddenBlock",
-          id = "binary_defs",
-          h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
-          HTML(
-            "<table class = 'defTab' border=1>
-    <tr> <th> Metric </th> <th> Definition </th>  </tr>
-    <tr> <td> N </td> <td> The number of valid reference values </td>  </tr>
-      <tr> <td> Accuracy  </td> <td>  (True positives + True negatives) / (All positives + All negatives) </td> </tr>
-      <tr> <td> Balanced Accuracy  </td> <td>  (True positive rate + True negative rate)/2 </td> </tr>
-      <tr> <td> F1 Score  </td> <td>  (2&times;True positives) / (2&times;True positives + False positives + False negatives) </td> </tr>
-      <tr> <td> True Positive Rate (Sensitivity)  </td> <td>  True positives / All positives </td> </tr>
-      <tr> <td> False Positive Rate  </td> <td>  False positives / All positives </td> </tr>
-      <tr> <td> True Negative Rate (Specificity)  </td> <td>  True negatives / All negatives </td> </tr>
-      <tr> <td> False Negative Rate  </td> <td>  False negatives / All negatives </td> </tr>
-       </table>"
-          )
+        plotOutput("perf_table_1")
+      ),
+      column(
+        id = "perf_table_block_2",
+        class = "hiddenBlock",
+        width = 6,
+        selectInput(
+          inputId = "reference_perf_2",
+          label = "Select Reference",
+          choices = NULL
         ),
-        div(
-          class = "hiddenBlock",
-          id = "potency_defs",
-          h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
-          HTML(
-            "<table class = 'defTab' border=1>
-             <tr> <th> Metric </th> <th> Definition </th>  </tr>
-        <tr> <td> N </td> <td> The number of valid reference values </td>  </tr>
-        <tr> <td> Accuracy  </td> <td>  The percentage of predicted values equal to reference values </td> </tr>
-        <tr> <td> Overpredicted </td> <td>  The percentage of predicted values with a more potent GHS category than the corresponding reference value </td> </tr>
-        <tr> <td> Underpredicted  </td> <td>  The percentage of predicted values with a less potent GHS category than the corresponding reference value </td> </tr>
-         </table>"
-          )
-        )
-        
-      )
-    ),
-    bsCollapsePanel_dass(
-      title = "Figures",
-      div(
-        # class = "hiddenBlock",
+        plotOutput("perf_table_2")
+      ),
+      column(
+        width = 12,
+        tags$h2(
+          "Create Figures",
+          info_button("info_perf_fig", "Performance Figure Information")
+        ),
+        p("Blahblah"),
         selectInput(
           inputId = "perf_fig_comparison",
-          label = "Select Comparison(s) to Visualize",
-          choices = NULL,
-          multiple = T
-        ),
-        conditionalPanel(
-          condition = "input.perf_use_ice_data",
-          radioButtons(
-            inputId = "quant_data_source",
-            label = "Select Data Source",
-            choiceNames = c("My Data", "Integrated Chemical Environment"),
-            choiceValues = c("user_data", "ice"),
-            selected = "user_data"
-          )
-        ),
-        selectInput(
-          inputId = "perf_fig_quant_col",
-          label = "Select Quantitative Data to Visualize",
-          choices = NULL,
-          multiple = T
-        ),
-        selectInput(
-          inputId = "perf_fig_id_col",
-          label = "Select Identifiers for Tool Tips (Optional)",
-          choices = NULL,
-          multiple = T
-        ),
-        actionButton(inputId = "create_perf_figs", label = "Create Figures"),
-        
-        # fluidRow(
-        #   column(
-        #     id = "perf_fig_block_1",
-        #     width = 12,
-        #     selectInput(
-        #       inputId = "perf_fig_comp_select",
-        #       label = "Select Comparison",
-        #       choices = NULL
-        #     ),
-        #     plotlyOutput("perf_fig_1", height = "75rem")
-        #   ),
-        #   column(
-        #     id = "perf_fig_block_2",
-        #     class = "hiddenBlock",
-        #     width = 6,
-        #     selectInput(
-        #       inputId = "reference_perf_2",
-        #       label = "Select Reference",
-        #       choices = NULL
-        #     ),
-        #     plotlyOutput("perf_fig_2", height = "75rem")
-        #   )
-        # ),
-        
-        
-        
-        
-        selectInput(
-          inputId = "perf_fig_comp_select",
-          label = "Select Figure to Show",
+          label = "Select Reference to Visualize",
           choices = NULL
         ),
         selectInput(
-          inputId = "perf_fig_quant_select",
-          label = "Select Figure to Show",
+          inputId = "perf_fig_quant_col",
+          label = "Select Quantiative Data to Visualize",
           choices = NULL
         ),
         plotlyOutput("perf_fig", height = "75rem")
       )
-    )
+    ),
+    fluidRow(
+      id = "compare_explore_borderline",
+      class = "bordered-panel hiddenBlock",
+      p("Compare features are not currently available for borderline results.")
+      )
   )
 )
 
@@ -971,12 +1174,6 @@ ui_dass <- list(
     review_selection_panel,
     results_panel,
     compare_panel
-    # selected = "Select Data Columns"
   ),
-  da_modals,
-  data_modals,
-  select_modals,
-  review_modals,
-  results_modals,
-  compare_modals
+  info_modals
 )

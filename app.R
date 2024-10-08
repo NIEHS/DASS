@@ -58,7 +58,6 @@ attr(ui, "lang") <- "en"
 
 # Read in server files
 server <- function(input, output, session) {
-  source("R/server/Step1-Select.R", local = TRUE)
   source("R/server/Step2-UploadData.R", local = TRUE)
   source("R/server/Step3-SelectColumns.R", local = TRUE)
   source("R/server/Step4-ReviewColumns.R", local = TRUE)

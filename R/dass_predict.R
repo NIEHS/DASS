@@ -158,22 +158,28 @@ daITS <- function(
   ke1_use_mean <- !is.na(values$ke1_mean_c_l_dep)
   ke1_use_c <- is.na(values$ke1_mean_c_l_dep) & !is.na(values$ke1_c_dep)
   ke1_score <- rep(NA, nz)
-  ke1_score[ke1_use_mean] <- as.numeric(as.character(cut(
-    values$ke1_mean_c_l_dep[ke1_use_mean],
-    breaks = da_its_ke_thresholds$ke1[[ke1_assay]]$mean_c_l_dep$score_breaks,
-    labels = da_its_ke_thresholds$ke1[[ke1_assay]]$mean_c_l_dep$score)))
   
+  if (any(ke1_use_mean)) {
+    ke1_score[ke1_use_mean] <- as.numeric(as.character(cut(
+      values$ke1_mean_c_l_dep[ke1_use_mean],
+      breaks = da_its_ke_thresholds$ke1[[ke1_assay]]$mean_c_l_dep$score_breaks,
+      labels = da_its_ke_thresholds$ke1[[ke1_assay]]$mean_c_l_dep$score)))
+  }
   
-  ke1_score[ke1_use_c] <- as.numeric(as.character(cut(
-    values$ke1_c_dep[ke1_use_c],
-    breaks = da_its_ke_thresholds$ke1[[ke1_assay]]$c_dep$score_breaks,
-    labels = da_its_ke_thresholds$ke1[[ke1_assay]]$c_dep$score)))
-  
-  ke3_score <- as.numeric(as.character(cut(
-    values$ke3_value,
-    breaks = da_its_ke_thresholds$ke3[[ke3_assay]]$score_breaks,
-    labels = da_its_ke_thresholds$ke3[[ke3_assay]]$score)))
-  
+  if (any(ke1_use_c)) {
+    ke1_score[ke1_use_c] <- as.numeric(as.character(cut(
+      values$ke1_c_dep[ke1_use_c],
+      breaks = da_its_ke_thresholds$ke1[[ke1_assay]]$c_dep$score_breaks,
+      labels = da_its_ke_thresholds$ke1[[ke1_assay]]$c_dep$score)))
+  }
+
+  if (!all(is.na(values$ke3_value))) {
+    ke3_score <- as.numeric(as.character(cut(
+      values$ke3_value,
+      breaks = da_its_ke_thresholds$ke3[[ke3_assay]]$score_breaks,
+      labels = da_its_ke_thresholds$ke3[[ke3_assay]]$score)))
+  }
+
   insil_score <- values$insil_prediction
   insil_score[is.na(values$insil_ad) | values$insil_ad == 0] <- NA
   
@@ -240,10 +246,10 @@ daKE31 <- function(ke1_call, ke3_value) {
     potency = NA
   )
   
-  out$potency[ke3_value == Inf & ke1_call == 0] <- "NC"
-  out$potency[ke3_value == Inf & ke1_call == 1] <- "1B"
+  out$potency[ke3_value >= 9999 & ke1_call == 0] <- "NC"
+  out$potency[ke3_value >= 9999 & ke1_call == 1] <- "1B"
   out$potency[ke3_value <= 10] <- "1A"
-  out$potency[ke3_value > 10 & ke3_value < Inf] <- "1B"
+  out$potency[ke3_value > 10 & ke3_value < 9999] <- "1B"
   
   out$hazard[out$potency == "NC"] <- "Negative"
   out$hazard[out$potency %in% c("1A", "1B")] <- "Positive"

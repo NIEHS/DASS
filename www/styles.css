@@ -31,6 +31,7 @@ body {
 
 h1 {
   margin: 0;
+  font-size: 2rem;
   font-weight: bold;
 }
 
@@ -49,6 +50,18 @@ a:focus, a:hover {
   text-decoration: underline;
 }
 
+.sub-ind {
+  padding-left: 2em;
+}
+
+dd {
+    margin-left: 5%;
+}
+
+dt{
+  margin-left: 2%;
+}
+
 /* || ELSE */
 /* Hidden but visible to screen reader */
 .sr-only {
@@ -61,14 +74,19 @@ a:focus, a:hover {
   position: absolute;
 }
 
-.radio label,
-{
-  margin-left: 2em;
+.shiny-options-group {
+  margin-left: 2rem;
+}
+/* Makes hover over checkbox show pointer */
+input[type="checkbox"]:hover {
+  cursor: pointer;
 }
 
-/* Makes hover over checkbox show pointer */
-
-
+.warningText {
+  font-weight: bold;
+  font-size: 1.1em;
+  color: #C25400;
+}
 
 /* Hides progress bar */
 #fpath_progress {
@@ -186,6 +204,7 @@ a:focus, a:hover {
 }
 
 .dropdown-content a {
+  background-color: var(--lightgreen);
   color: black;
   text-decoration: none;
   display: block;
@@ -354,6 +373,7 @@ a:focus, a:hover {
   padding:1vh;
   display:flex;
   align-items:center;
+  margin-bottom: 1em;
 }
 
 .glyphicon-exclamation-sign {
@@ -371,12 +391,54 @@ a:focus, a:hover {
 }
 
 /* || TABLES */
+.datatables {
+  margin: 0 auto;
+}
+
 .datatables thead {
   background-color: #232b5f;
   color: white;
 }
 
+.table-plain {
+  width: fit-content;
+}
+
+.table-plain thead {
+  background-color: #fff1d4;
+  color: black;
+}
+
+.table-plain thead tr th {
+  text-align: center;
+}
+
+.defTab {
+  margin: auto;
+}
+
+.defTab th,
+.defTab td {
+  padding: 4px 8px;
+  font-size: 0.75em;
+}
+
+.defTab th {
+  text-align: center;
+}
+
+/* ||MODALS */
+#xl_select_modal .modal-header, 
+#xl_select_modal .modal-footer,
+#confirm_run_with_flag .modal-footer {
+  display: none;
+}
+
 /* || DETAILS */
+details {
+  margin-bottom: 1em;
+}
+
 details summary {
   background-color: var(--lightblue);
   font-size: 1.2em;
@@ -403,3 +465,43 @@ details summary:hover {
   padding: 0 2em;
 }
 
+/* || DIAGRAMS */
+.da-diagram {
+  max-width: 100%;
+  padding-top: 2vh;
+  padding-bottom: 2vh;
+  display: block;
+  margin: auto;
+}
+
+figcaption {
+  font-size: 75%;
+}
+
+.caro-fig {
+  display: none;
+}
+
+.blr_caro_nav {
+ display: flex; 
+ justify-content: center;
+ align-items: center;
+}
+
+.prev, .next {
+  margin-bottom: 15px;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 3px;
+  background-color: #bbb;
+  border: 1px var(--darkblue) solid;
+  border-radius: 4px;
+  color: black;
+}
+
+/* On hover, add a black background color with a little bit see-through */
+.prev:hover, .next:hover {
+  background-color: var(--darkblue);
+  color: white;
+  text-decoration: none;
+}
