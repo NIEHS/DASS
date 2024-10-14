@@ -19,26 +19,12 @@ function resetHiddenTab(tabName) {
 // ## DATA TABLE
 // Makes tables show NA instead of blank
 function showNA() {
-
   for (let i = 0; i < data.length; i++) {
     if (data[i]===null) {
       $(this.api().cell(row, i).node()).css({"color": "red"})
     }
   }
-
-  
-
 }
-/*
-function showNA(row, data) {
-  for (var i=0; i<data.length; i++) {
-    if(data[i]===null){
-      $('td:eq('+i+')', row).html('NA')
-        .css({'color': 'red'});
-    }
-  }
-}
-*/
 
 function styleWarnRow(row, data) {
   if(data[data.length-1]===true) {
@@ -50,20 +36,18 @@ function styleWarnRow(row, data) {
 function updateSelectUI(ke31=true) {
   if(ke31) {
     $('#ke1_select_ui summary').html('Key Event 1 - DPRA');
-    $("#ke1_call_select h2").html("DPRA Call");
-    $("#ke1_dep_select h2").html("DPRA Mean Depletion Value");
+    $("#ke1_call_select h2 span").html("DPRA Call");
+    $("#ke1_dep_select h2 span").html("DPRA Mean Depletion Value");
 
     $('#ke3_select_ui summary').html('Key Event 3 - h-CLAT');
-    $("#ke3_quant_ui h2").html("h-CLAT MIT");
-    $("label[for='ke3_val_col']").html("Minimum Induction Threshold Column")
+    $("#ke3_quant_ui h2 span").html("h-CLAT MIT");
   } else {
     $('#ke1_select_ui summary').html('Key Event 1');
-    $("#ke1_call_select h2").html("KE1 Call");
-    $("#ke1_dep_select h2").html("KE1 Mean Depletion Value");
+    $("#ke1_call_select h2 span").html("KE1 Call");
+    $("#ke1_dep_select h2 span").html("KE1 Mean Depletion Value");
 
     $('#ke3_select_ui summary').html('Key Event 3');
-    $("#ke3_quant_ui h2").html("KE3 Quantitative Endpoint");
-    $("label[for='ke3_val_col']").html("Quantitative Endpoint Column")
+    $("#ke3_quant_ui h2 span").html("KE3 Quantitative Endpoint");
   }
 }
 
@@ -77,38 +61,3 @@ $(document).on('shiny:connected', function() {
   $("#do_da_2o3_bl").attr("aria-labelledby", "2o3_bl_cb_label");
   
 });
-
-/*
-
-function toggleAssaySelect(input_name, assay_value, disable = true) {
-  const assay_input = $(`input[name = '${input_name}'][value='${assay_value}']`);
-  console.log(assay_input);
-  if (disable) {
-    assay_input.addClass("disabled");
-    assay_input.attr("disabled", true);
-    assay_input.attr("aria-disabled", true);
-    assay_input.parent().addClass("disabled");
-    assay_input.attr("aria-disabled", true);
-  } else {
-    assay_input.removeClass("disabled");
-    assay_input.attr("disabled", false);
-    assay_input.attr("aria-disabled", false);
-    assay_input.parent().removeClass("disabled");
-    assay_input.attr("aria-disabled", false);
-  }
-}
-
-
-
-
-
-/*
-$(document).on('shiny:connected', function() {
-  document.querySelector
-  let predCol = document.querySelector("#perfPredCol");
-  let refCol = document.querySelector("#perfRefRes");
-  predCol.setAttribute("title", "Select prediction columns");
-  refCol.setAttribute("title", "Select reference columns");
-  
-});
-*/

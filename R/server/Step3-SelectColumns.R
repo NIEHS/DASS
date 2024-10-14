@@ -11,18 +11,6 @@ ke_block_id <- list(
 # List to store selection details
 tmp_list <- function(x) list(display_name = x, col_name = NULL, values = NULL, converted_values = NULL, flagged = NULL)
 data_select_template <- list(
-  ke1_call_col         = tmp_list("KE1 Assay Call"),
-  ke1_mean_c_l_dep_col = tmp_list("KE1 Mean Depletion (%)"),
-  ke1_c_dep_col        = tmp_list("KE1 Cys/NAC Depletion (%)"),
-  ke1_l_dep_col        = tmp_list("KE1 Lys/NAL Depletion (%)"),
-  ke2_call_col         = tmp_list("KE2 Assay Call"),
-  ke3_call_col         = tmp_list("KE3 Assay Call"),
-  ke3_val_col          = tmp_list("KE3 Quantiative Endpoint"),
-  insil_call_col       = tmp_list("In Silico Call Prediction"),
-  insil_ad_col         = tmp_list("In Silico Applicability Domain")
-)
-
-data_select_template <- list(
   ke1_call_col         = tmp_list(column_text_labels["ke1_call_col"]),
   ke1_mean_c_l_dep_col = tmp_list(column_text_labels["ke1_mean_c_l_dep_col"]),
   ke1_c_dep_col        = tmp_list(column_text_labels["ke1_c_dep_col"]),
@@ -41,9 +29,9 @@ data_select_auto_col <- list(
   ke1_l_dep_col        = c(adra = "ADRA_NAL_dep", dpra = "DPRA_Lys_dep"),
   ke2_call_col         = c(keratinosens = "KeratinoSens_call", lusens = "LuSens_call"),
   ke3_call_col         = c(gardskin = "GARDskin_call", hclat = "hCLAT_call", usens = "USENS_call"),
-  ke3_val_col          = c(gardskin = "GARDskin_DV", hclat = "hCLAT_MIT", usens = "USENS_EC150"),
-  insil_call_col       = c("Derek_prediction", "iSafeRat_prediction", "Leadscope_prediction", "OECDQSARTB_prediction", "StopTox_prediction"),
-  insil_ad_col         = c("Derek_ad", "iSafeRat_ad", "Leadscope_ad", "OECDQSARTB_ad", "StopTox_ad")
+  ke3_val_col          = c(gardskin = "GARDskin_input_conc", hclat = "hCLAT_MIT", usens = "USENS_EC150"),
+  insil_call_col       = c("insil_call", "Derek_prediction", "iSafeRat_prediction", "Leadscope_prediction", "OECDQSARTB_prediction", "StopTox_prediction"),
+  insil_ad_col         = c("insil_ad", "Derek_ad", "iSafeRat_ad", "Leadscope_ad", "OECDQSARTB_ad", "StopTox_ad")
 )
 
 ## Set up UI -----
@@ -165,7 +153,7 @@ observe({
 observe({
   switch(
     input$ke3_assay_name,
-    gard = updateSelectInput(inputId = "ke3_val_col", label = "Decision Value Column"),
+    gardskin = updateSelectInput(inputId = "ke3_val_col", label = "Input Concentration Column"),
     hclat = updateSelectInput(inputId = "ke3_val_col", label = "Minimum Induction Threshold Column"),
     usens = updateSelectInput(inputId = "ke3_val_col", label = "EC150 Column")
   )

@@ -246,10 +246,10 @@ daKE31 <- function(ke1_call, ke3_value) {
     potency = NA
   )
   
-  out$potency[ke3_value >= 9999 & ke1_call == 0] <- "NC"
-  out$potency[ke3_value >= 9999 & ke1_call == 1] <- "1B"
+  out$potency[ke3_value == Inf & ke1_call == 0] <- "NC"
+  out$potency[ke3_value == Inf & ke1_call == 1] <- "1B"
   out$potency[ke3_value <= 10] <- "1A"
-  out$potency[ke3_value > 10 & ke3_value < 9999] <- "1B"
+  out$potency[ke3_value > 10 & ke3_value < Inf] <- "1B"
   
   out$hazard[out$potency == "NC"] <- "Negative"
   out$hazard[out$potency %in% c("1A", "1B")] <- "Positive"

@@ -10,6 +10,7 @@ abbrev <- c(
   ks = "KeratinoSens",
   lusens = "LuSens",
   gard = "GARDskin",
+  gardskin = "GARDskin",
   hclat = "h-CLAT",
   il8 = "IL-8 Luc",
   usens = "U-SENS"
@@ -65,8 +66,6 @@ tabNames <- c(
   "Results",
   "Compare"
 )
-
-showNA_js <- "for (let i=0; i < data.length; i++) {if (data[i]===null) {$(this.api().cell(row, i).node()).html('NA')}}"
 
 # Create page
 # Welcome -----
@@ -223,9 +222,7 @@ upload_data_panel <- tabPanel(
         "<i class='glyphicon glyphicon-exclamation-sign' role='presentation'></i>",
         "</div>",
         "<div>",
-        "<p style='margin-bottom:0;'>Before uploading your file, ensure that the data meet the",
-        "<a id='show_upload_req' href = 'dassApp-dataRequirements.html' target = '_blank' class = 'action-link' aria-label='data and formatting requirements'>",
-        "<b>data and formatting requirements</b></a>.</p>",
+        "<p style='margin-bottom:0;'>Before uploading your file, ensure that the data meet the data and formatting requirements. More details are available in the user guide.</p>",
         "</div>",
         "</div>"
       ),
@@ -373,12 +370,12 @@ select_columns_panel <- tabPanel(
           class = "detailsBody",
           div(
             id = "ke1_call_select",
-            tags$h2("KE1 Call", info_button("info_ke1Call", "KE1 Call information")),
+            tags$h2(span("KE1 Call"), info_button("info_ke1Call", "KE1 Call information")),
             div(
               class = "sub-ind",
               checkboxInput(
                 inputId = "ke1_call_interpret",
-                label = "Derive call from quantiative data.",
+                label = "Derive call from quantitative data.",
                 value = F
               ),
               selectInput(
@@ -411,7 +408,7 @@ select_columns_panel <- tabPanel(
           div(
             id = "ke1_dep_select",
             tags$h2(
-              "KE1 Mean Depletion Value",
+              span("KE1 Mean Depletion Value"),
               info_button("info_ke1DepValue", "KE1 Mean Depletion Value Information")
             ),
             div(
@@ -506,7 +503,7 @@ select_columns_panel <- tabPanel(
             div(
               id = "ke3_quant_ui",
               tags$h2(
-                "KE3 Quantitative Endpoint",
+                span("KE3 Quantitative Endpoint"),
                 info_button("info_ke3_value", "KE3 Value information")
               ),
               div(
@@ -846,7 +843,7 @@ review_selection_panel <- tabPanel(
           "Your selections are summarized below. The KE assay sections show a table with your data column selections. Values in these columns are checked against formatting requirements and flagged if any issues are identified. Chemical identifier columns are flagged if any chemical identifiers do not have enough data to perform the 2o3."
         ),
         p(
-          "The last section lists the unique chemical identifiers from your data and indicates which worksheets contain those identifiers. The identifier is flagged if it does not have valid values in at least two worksheets."
+          "The last section lists the unique chemical identifiers from your data and indicates which worksheets contain those identifiers. The identifier is flagged if it does not have values in at least two worksheets."
         ),
         p(
           "Review your selections. When you are done, click 'Run' to run the DASS. If you need to change a selection, return to the 'Select Data Columns' page. If you need to upload new or updated data, return to the 'Upload Data' page."
@@ -925,7 +922,6 @@ results_panel <- tabPanel(
           style = "margin-bottom: 1em",
           tags$button(
             class = "btn dropbtn btn-default",
-            # style = "padding:1vh;",
             "Download Results",
             HTML("<i class='fas fa-caret-down' role='presentation'> </i>")
           ),
@@ -974,7 +970,7 @@ results_panel <- tabPanel(
           tags$summary("2o3 Results"),
           div(
             class = "detailsBody",
-            dataTableOutput("dass_results_blr", width = "fit-content")
+            DT::dataTableOutput("dass_results_blr", width = "fit-content")
           )
         ),
         tags$details(
@@ -982,7 +978,7 @@ results_panel <- tabPanel(
           tags$summary("KE1 Assay Run Outcomes"),
           div(
             class = "detailsBody",
-            dataTableOutput("ke1_blr_indiv", width = "fit-content")
+            DT::dataTableOutput("ke1_blr_indiv", width = "fit-content")
           )
         ),
         tags$details(
@@ -991,7 +987,7 @@ results_panel <- tabPanel(
           div(
             class = "detailsBody",
             p(id = "ks_run_text", "No run outcomes for KeratinoSens input."),
-            dataTableOutput("ke2_blr_indiv", width = "fit-content")
+            DT::dataTableOutput("ke2_blr_indiv", width = "fit-content")
           )
         ),
         tags$details(
@@ -999,7 +995,7 @@ results_panel <- tabPanel(
           tags$summary("KE3 Assay Run Outcomes"),
           div(
             class = "detailsBody",
-            dataTableOutput("ke3_blr_indiv", width = "fit-content")
+            DT::dataTableOutput("ke3_blr_indiv", width = "fit-content")
           )
         )
       )
@@ -1016,12 +1012,19 @@ compare_panel <- tabPanel(
       id = "compare_setup_standard",
       class = "bordered-panel hiddenBlock",
       tags$h1("Input"),
-      p(
-        "This section allows you to compare the DA outcomes to reference data. The reference data should be provided in your uploaded data file."
+      div(class = "sub-ind",
+        p(
+        "This section allows you to compare the DA outcomes to reference data from your uploaded input file. You can also compare the DA outcomes to chemical reference lists from the",
+        tags$a(
+          class = "external-link", 
+          target = "_blank", 
+          href = "https://ice.ntp.niehs.nih.gov/",
+          "Integrated Chemical Environment (ICE)"), 
+        ". There must be at least 5 prediction-reference pairs to perform the evaluation."
       ),
       p(
-        "Use the dropdown lists to select the DA predictions you want to evaluate and specify the columns containing your reference data. You may select more than one prediction or reference column. Click 'Compare' to generate a confusion matrix and accuracy metrics. Comparisons will only be performed if there are valid values for at least five prediction-reference pairs."
-      ),
+        "Select the DA prediction you want to evaluate and specify the reference data for comparison. When you are done, click \"Compare Data\" to generate performance metrics and figures."
+      )),
       radioButtons(
         inputId = "perf_pred_col",
         label = h2("Select DA Prediction"),
@@ -1044,6 +1047,9 @@ compare_panel <- tabPanel(
           ),
           conditionalPanel(
             condition = "input.perf_use_my_data",
+            p(
+              "Use the dropdown list to select the columns from your input file that contain reference data. You can select more than one column."
+            ),
             selectInput(
               inputId = "perf_ref_col",
               label = "Select Reference Column(s)",
@@ -1067,6 +1073,7 @@ compare_panel <- tabPanel(
           checkboxInput(inputId = "perf_use_ice", label = "Use reference data from ICE"),
           conditionalPanel(
             condition = "input.perf_use_ice",
+            p("Choose the reference chemical lists you want to use. The data will be matched by a chemical identifier that you specify. Use the dropdown list to select the column in your data containing the appropriate chemical identifiers."),
             checkboxGroupInput(
               inputId = "perf_ice_ref_cql",
               label = "Select ICE Chemical Quick List",

@@ -123,12 +123,17 @@ run_dass <- reactive({
     )[,names(dass_res)]
   }
   
-  names(dass_res) <- paste0(input$selected_da, ".", names(dass_res))
+  names(dass_res) <- paste0(abbrev[input$selected_da], ".", names(dass_res))
   
   da_input <- sapply(data_select, function(x) !is.null(x$converted_values))
   da_input <- lapply(data_select[da_input], function(x) {
     out <- list(x$converted_values)
     names(out) <- paste0(x$col_name, "_input")
+    if (x$flagged) {
+      names(out) <- paste0(names(out), "_FLAG")
+    }
+    
+    
     return(out)
   })
   da_input <- as.data.frame(da_input)
@@ -151,7 +156,7 @@ run_dass <- reactive({
   
   updateRadioButtons(inputId = "perf_pred_col", choices = switch(input$selected_da, da_2o3 = "Hazard", da_its = c("Hazard", "Potency"), da_ke31 = c("Hazard", "Potency")))
   updateSelectInput(inputId = "perf_ref_col", choices = names(dt_analyze()))
-  updateSelectInput(inputId = "perf_ice_user_identifier", choices = names(dt_analyze()))
+  updateSelectInput(inputId = "perf_ice_user_identifier", choices = c("", names(dt_analyze())))
   
 })
 
@@ -191,9 +196,9 @@ output$dt_results <- renderDataTable({
     visible = F
   )
   
-  rc <- dt_results$x$options$rowCallback
-  rc <- unlist(strsplit(as.character(rc), '\n'))
-  dt_results$x$options$rowCallback <- JS(append(rc, after = length(rc) - 1, showNA_js))
+  # rc <- dt_results$x$options$rowCallback
+  # rc <- unlist(strsplit(as.character(rc), '\n'))
+  # dt_results$x$options$rowCallback <- JS(append(rc, after = length(rc) - 1, showNA_js))
 
   dt_results
 })
@@ -203,11 +208,10 @@ create_xl_file <- reactive({
   wb <- createWorkbook()
 
   addWorksheet(wb, sheetName = "Key")
-  addWorksheet(wb, sheetName = "Column Selection")
+  addWorksheet(wb, sheetName = "Selections")
   addWorksheet(wb, sheetName = "Results")
 
   # Styles
-  orange_font <- createStyle(fontColour = "#D55E00")
   bold_font <- createStyle(textDecoration = "bold")
   blue_bg <- createStyle(fgFill = "#56B4E9", halign = "right")
   pink_bg <- createStyle(fgFill = "#CC79A7", halign = "right")
@@ -234,15 +238,38 @@ create_xl_file <- reactive({
   addStyle(wb, sheet = "Key", style = pink_bg, row = 3, col = 1)
   addStyle(wb, sheet = "Key", style = yellow_bg, row = 2, col = 1)
 
-  writeData(wb, sheet = "Column Selection", x = dt_review(), headerStyle = bold_font)
-  flag_rows <- which(dt_review()$Flagged == "FLAG")
-
-  if (length(flag_rows) > 0) {
-    flag_rows <- flag_rows + 1
-    addStyle(wb, sheet = "Column Selection", style = orange_font,
-             rows = flag_rows, cols = 1:ncol(dt_review()), gridExpand = T)
+  dt_review <- dt_review()
+  colnames(dt_review) <- c("Required Endpoint", "Selection", "Flagged")
+  
+  summary_df <- data.frame(
+    `Required Endpoint` = c("DASS App", "Date Run", "", "Required Endpoint", "DA"),
+    `Selection` = c("v2.0", format.Date(Sys.Date()), "", "Selection", abbrev[input$selected_da]),
+    Flagged = c(rep("", 3), "Flagged", ""),
+    check.names = F
+  )
+  
+  if ((input$selected_da == "da_2o3" & input$ke1_call_interpret) | input$selected_da == "da_its") {
+    summary_df <- rbind(summary_df, data.frame(
+      `Required Endpoint` = c("KE1 Assay"),
+      `Selection` = abbrev[input$ke1_assay_name],
+      Flagged = "",
+      check.names = F
+    ))
   }
+  
+  if (input$selected_da == "da_its") {
+    summary_df <- rbind(summary_df, data.frame(
+      `Required Endpoint` = c("KE3 Assay"),
+      `Selection` = abbrev[input$ke3_assay_name],
+      Flagged = "",
+      check.names = F
+    ))
+  }  
+  
+  summary_df <- rbind(summary_df, dt_review)
 
+  writeData(wb, "Selections", summary_df, colNames = F, rowNames = F)
+  
   writeData(wb, sheet = "Results", x = all_out$result_df, headerStyle = bold_font, keepNA = T, na.string = "NA")
   row_select <- 2:(nrow(all_out$result_df) + 1)
   addStyle(wb, sheet = "Results", style = yellow_bg,
@@ -252,11 +279,7 @@ create_xl_file <- reactive({
   addStyle(wb, sheet = "Results", style = blue_bg,
            rows = row_select, cols = all_out$dass_results, gridExpand = T)
   activeSheet(wb) <- "Results"
-  
-  addWorksheet(wb, "test")
-  writeData(wb, "test", dt_review())
-  
-  
+
   wb
 })
 
@@ -271,7 +294,10 @@ output$downloadres_txt <- downloadHandler(
     paste0(fname, "_DASSResults_", format.Date(Sys.time(), "%Y%m%d-%H%M%S"), ".txt")
   },
   content = function(con) {
-    write.table(x = all_out$result_df, file = con, quote = F, row.names = F, sep = "\t")
+    tmp <- data.frame(t(c("DASS App v2.0", format.Date(Sys.Date()), rep("", ncol(all_out$result_df)-2))))
+    colnames(tmp) <- names(all_out$result_df)
+    tmp <- rbind(all_out$result_df, tmp)
+    write.table(x = tmp, file = con, quote = F, row.names = F, sep = "\t")
   }
 )
 
@@ -526,8 +552,8 @@ output$dass_results_blr <- renderDataTable({
     callback  = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
     options   = list(
       dom = "lrtip",
-      rowCallback = JS(sprintf("function(row, data) {%s}", showNA_js))
-    )
+      scrollY = TRUE,
+      scrollX = TRUE)
     )
 })
 
@@ -541,9 +567,9 @@ output$ke1_blr_indiv <- renderDataTable({
     callback  = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
     options   = list(
       dom = "lrtip",
-      rowCallback = JS(sprintf("function(row, data) {%s}", showNA_js))
-    )
-    )
+      scrollY = TRUE,
+      scrollX = TRUE)
+  )
 })
 
 output$ke2_blr_indiv <- renderDataTable({
@@ -555,8 +581,9 @@ output$ke2_blr_indiv <- renderDataTable({
             callback  = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
             options   = list(
               dom = "lrtip",
-              rowCallback = JS(sprintf("function(row, data) {%s}", showNA_js))
-            ))
+              scrollY = TRUE,
+              scrollX = TRUE)
+  )
 })
 
 output$ke3_blr_indiv <- renderDataTable({
@@ -568,8 +595,9 @@ output$ke3_blr_indiv <- renderDataTable({
             callback  = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
             options   = list(
               dom = "lrtip",
-              rowCallback = JS(sprintf("function(row, data) {%s}", showNA_js))
-            ))
+              scrollY = TRUE,
+              scrollX = TRUE)
+  )
 })
 
 ## Downloads -----

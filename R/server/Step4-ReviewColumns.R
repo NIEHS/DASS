@@ -134,7 +134,6 @@ observeEvent(input$review_entries, {
   dt_review <- lapply(data_select[col_req], function(x) x[c("display_name", "col_name", "flagged")])
   dt_review <- do.call("rbind.data.frame", dt_review)
   names(dt_review) <- c("Endpoint", "Selected Column", "Flagged")
-  # dt_review$Flagged <- ifelse(dt_review$Flagged, "FLAG", "")
 
   dt_review(dt_review)
 
@@ -145,15 +144,29 @@ observeEvent(input$review_entries, {
 output$review_contents_standard_ui <- renderUI({
   
   ui <- list(
-    tags$ul(
-      tags$li(tags$b("Selected DA: "), abbrev[input$selected_da]),
-      tags$li(tags$b("Input File: "), ifelse(input$use_demo_data, "Demo Data", input$fpath$name))
-    ),
+    select_list = NULL,
     dupe_warn = NULL,
     flag_warn = NULL,
-    dataTableOutput("dt_review", width = "fit-content"),
+    dt_review = dataTableOutput("dt_review", width = "fit-content"),
     br()
   )
+
+  select_summary <- list(
+    tags$li(tags$b("Selected DA: "), abbrev[input$selected_da]),
+    tags$li(tags$b("Input File: "), ifelse(input$use_demo_data, "Demo Data", input$fpath$name)),
+    ke1_tmp = NULL,
+    ke3_tmp = NULL
+  )
+  
+  if ((input$selected_da == "da_2o3" & input$ke1_call_interpret) | input$selected_da == "da_its") {
+    select_summary$ke1_tmp <- tags$li(tags$b("KE1 Assay: "), abbrev[input$ke1_assay_name])
+  }
+  
+  if (input$selected_da == "da_its") {
+    select_summary$ke3_tmp <- tags$li(tags$b("KE3 Assay: "), abbrev[input$ke3_assay_name])
+  }
+  
+  ui$select_list <- tags$ul(select_summary)
 
   if (any(duplicated(dt_review()$`Selected Column`))) {
     ui$dupe_warn <- p(strong(class = "warningText", "Warning: Identical column assigned to more than one endpoint."))
@@ -177,7 +190,8 @@ output$dt_review <- DT::renderDataTable({
               rowCallback = JS("styleWarnRow"),
               dom = "t",
               ordering = F
-            ))
+            ),
+            callback = JS("$('#dt_review .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"))
 })
 
 ## BORDERLINES -----

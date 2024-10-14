@@ -13,8 +13,18 @@ perf_plots <- reactiveVal()
 # Comparison -----
 observeEvent(input$do_compare, {
   ref_user_data <- NULL
+  n_comp <- 0
   if (input$perf_use_my_data) {
-    ref_user_data <- as.list(all_out$result_df[,input$perf_ref_col,drop=F])
+    if (is.null(input$perf_ref_col)) {
+      showNotification(
+        ui = "No reference columns selected.",
+        type = "warning",
+        duration = 10
+      )
+    } else {
+      ref_user_data <- as.list(all_out$result_df[,input$perf_ref_col,drop=F])
+      n_comp <- n_comp + 1
+    }
   }
   
   ref_hppt_data <- NULL
@@ -27,31 +37,49 @@ observeEvent(input$do_compare, {
       smiles = "QSAR Ready SMILES"
     )
     
-    if ("hppt" %in% input$perf_ice_ref_cql) {
-      rcol <- switch(
-        input$perf_pred_col,
-        Hazard = grep_ci("binary hazard", names(hppt_ref), value = T),
-        Potency = grep_ci("potency", names(hppt_ref), value = T)
+    if (input$perf_ice_user_identifier == "") {
+      showNotification(
+        ui = "No identifier column selected for ICE comparison.",
+        type = "warning",
+        duration = 10
       )
-      ref_hppt_data <- as.list(hppt_ref[match(all_out$result_df[[input$perf_ice_user_identifier]], hppt_ref[[id]]), rcol, drop = F])
-    }
-    
-    if ("llna" %in% input$perf_ice_ref_cql) {
-      rcol <- switch(
-        input$perf_pred_col,
-        Hazard = grep_ci("binary hazard", names(llna_ref), value = T),
-        Potency = grep_ci("potency", names(llna_ref), value = T)
-      )
-      ref_llna_data <- as.list(llna_ref[match(all_out$result_df[[input$perf_ice_user_identifier]], llna_ref[[id]]), rcol, drop = F])
+    } else {
+      if ("hppt" %in% input$perf_ice_ref_cql) {
+        rcol <- switch(
+          input$perf_pred_col,
+          Hazard = grep_ci("binary hazard", names(hppt_ref), value = T),
+          Potency = grep_ci("potency", names(hppt_ref), value = T)
+        )
+        ref_hppt_data <- as.list(hppt_ref[match(all_out$result_df[[input$perf_ice_user_identifier]], hppt_ref[[id]]), rcol, drop = F])
+      }
+      
+      if ("llna" %in% input$perf_ice_ref_cql) {
+        rcol <- switch(
+          input$perf_pred_col,
+          Hazard = grep_ci("binary hazard", names(llna_ref), value = T),
+          Potency = grep_ci("potency", names(llna_ref), value = T)
+        )
+        ref_llna_data <- as.list(llna_ref[match(all_out$result_df[[input$perf_ice_user_identifier]], llna_ref[[id]]), rcol, drop = F])
+      }
+      n_comp <- n_comp + 1
     }
   }
-  perf_ref_data(c(ref_user_data, ref_hppt_data, ref_llna_data))
-
-  switch(
-    input$perf_pred_col,
-    Hazard = binary_compare(),
-    Potency = cat_compare()
-  )
+  
+  if (n_comp == 0) {
+    showNotification(
+      "Missing required information. Review your selections and try again.",
+      type = "error",
+      duration = 10
+    )
+  } else {
+    perf_ref_data(c(ref_user_data, ref_hppt_data, ref_llna_data))
+    
+    switch(
+      input$perf_pred_col,
+      Hazard = binary_compare(),
+      Potency = cat_compare()
+    )
+  }
 })
 
 # Binary -----
@@ -156,7 +184,10 @@ binary_compare <- reactive({
 })
 
 # Categorical -----
+
 cat_compare <- reactive({
+  perf_pred_col <- isolate(input$perf_pred_col)
+  
   pred <- all_out$result_df[all_out$dass_results]
   pred <- pred[,grep_ci("potency", names(pred))]
   pred <- factor(pred, levels = c("1A", "1B", "NC", "Inconclusive"))
@@ -189,10 +220,10 @@ cat_compare <- reactive({
       out <- list(
         ref_col = i,
         ref_dat = ref,
-        pred_col = input$perf_pred_col,
+        pred_col = perf_pred_col,
         pred_dat = pred,
-        id = gsub("\\s+|[.]+", "", tolower(paste(i, input$perf_pred_col, sep = "_"))),
-        label = paste(i, input$perf_pred_col, sep = " vs. "),
+        id = gsub("\\s+|[.]+", "", tolower(paste(i, perf_pred_col, sep = "_"))),
+        label = paste(i, perf_pred_col, sep = " vs. "),
         ref_warn = ref_warn,
         pred_error = pred_error
       )
@@ -201,23 +232,35 @@ cat_compare <- reactive({
         perf <- compareCat(
           pred = pred,
           ref = ref,
-          predCol = input$perf_pred_col,
+          predCol = perf_pred_col,
           refCol = i
         )
         out <- append(out, perf)
 
-        base_plot_data <- data.frame(
+        base_plot_data_ref <- expand.grid(ref = unique(ref), pred = unique(pred))
+        base_plot_data_ref$val <- apply(base_plot_data_ref, 1, function(x) {
+          ref_na <- is.na(x[1])
+          pred_na <- is.na(x[2])
+          if (ref_na & pred_na) {
+            sum(is.na(ref) & is.na(pred))
+          } else if (ref_na & !pred_na) {
+            sum(is.na(ref) & pred == x[2], na.rm = T)
+          } else if (!ref_na & pred_na) {
+            sum(ref == x[1] & is.na(pred), na.rm = T)
+          } else if (!ref_na & !pred_na) {
+            sum(ref == x[1] & pred == x[2], na.rm = T)
+          }
+        })
+
+        base_plot_data <- unique(data.frame(
           ref = ref,
           pred = pred,
-          pred_type = perf$indiv,
-          val = 1
-        )
-
-        base_plot_data <- aggregate(val ~ ref + pred + pred_type, data = base_plot_data, sum)
+          pred_type = perf$indiv
+        ))
+        base_plot_data <- merge(base_plot_data, base_plot_data_ref, all = T)
         base_plot_data$tt_text <- sprintf("Prediction Type = %s\nPrediction = %s\nReference = %s\nCount = %i",
                                           base_plot_data$pred_type, base_plot_data$pred, base_plot_data$ref, base_plot_data$val)
-        base_plot_data$ref <- sprintf("Reference = %s", base_plot_data$ref)
-
+        
         da_lab <- switch(input$selected_da,
                          da_2o3 = "Two-out-of-Three DA",
                          da_its = "Integrated Testing Strategy DA",
@@ -225,11 +268,13 @@ cat_compare <- reactive({
 
         bp_title <- sprintf("Potency Comparison\n%s vs. %s", da_lab, i)
 
-        base_plot <- ggplot(base_plot_data, aes(x = pred, y = val, text = tt_text)) +
-          geom_bar(stat = "identity") +
-          facet_grid(.~ref) +
-          labs(x = "Potency Prediction", y = "Count", title = bp_title) +
-          theme_bw()
+        base_plot <- ggplot(base_plot_data, aes(x = ref, y = val, fill = pred, text = tt_text)) + 
+          geom_bar(stat = "identity", position = position_dodge(preserve = "single"), color = "black") + 
+          labs(x = "Reference Potency", y = "Count", title = bp_title) + 
+          scale_x_discrete(labels = c("1A", "1B", "NC", "NA"), breaks = c("1A", "1B", "NC", NA)) +
+          scale_fill_manual(name = sprintf("%s Prediction", abbrev[input$selected_da]), values = c("#382A54FF", "#357BA2FF", "#60CEACFF", "#7d7d7d"), breaks = c("1A", "1B", "NC", "Inconclusive", NA), na.value = "#F0F0F0") +
+          theme_bw() 
+        
         out$base_plot <- base_plot
       }
     }
@@ -430,34 +475,39 @@ perf_plot_error_quant$x$layout$yaxis <- list(visible = F)
 perf_plot_error_quant$x$config$staticPlot <- T
 
 perf_shown <- reactive({
-  perf_table <- perf_tables()[[input$perf_fig_comparison]]
+  perf_pred_col <- isolate(input$perf_pred_col)
+  perf_table <- perf_tables()[[isolate(input$perf_fig_comparison)]]
   if (!is.null(perf_table[["ref_error"]])) {
     perf_plot_error_pred
   } else if (perf_table$pred_error) {
     perf_plot_error_pred
   } else {
     if (input$perf_fig_quant_col == "None") {
-      plot_out <- ggplotly(perf_tables()[[input$perf_fig_comparison]][["base_plot"]])
+      plot_out <- ggplotly(perf_table[["base_plot"]], tooltip = "text")
       plot_out$x$layout$margin$t <- plot_out$x$layout$title$font$size*3
-      plot_out
     } else {
       quant_val <- suppressWarnings(as.numeric(dt_analyze()[[input$perf_fig_quant_col]]))
       if (all(is.na(quant_val))) {
         perf_plot_error_quant
       } else {
-        etypes <- c("True Positive", "True Negative", "False Positive", "False Negative", NA)
         
-        cols <- c(
-          "#882255",
-          "#117733",
-          "#88CCEE",
-          "#332288",
-          "#999999"
+        etypes <- switch(
+          perf_pred_col,
+          Hazard  = c("True Positive", "True Negative", "False Positive", "False Negative", NA),
+          Potency = c("True 1A", "True 1B", "True NC", "Overpredicted", "Underpredicted", NA)
         )
         
+        cols <- switch(
+          perf_pred_col,
+          Hazard  = c("#882255", "#117733", "#88CCEE", "#332288", "#999999"),
+          Potency = c("#882255", "#CC6677", "#117733", "#88CCEE", "#332288", "#999999")
+        )
+
         pt_text <- sprintf(
-          "%s\n%s=%.2f",
+          "%s\nReference=%s\nDA Prediction=%s\n%s=%.2f",
           perf_table$indiv,
+          perf_table$ref_dat,
+          perf_table$pred_dat,
           input$perf_fig_quant_col,
           quant_val
         )
@@ -466,7 +516,7 @@ perf_shown <- reactive({
           geom_point(aes(x = quant_val, y = perf_table$indiv, color = perf_table$indiv, text = pt_text), position = position_jitter(width = 0)) +
           scale_color_manual(name = "Comparison", breaks = etypes, values = cols) + 
           labs(
-            title = sprintf("DA %s %s Prediction vs. %s", abbrev[input$selected_da], input$perf_pred_col, input$perf_fig_comparison),
+            title = sprintf("DA %s %s Prediction vs. %s", abbrev[input$selected_da], perf_pred_col, isolate(input$perf_fig_comparison)),
             y = NULL,
             x = input$perf_fig_quant_col) +
           theme_bw()
@@ -484,20 +534,19 @@ perf_shown <- reactive({
           val
         })
         
-        joint_plot <- subplot(pt_plt, dens_plt, nrows = 2, heights = c(0.35,0.65), shareX = T, titleX = T, titleY = T)
-        joint_plot$x$data <- lapply(joint_plot$x$data, function(val) {
+        plot_out <- subplot(pt_plt, dens_plt, nrows = 2, heights = c(0.35,0.65), shareX = T, titleX = T, titleY = T)
+        plot_out$x$data <- lapply(plot_out$x$data, function(val) {
           if (val$mode == "lines") val$showlegend <- F
           return(val)
         })
-        
-        joint_plot
-        
+        plot_out$x$layout$margin$t <- plot_out$x$layout$title$font$size*3
       }
     }
+    plot_out
   }
 })
 
 output$perf_fig <- renderPlotly({
-  req(perf_tables())
+  req(input$perf_fig_comparison)
   perf_shown()
 })

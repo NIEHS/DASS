@@ -23,7 +23,7 @@ observeEvent(input$confirm_da, {
     blr(TRUE)
     showHide(
       show = c("upload_blr_data_text", "blr_data_worksheet_select_block", "upload_block"),
-      hide = c("upload_data_text", "use_demo_data_cb")
+      hide = c("upload_data_text", "use_demo_data_cb", "xl_sheet_text_ui")
     )
   } else {
     if (blr()) { 
@@ -167,8 +167,7 @@ output$dt_analyze <- DT::renderDataTable({
             class = "table-bordered stripe",
             options = list(
               scrollY = TRUE,
-              scrollX = TRUE,
-              rowCallback = JS(sprintf("function(row, data) {%s}", showNA_js))
+              scrollX = TRUE
             ),
             callback = JS("$('#dt_analyze .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))")
   )
@@ -180,7 +179,6 @@ observeEvent(dt_analyze(), {
   } else {
     shinyjs::show("data_block")
   }
-  # shinyjs::runjs("resetHidden(false);")
 }, ignoreNULL = F)
 
 ## Load Demo Data -----
@@ -189,7 +187,6 @@ observeEvent(input$use_demo_data, {
     if (is.null(demo_data())) {
       demo_data(data.frame(fread("www/DASS_demo_data.csv", na.strings = c("", "na", "NA"))))
     }
-    
     dt_analyze(demo_data())
     shinyjs::hide("upload_block")
   }

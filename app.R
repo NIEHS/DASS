@@ -3,6 +3,7 @@
 # Original Creator: Kim To
 # Contact Information: ICE-support@niehs.nih.gov
 # Date Created: 2021-12-03
+# Last Modified: 2024-10-08
 # License: MIT
 # Version: 1.0
 # Description: Loads required packages. Reads in functions. Loads UI and
@@ -36,6 +37,8 @@ source("R/utils.R")
 
 # Load ui from file
 source("R/ui_obj.R")
+options(DT.TOJSON_ARGS = list(na = 'string'))
+options(shiny.reactlog=TRUE)
 ui <- fluidPage(
   useShinyjs(),
   # Set CSS styles
@@ -45,12 +48,7 @@ ui <- fluidPage(
 
   htmltools::findDependencies(selectizeInput("foo", "bar", choices = "a")),
   htmltools::findDependencies(icon("box", lib = "font-awesome")),
-  ui_dass,
-  # for debugging
-  div(style = "position: fixed; top: 0;", actionButton("browser", "browser")),
-  tags$footer(
-    tags$script(src = "js.js")
-  )
+  ui_dass
 )
 
 attr(ui, "lang") <- "en"
@@ -63,10 +61,6 @@ server <- function(input, output, session) {
   source("R/server/Step4-ReviewColumns.R", local = TRUE)
   source("R/server/Step5-Results.R", local = TRUE)
   source("R/server/Step6-Performance.R", local = TRUE)
-  # for debugging
-  observeEvent(input$browser,{
-    browser()
-  })
 }
 
 # Create App -----

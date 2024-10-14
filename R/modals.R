@@ -43,13 +43,13 @@ get_da_fig <- list(
   da2o3 = list(
     url = "da_diagrams/2o3_diagram-v2.png",
     alt = "Diagram of 2o3 data interpretation procedure",
-    caption = "\u2020 GL497 evalutes the 2o3 DA using DPRA, KeratinoSens, and h-CLAT. The additional key event assays are under evaluation for inclusion in GL497."
+    caption = "\u2020 GL497 evaluates the 2o3 DA using DPRA, KeratinoSens, and h-CLAT. The additional key event assays are under evaluation for inclusion in GL497."
   ),
   
   daits = list(
     url = "da_diagrams/its_diagram-v2.png",
     alt = "Diagram of ITS data interpretation procedure",
-    caption = "\u2020 GL497 evalutes the ITS DA using DPRA, h-CLAT, and either OECD QSAR Toolbox or Derek Nexus. The additional key event assays and in silico models are under evaluation for inclusion in GL497."
+    caption = "\u2020 GL497 evaluates the ITS DA using DPRA, h-CLAT, and either OECD QSAR Toolbox or Derek Nexus. The additional key event assays and in silico models are under evaluation for inclusion in GL497."
   ),
   
   dake31 = list(
@@ -168,7 +168,16 @@ format_info <- list(
     ),
   binary_call_ke1 = p("Alternatively, depletion values can be used to derive binary calls using the prediction models in", get_link[["tg442c"]], "."),
   numeric = p("The column corresponding to this endpoint should only contain numeric values. Missing values should be blank or labeled as \"NA\"."),
-  neg_inf = p("Negative results should be labeled as \"Inf\"."),
+  
+  ke3_value = p(
+    "The column corresponding this endpoint should only contain:",
+    tags$ul(
+      tags$li("Numeric values corresponding to positive assay outcomes"),
+      tags$li("\"Inf\", \"NI\", \"non-sensitizer\", \"non-sensitiser\", \"i\", \"inactive\", \"n\", \"neg\", \"negative\", or \"0\" to indicate negative assay outcomes.*")
+    )
+  ),
+  
+  # neg_inf = p("Negative results should be labeled as \"Inf\"."),
   insilico_ad = p(
     "The column corresponding to this endpoint should only contain the values:",
     tags$ul(
@@ -307,14 +316,14 @@ info_modals <- list(
     title = "Key Event 3 Assay Endpoint: Quantitative Value",
     p("The ITS uses a quantiative endpoint from a KE3 assay to assign a score.",
       tags$dl(
-        tags$dt("GARDskin: Decision Value"),
-        tags$dd(format_info[["numeric"]]),
+        tags$dt("GARDskin: Input Concentration"),
+        tags$dd(format_info[["ke3_value"]]),
         tags$dt("h-CLAT: Minimum Induction Threshold"),
-        tags$dd(format_info[c("numeric", "neg_inf")]),
+        tags$dd(format_info[["ke3_value"]]),
         tags$dt("U-SENS: CD86 Induction EC150"),
         tags$dd(
           p("The concentration needed to reach a stimulation index of 150% for CD86 induction."),
-          format_info[c("numeric", "neg_inf")])
+          format_info[["ke3_value"]])
       ))
   ),
   #### In Silico Model -----
