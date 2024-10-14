@@ -38,7 +38,6 @@ source("R/utils.R")
 # Load ui from file
 source("R/ui_obj.R")
 options(DT.TOJSON_ARGS = list(na = 'string'))
-options(shiny.reactlog=TRUE)
 ui <- fluidPage(
   useShinyjs(),
   # Set CSS styles
@@ -48,7 +47,10 @@ ui <- fluidPage(
 
   htmltools::findDependencies(selectizeInput("foo", "bar", choices = "a")),
   htmltools::findDependencies(icon("box", lib = "font-awesome")),
-  ui_dass
+  ui_dass,
+  tags$footer(
+    tags$script(src = "js.js")
+  )
 )
 
 attr(ui, "lang") <- "en"
