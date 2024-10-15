@@ -550,10 +550,7 @@ output$dass_results_blr <- renderDataTable({
     filter    = "top",
     selection = "none",
     callback  = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
-    options   = list(
-      dom = "lrtip",
-      scrollY = TRUE,
-      scrollX = TRUE)
+    options   = list(dom = "lrtip")
     )
 })
 
@@ -565,10 +562,7 @@ output$ke1_blr_indiv <- renderDataTable({
     filter    = "top",
     selection = "none",
     callback  = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
-    options   = list(
-      dom = "lrtip",
-      scrollY = TRUE,
-      scrollX = TRUE)
+    options   = list(dom = "lrtip")
   )
 })
 
@@ -579,10 +573,7 @@ output$ke2_blr_indiv <- renderDataTable({
             filter    = "top",
             selection = "none",
             callback  = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
-            options   = list(
-              dom = "lrtip",
-              scrollY = TRUE,
-              scrollX = TRUE)
+            options   = list(dom = "lrtip")
   )
 })
 
@@ -593,10 +584,7 @@ output$ke3_blr_indiv <- renderDataTable({
             filter    = "top",
             selection = "none",
             callback  = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
-            options   = list(
-              dom = "lrtip",
-              scrollY = TRUE,
-              scrollX = TRUE)
+            options   = list(dom = "lrtip")
   )
 })
 

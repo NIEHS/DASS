@@ -476,7 +476,7 @@ perf_plot_error_quant$x$config$staticPlot <- T
 
 perf_shown <- reactive({
   perf_pred_col <- isolate(input$perf_pred_col)
-  perf_table <- perf_tables()[[isolate(input$perf_fig_comparison)]]
+  perf_table <- perf_tables()[[input$perf_fig_comparison]]
   if (!is.null(perf_table[["ref_error"]])) {
     perf_plot_error_pred
   } else if (perf_table$pred_error) {
@@ -485,6 +485,7 @@ perf_shown <- reactive({
     if (input$perf_fig_quant_col == "None") {
       plot_out <- ggplotly(perf_table[["base_plot"]], tooltip = "text")
       plot_out$x$layout$margin$t <- plot_out$x$layout$title$font$size*3
+      plot_out
     } else {
       quant_val <- suppressWarnings(as.numeric(dt_analyze()[[input$perf_fig_quant_col]]))
       if (all(is.na(quant_val))) {
@@ -540,9 +541,9 @@ perf_shown <- reactive({
           return(val)
         })
         plot_out$x$layout$margin$t <- plot_out$x$layout$title$font$size*3
+        plot_out
       }
     }
-    plot_out
   }
 })
 

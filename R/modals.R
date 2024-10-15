@@ -47,7 +47,7 @@ get_da_fig <- list(
   ),
   
   daits = list(
-    url = "da_diagrams/its_diagram-v2.png",
+    url = "da_diagrams/ITS_diagram-v2.png",
     alt = "Diagram of ITS data interpretation procedure",
     caption = "\u2020 GL497 evaluates the ITS DA using DPRA, h-CLAT, and either OECD QSAR Toolbox or Derek Nexus. The additional key event assays and in silico models are under evaluation for inclusion in GL497."
   ),

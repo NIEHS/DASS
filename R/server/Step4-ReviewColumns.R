@@ -256,7 +256,7 @@ observeEvent(input$review_entries, {
           
         } else if (ctype == "ks_pn_column") {
           
-          col_data$converted_values <- ifelse(col_data$values %in% c("POSITIVE", "NEGATIVE", "BORDERLINE"), col_data$values, NA)
+          col_data$converted_values <- ifelse(toupper(col_data$values) %in% c("POSITIVE", "NEGATIVE", "BORDERLINE"), col_data$values, NA)
           col_data$flagged <- !is.na(col_data$values) & is.na(col_data$converted_values)
         }
         
