@@ -168,7 +168,6 @@ format_info <- list(
     ),
   binary_call_ke1 = p("Alternatively, depletion values can be used to derive binary calls using the prediction models in", get_link[["tg442c"]], "."),
   numeric = p("The column corresponding to this endpoint should only contain numeric values. Missing values should be blank or labeled as \"NA\"."),
-  
   ke3_value = p(
     "The column corresponding this endpoint should only contain:",
     tags$ul(
@@ -176,8 +175,6 @@ format_info <- list(
       tags$li("\"Inf\", \"NI\", \"non-sensitizer\", \"non-sensitiser\", \"i\", \"inactive\", \"n\", \"neg\", \"negative\", or \"0\" to indicate negative assay outcomes.*")
     )
   ),
-  
-  # neg_inf = p("Negative results should be labeled as \"Inf\"."),
   insilico_ad = p(
     "The column corresponding to this endpoint should only contain the values:",
     tags$ul(
@@ -198,7 +195,8 @@ format_info <- list(
     span(style = "font-size: 90%", "*Case insensitive")
     ),
   blr_run = p("A run ID must be entered for every row of the data worksheet. The run ID is used to group results from the same run for evaluation."),
-  conc_numeric = p("The column corresponding to concentration should only contain numeric values and will be sorted during the evaluation. Missing values should be blank or labeled as \"NA\".")
+  conc_numeric = p("The column corresponding to concentration should only contain numeric values and will be sorted during the evaluation. Missing values should be blank or labeled as \"NA\"."),
+  potency_ref = p("The column corresponding to this endpoint should only contain GHS potency categories \"1A\", \"1B\", or \"NC\".")
 )
 
 # MODAL LIST -----
@@ -583,30 +581,63 @@ info_modals <- list(
   ),
   ## Step 5: Results -----
   bsModal(
-    id = "info_pink_modal",
-    title = "Input and Calculated Columns",
-    trigger = "info_pink",
-    p("These are the actual values used for evaluation. It may be useful to review the selected columns and their transformations to ensure your data were properly interpreted, especially if the DAs were run with flagged data."),
-    p("Binary call data are transformed to \"0\" for negative outcomes and \"1\" for positive outcomes.")
-  ),
-  bsModal(
-    id = "info_blue_modal",
-    title = "DA Columns",
-    trigger = "info_blue",
-    p("If the ITS DA was selected, then the individual ITS scores are also appended and highlighted in blue. The corresponding columns end with ‘Score’."),
-    p("Hazard call predictions are ‘0’ if the result is negative and ‘1’ if the result is positive."),
-    p("For assigning potency predictions, the DASS App uses categories established by the United Nations Globally Harmonized System for Classification and Labelling of Chemicals (GHS).")
+    id = "info_results_table_key",
+    title = "DA Result Table Key",
+    trigger = "showTableKey",
+    tags$dl(
+      tags$dt("Yellow columns"),
+      tags$dd(
+        "The data columns that you selected in Step 3 are yellow and the column names are annotated with an asterisk."
+      ),
+      tags$dt("Pink columns"),
+      tags$dd(
+        p("The DASS App processes your data columns for evaluation."),
+        tags$ul(
+          tags$li("Binary hazard calls are transformed to \"0\" for negative outcomes and \"1\" for positive outcomes."),
+          tags$li("Invalid numeric values are replaced with \"NA\"."),
+          tags$li("For the ITS, negative KE3 results are replaced with \"Inf\"."),
+          tags$li("For the ITS, applicability domain values are transformed to \"0\" to indicate \"out of domain\" and \"1\" to indicate \"in domain\".")
+        ),
+        p("In the results table, the processed data columns are appended to your data, but hidden by default. Use the column visibility dropdown list to show or hide these columns. The columns are pink and column names are the original column names appended with \"_input\"."),
+        p("For values that were derived by the app (i.e., assay call, mean depletion values), the column name will end with \"calculated\"."),
+        p("The values in these columns are the actual values used for evaluation. It may be useful to review the selected columns and their transformations to ensure your data were properly interpreted, especially if the DAs were run with flagged data.")
+      ),
+      tags$dt("Blue columns"),
+      tags$dd(
+        p("DA predictions are appended to the table as blue columns. If the ITS DA was selected, then the individual and total ITS scores are also appended and highlighted in blue."),
+        p("For assigning potency predictions, the DASS App uses categories established by the United Nations Globally Harmonized System for Classification and Labelling of Chemicals (GHS).")
+      )
+    )
   ),
   ## Compare -----
   bsModal(
     id = "info_perf_ref_select_modal",
     title = "Reference Data for Comparisons",
-    trigger = "info_perf_ref_select"
+    trigger = "info_perf_ref_select",
+    p(
+      tags$dl(
+        tags$dt("Hazard"),
+        tags$dd(format_info[["binary_call"]]),
+        tags$dt("Potency"),
+        tags$dd(format_info[["potency_ref"]]),
+      )
+    )
   ),
   bsModal(
     id = "info_perf_ice_select_modal",
     title = "Reference Data from ICE",
-    trigger = "info_perf_ice_select"
+    trigger = "info_perf_ice_select",
+    p("You can compare the DA results against reference data that was used in the development of ", get_link[["gl497"]], ". The reference data were sourced from the Integrated Chemical Environment. The human reference data comprise human predictive patch test results for 66 chemicals. The local lymph node assay (LLNA) data comprise results for 156 chemicals."),
+    p("You must provide chemical identifiers (CASRN, DTXSID, or QSAR-Ready SMILES). The selected identifier will be used to pair DA results and reference data for comparison."),
+    p(
+      "Downloads: ", br(),
+      div(
+        class = "sub-ind",
+        tags$a(href = "ice_references/2024June13_OECD Defined Approach to Skin Sensitization Human (R).txt", "Download human reference data (.txt)", target = "_blank", download = NA), br(),
+        tags$a(href = "ice_references/2024June13_OECD Defined Approach to Skin Sensitization Human (R)_metadata.txt", "Download human reference metadata (.txt)", target = "_blank", download = NA), br(),
+        tags$a(href = "ice_references/2024June13_OECD Defined Approach to Skin Sensitization LLNA (R).txt", "Download LLNA reference data (.txt)", target = "_blank", download = NA), br(),
+        tags$a(href = "ice_references/2024June13_OECD Defined Approach to Skin Sensitization LLNA (R)_metadata.txt", "Download LLNA reference metadata (.txt)", target = "_blank", download = NA))
+    )
   ),
   bsModal(
     id = "info_perf_table_modal",
@@ -653,7 +684,7 @@ info_modals <- list(
     div(
       actionLink(inputId = "perf_table_all", label = "Select All"), " | ",
       actionLink(inputId = "perf_table_none", label = "Deselect All"),
-      checkboxGroupInput(inputId = "perf_table_choices", label = "Select Output to Download", choices = NULL),
+      checkboxGroupInput(inputId = "perf_table_choices", label = "Select Output to Download", choices = NULL, width = "100%"),
       downloadButton(outputId = "dl_perf_tables", label = "Download Output")
     ),
     br(),
@@ -662,5 +693,13 @@ info_modals <- list(
       downloadButton(outputId = "perf_table_flat_xl", label = "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
       downloadButton(outputId = "perf_table_flat_txt", label = "Tab-Delimited (.txt) ", icon = icon("file-alt"), class = "btn-dl")
     )
+  ),
+  bsModal(
+    id = "perf_fig_modal",
+    title = "Visualizing Results",
+    trigger = "info_perf_fig",
+    p("Two types of figures can be generated."), 
+    p("If the quantitative endpoint column is \"None\", a bar chart will summarize the comparison results."),
+    p("Otherwise, you must select a column containing numeric data. This will generate density plots and scatter plots of the selected data, with data split based the comparison result. This may provide useful context for exploring your results.")
   )
 )

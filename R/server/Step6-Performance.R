@@ -30,6 +30,14 @@ observeEvent(input$do_compare, {
   ref_hppt_data <- NULL
   ref_llna_data <- NULL
   if (input$perf_use_ice) {
+    if (length(input$perf_ice_ref_cql) == 0) {
+      showNotification(
+        ui = "No chemical list selected..",
+        type = "warning",
+        duration = 10
+      )
+    }
+    
     id <- switch(
       input$perf_ice_identifier_type,
       dtxsid = "DTXSID",
@@ -477,6 +485,9 @@ perf_plot_error_quant$x$config$staticPlot <- T
 perf_shown <- reactive({
   perf_pred_col <- isolate(input$perf_pred_col)
   perf_table <- perf_tables()[[input$perf_fig_comparison]]
+  
+  check_pt <- input$perf_fig_comparison %in% names(perf_tables())
+  req(check_pt)
   if (!is.null(perf_table[["ref_error"]])) {
     perf_plot_error_pred
   } else if (perf_table$pred_error) {

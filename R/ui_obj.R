@@ -870,49 +870,7 @@ results_panel <- tabPanel(
       class = "hiddenBlock",
       column(
         width = 12,
-        p(
-          "Results of the DASS App analysis are shown in the table below. Use the",
-          "scroll bar along the bottom of the table to view all the columns.",
-          "The buttons above the table can be used to hide or show columns.",
-          "Use the 'Download Results' button to export your results to an Excel",
-          "spreadsheet or text file, which may allow easier viewing.",
-        ),
-        div(
-          class = "text-block",
-          h2("Table Key", style = "font-size:1.2em; font-weight:bold; margin-top:10px;"),
-          tags$dl(
-            tags$dt("Yellow columns"),
-            tags$dd(
-              "The data columns that you selected in Step 3. The column names are annotated with an asterisk."
-            ),
-            tags$dt(
-              "Pink columns",
-              HTML(
-                "<button id='info_pink' type='button' class='btn action-link btn-qs' aria-label='Information button for details about pink columns'>",
-                "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-                "</button>"
-              )
-            ),
-            tags$dd(
-              "Appended columns showing how your data inputs were interpreted.",
-              "The corresponding column names begin with 'Input'. For values that",
-              "were calculated by the app, the column name will also end with 'Calculated'."
-            ),
-            tags$dt(
-              "Blue columns",
-              HTML(
-                "<button id='info_blue' type='button' class='btn action-link btn-qs' aria-label='Information button for details about blue columns'>",
-                "<i class='glyphicon glyphicon-question-sign' role='presentation'> </i>",
-                "</button>"
-              )
-            ),
-            tags$dd(
-              "Appended columns with the DASS predictions. The corresponding column",
-              "names begin with 'DA' and the name of the DA."
-            )
-          ),
-          "For more details about the appended columns, see the User Guide.",
-        )
+        p("Results of the DASS App analysis are appended to your data in the table below. By default, the table shows the first three columns of data, your selected input columns, and the DA results. The buttons above the table can be used to hide or show columns. Use the \"Download Results\" button to export your results to an Excel spreadsheet or text file, which may allow for easier viewing.")
       ),
       fluidRow(column(
         12,
@@ -941,7 +899,8 @@ results_panel <- tabPanel(
             ),
           )
         ),
-        actionButton(inputId = "goToCompare", label = "Compare Results")
+        actionButton(inputId = "goToCompare", label = "Compare Results"),
+        actionButton(inputId = "showTableKey", label = "Table Key")
       )),
       br(),
       dataTableOutput("dt_results")
@@ -1087,8 +1046,8 @@ compare_panel <- tabPanel(
             radioButtons(
               inputId = "perf_ice_identifier_type",
               label = "Select Identifier Type",
-              choiceNames = c("DTSXID", "CASRN", "QSAR-Ready SMILES"),
-              choiceValues = c("dtsxid", "casrn", "smiles")
+              choiceNames = c("CASRN", "DTSXID", "QSAR-Ready SMILES"),
+              choiceValues = c("casrn", "dtsxid", "smiles")
             ),
             selectInput(
               inputId = "perf_ice_user_identifier",
@@ -1148,7 +1107,7 @@ compare_panel <- tabPanel(
           "Create Figures",
           info_button("info_perf_fig", "Performance Figure Information")
         ),
-        p("Blahblah"),
+        p("Use the first dropdown list to select the comparison you want to visualize. Use the second dropdown list to select quantitative data columns from your uploaded data set. Hover over the figure and click the camera icon in the top right corner to download the figure."),
         selectInput(
           inputId = "perf_fig_comparison",
           label = "Select Reference to Visualize",

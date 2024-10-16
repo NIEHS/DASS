@@ -1,14 +1,3 @@
-# =============================================================================#
-# File Name: utils.R
-# Original Creator: Kim To
-# Contact Information: ICE-support@niehs.nih.gov
-# Date Created: 2024-04-23
-# License: MIT
-# Description: Functions used in the DASS App
-# Required Packages:
-# 
-# =============================================================================#
-
 # Function to read in data
 # `fpath` - user-supplied path to data file
 read_excel_dass <- function(fpath, sheet = 1) {
@@ -45,7 +34,6 @@ info_button <- function(button_id,
     )
   )
 }
-
 
 showHide <- function(show = NULL, hide = NULL) {
   if (!is.null(show)) {

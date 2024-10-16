@@ -195,10 +195,6 @@ output$dt_results <- renderDataTable({
     targets = to_hide,
     visible = F
   )
-  
-  # rc <- dt_results$x$options$rowCallback
-  # rc <- unlist(strsplit(as.character(rc), '\n'))
-  # dt_results$x$options$rowCallback <- JS(append(rc, after = length(rc) - 1, showNA_js))
 
   dt_results
 })
@@ -488,6 +484,8 @@ run_borderline <- reactive({
       } else {
         return("Inconclusive")
       }
+    } else {
+      return(NA)
     }
   })))
   ke3_overall <- data.frame(cid = names(ke3_overall), ke3_overall, row.names = NULL)

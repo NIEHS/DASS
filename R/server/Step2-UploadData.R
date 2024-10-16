@@ -10,7 +10,7 @@ demo_data <- reactiveVal()
 observeEvent(input$confirm_da, {
   for (i in tabNames[3:6]) shinyjs::runjs(sprintf("resetHiddenTab('%s');", i))
   shinyjs::reset(id = "select_col_ui_all")
-  shinyjs::reset(id = "compare_setup_standard")
+  shinyjs::reset(id = "compare_ui_all")
   
   updateTabsetPanel(inputId = "step_set", selected = "Upload Data")
   shinyjs::show("upload_data_ui")

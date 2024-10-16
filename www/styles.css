@@ -105,11 +105,21 @@ input[type="checkbox"]:hover {
 #dt_results .dt-buttons button,
 #dt_results .dt-buttons button.buttons-columnVisibility.dt-button-active {
   text-decoration: none;
-  background-color: var(--midgreen);
-  color: white;
   font-weight: 700;
   border-radius:8px;
+}
+
+.btn-default {
+  background-color: var(--midgreen);
   border: 1px solid var(--darkgreen);
+  color: white;
+}
+
+#dt_results .dt-buttons button,
+#dt_results .dt-buttons button.buttons-columnVisibility.dt-button-active {
+  background-color: var(--lightblue);
+  border: 1px solid var(--darkblue);
+  color: black;
 }
 
   .btn-default:hover,
@@ -129,9 +139,9 @@ input[type="checkbox"]:hover {
   #dt_results .dt-buttons button.buttons-columnVisibility.dt-button-active:hover,
   #dt_results .dt-buttons button.buttons-columnVisibility.dt-button-active:active,
   #dt_results .dt-buttons button.buttons-columnVisibility.dt-button-active:focus{
-    background-color: var(--darkgreen);
+    background-color: var(--darkblue);
     color: white;
-    border: 1px solid var(--darkgreen);
+    border: 1px solid var(--darkblue);
   }
   
     #dt_results .dt-buttons button:hover .dt-button-down-arrow,
