@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DASS App User Guide</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 2rem 10rem;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+        text-align: center;
+        padding: 6px 4px;
+    }
+
+    table {
+        margin: 1em auto;
+    }
+
+    table td ul {
+        text-align:left;
+    }
+
+    h1 {
+        font-size: 2.2em;
+    }
+
+    h2 {
+        font-size: 2em;
+    }
+
+    h3 {
+        font-size: 1.8em;
+    }
+    h4 {
+        font-size: 1.6em;
+    }
+
+    h5 {
+        font-size: 1.4em;
+    }
+    h6 {
+        font-size: 1.2em;
+        margin-top: 1.8em;
+        margin-bottom: 1em;
+    }
+
+figure, table {
+    margin-top: 2em;
+    margin-bottom: 2em;
+}
+  </style>
+</head>
+<body>
+
+<h1>DASS App User Guide</h1>
+
+<h2>Table of Contents</h2>
+<ul>
+    <li><a href="#release-notes">Release Notes</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#step-1">Step 1: Select Defined Approaches</a></li>
+    <li>
+        <a href="#standard-workflow">Standard Workflow</a>
+    <ul>
+        <li><a href="#stan-step-2">Step 2: Upload Data</a></li>
+        <li><a href="#stan-step-3">Step 3: Select Data Columns</a></li>
+        <li><a href="#stan-step-4">Step 4: Review Selection</a></li>
+        <li><a href="#stan-step-5">Step 5: Results</a></li>
+        <li><a href="#compare">Compare</a></li>
+    </ul>
+    </li>
+    <li>
+        <a href="#borderline-workflow">Borderline Workflow (2o3)</a>
+    <ul>
+        <li><a href="#bl-step-2">Step 2: Upload Data</a></li>
+        <li><a href="#bl-step-3">Step 3: Select Data Columns for Predictions</a></li>
+        <li><a href="#bl-step-4">Step 4: Review Selection</a></li>
+        <li><a href="#bl-step-5">Step 5: Results</a></li>
+    </ul>
+    </li>
+    <li><a href="#references">References</a></li>
+</ul>
+
+<h2 id="release-notes">Release Notes</h2>
+<h3>25 October 2024</h3>
+<p>
+    Version 2.0
+    <ul>
+        <li>Assay options have been expanded for the Integrated Testing Strategy and now include ADRA, LuSens, GARDskin, and U-SENS.</li>
+        <li>Data from individual assay runs can be evaluated for borderline results before applying the 2o3 DA. Evaluations can be performed for ADRA, DPRA, KeratinoSens, LuSens, GARDskin, h-CLAT, IL-8 Luc, and U-SENS.</li>
+        <li>DA results can be compared against harmonized chemical reference lists from the Integrated Chemical Environment. </li>
+        <li>Users can upload quantitative data to visualize against performance results.</li>
+        <li>New user interface.</li>
+    </ul>
+</p>
+
+<h3>20 October 2023</h3>
+<p>
+    Version 1.1
+    <li>A demo data set has been added so that users may try using the app without the need to upload their own data.</li>
+    <li>A supplemental module has been added which allows derivation of confusion matrices and performance metrics against user-supplied reference data.</li>
+    <li>Columns in the results table can be hidden allowing users to view only their columns of interest.</li>
+    <li>User does not need to reload app to upload new data.</li>
+    <li>Collapsible panels, updated scroll behavior.</li>
+</p>
+
+<h2 id = "about">About</h2>
+<p>
+    The DASS App is a user-friendly web tool for applying defined approaches on skin sensitization (DASS) that are described in Guideline No. 497 (GL497) from the Organisation for Economic Co-operation and Development (OECD 2023) and the U.S. Environmental Protection Agency (EPA) Interim Science Policy: Use of Alternative Approaches for Skin Sensitization as a Replacement for Laboratory Animal Testing (EPA 2018). The DASS App predicts both skin sensitization hazard (either a sensitizer or non-sensitizer) and potency for chemicals of interest. For assigning potency predictions to query chemicals, the DASS App uses categories established by the United Nations Globally Harmonized System for Classification and Labelling of Chemicals (GHS).
+</p>
+<p>
+    Defined approaches (DAs) consist of a defined set of information sources (e.g., in vitro or in chemico assays, in silico models) used in a fixed data interpretation procedure (DIP) to provide predictions without the need for expert judgement. Assays that are applicable to DAs in the DASS App are based on key events (KEs) in the Adverse Outcome Pathway for Skin Sensitisation Initiated by Covalent Binding to Proteins (OECD 2014). OECD test guidelines (TGs) describe such KE-based assays: 
+    <ol>
+        <li>
+            TG442c describes in chemico assays that map to KE1, protein binding (OECD 2022a).
+            <ul>
+                <li>Amino acid derivative reactivity assay (ADRA)</li>
+                <li>Direct peptide reactivity assay (DPRA)</li>
+            </ul>
+        </li>
+        <li>
+            TG442d describes in vitro assays that map to KE2, keratinocyte activation (OECD 2022b).
+            <ul>
+                <li>ARE-Nrf2 luciferase KeratinoSens&trade; test method</li>
+                <li>ARE-Nrf2 luciferase LuSens test method</li>
+            </ul>
+        </li>
+        <li>
+            TG442e describes in vitro assays that map to KE3, dendritic cell activation (OECD 2022c).
+            <ul>
+                <li>Genomic allergen rapid detection skin assay (GARD&trade;skin)</li>
+                <li>Human cell line activation test (h-CLAT)</li>
+                <li>Interleukin-8 reporter gene assay (IL-8 Luc)</li>
+                <li>U937 cell line activation Test (U-SENS&trade;)</li>
+            </ul>
+        </li>
+    </ol>
+</p>
+<p>GL497 and the EPA's draft policy only define DPRA, KeratinoSens, and h-CLAT as acceptable TG information sources, however additional validated test methods from the TGs are relevant to DASS (Kleinstreuer 2018) and are included in the DASS App. In addition, one of the DAs, the Integrated Testing Strategy (ITS) method, integrates an in silico prediction of skin sensitization potential..</p>
+<p>The app runs the DA analysis using data from a file you provide; data templates are provided to help you correctly format your data. No data is provided by or retained by the app, and it can thus be used to analyze data from substances in development.</p>
+<p>This app was developed by the National Toxicology Program Interagency Center for the Evaluation of Alternative Toxicological Methods (NICEATM). Version 2.0 was tested on Windows 11 using R v.4.4.1 (R Core Team 2024) and Google Chrome v.129. The DASS App is available at <a href = "https://ntp.niehs.nih.gov/go/952311">https://ntp.niehs.nih.gov/go/952311</a>.</p>
+<p>For more information or to report a problem with the app, please contact NICEATM at <a href = "mailto:ICE-support@niehs.nih.gov">ICE-support@niehs.nih.gov</a>.</p>
+
+<h2 id = "step-1">Step 1: Select Defined Approach</h2>
+
+<p>The app will open on the “Selected Defined Approaches” tab. In this first step, select the DA to be applied. Click the green information buttons next to the DA name to view a description of the DA and the test methods required to implement the DA. When you are done, click “Confirm DA” to move to the next step.</p>
+<h3>2 out of 3 DA</h3>
+<p>
+    The 2 out of 3 (2o3) DA predicts skin sensitization hazard based on a set of assays representing KEs 1-3 (Bauch et al. 2012; Urbisch et al. 2015).  At least two concordant results from the three assays determines the final prediction as a sensitizer or non-sensitizer (Figure 1). If there are only results from two assays and the results are discordant, the chemical can't be classified, and the evaluation will return an “Inconclusive” result.
+</p>
+<p>
+    2o3 does not predict GHS potency category.
+</p>
+
+<div style = "width: fit-content; display: block; margin:auto;">
+<figure>
+    <img src = "da_diagrams/2o3_diagram-v2.png" alt = "Diagram of 2o3 data interpretation procedure" width = "100%">
+    <figcaption>Figure 1. Diagram of the 2o3 DA data interpretation procedure</figcaption>
+</figure>
+</div>
+
+<h4>Borderline Result Evaluation</h4>
+<p>Results from the assays may fall within a 'borderline range' of the assay decision threshold, which can yield inconclusive 2o3 results. Assay-specific decision trees can be applied to generate conclusive positive, conclusive negative, and borderline outcomes (Appendix 1). </p>
+<p>With the DASS App, you can implement the 2o3 by providing overall results (i.e., one outcome per chemical for each assay) or by providing data from individual assay runs to be evaluated for borderline results. Sections in this user guide are split to first show instructions or details for the “standard” overall workflow, followed by instructions or details for the “borderline” workflow. </p>
+
+<h3>Integrated Testing Strategy DA</h3>
+<p>The ITS DA predicts skin sensitization hazard and GHS potency category based on KEs 1 and 3 and in silico predictions (Nukada et al. 2013; Takenouchi et al. 2015). Results from each information source are scored and the summed scores are used to predict chemical hazard and potency (Figure 2).</p>
+<p>GL497 describes the ITS using the DPRA, h-CLAT, and either <a href="https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm">Derek Nexus</a> or the OECD QSAR Toolbox (Yordanova et al. 2019). The DASS App includes ITS scoring schemes for additional validated KE assays.</p>
+<div style = "width: fit-content; display: block; margin:auto;">
+    <figure>
+        <img src = "da_diagrams/ITS_diagram-v2.png" alt = "Diagram of ITS data interpretation procedure" width="100%">
+        <figcaption>
+            Figure 2. Diagram of the ITS data interpretation procedure. 1A = strong sensitizer; 1B = weak sensitizer; NC = not classified; 1* = sensitizer, inconclusive for potency.
+        </figcaption>
+    </figure>
+</div>
+
+<table>
+    <caption>Table 1. Individual ITS scores for KE1 assays ADRA and DPRA.</caption>
+    <tr>
+      <th>Score</th>
+      <th>ADRA<br>Mean NAC & NAL Depletion (%)</th>
+      <th>ADRA<br>NAC Depletion (%)</th>
+      <th>DPRA<br>Mean Cys & Lys Depletion (%)</th>
+      <th>DPRA<br>Cys Depletion (%)</th>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>x ≥ 46.4</td>
+      <td>x ≥ 67.4</td>
+      <td>x ≥ 42.47</td>
+      <td>x ≥ 98.24</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>15.5 ≤ x &lt; 46.4</td>
+      <td>17.5 ≤ x &lt; 67.4</td>
+      <td>22.62 ≤ x &lt; 42.47</td>
+      <td>23.09 ≤ x &lt; 98.24</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>4.9 ≤ x &lt; 15.5</td>
+      <td>5.6 ≤ x &lt; 17.5</td>
+      <td>6.38 ≤ x &lt; 22.62</td>
+      <td>13.89 ≤ x &lt; 23.09</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>x &lt; 4.9</td>
+      <td>x &lt; 5.6</td>
+      <td>x &lt; 6.38</td>
+      <td>x &lt; 13.89</td>
+    </tr>
+  </table>
+
+  <table>
+    <caption>Table 2. Individual ITS scores for KE3 assays GARDskin, h-CLAT, and U-SENS.</caption>
+    <tr>
+      <th>Score</th>
+      <th>GARDskin Input Conc (&micro;M)</th>
+      <th>h-CLAT MIT (&micro;g/mL)</th>
+      <th>U-SENS EC150 (&micro;g/mL)</th>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>x &le; 13.03</td>
+      <td>x &le; 10</td>
+      <td>x &le; 3</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>13.03 &lt; x &le; 56.44</td>
+      <td>10 &lt; x &le; 150</td>
+      <td>3 &lt; x &le; 35</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>x &gt; 56.44</td>
+      <td>150 &lt; x &le; 5000</td>
+      <td>35 &lt; x &lt; 200</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>Negative</td>
+      <td>Negative</td>
+      <td>Negative</td>
+    </tr>
+  </table>
+
+  <h3>Key Event 3/1 Sequential Testing Strategy DA</h3>
+<p>The KE 3/1 Sequential Testing Strategy (STS) predicts skin sensitization hazard and potency based on KEs 1 and 3 (Nukada et al. 2013; Takenouchi et al. 2015). If the h-CLAT predicts that a chemical will be a sensitizer, then the hazard and potency categories are determined by the h-CLAT MIT. If the h-CLAT predicts the chemical to be a non-sensitizer, then the hazard and potency categories are determined by DPRA results (Figure 3). EPA currently accepts results from the KE 3/1 STS for hazard identification, and the DASS App also provides potency classification predictions (EPA 2018). </p>
+
+<div style = "width: fit-content; display: block; margin:auto;">
+    <figure>
+        <img src = "da_diagrams/KE31STS_diagram-v1.png" alt = "Diagram of KE 3/1 STS data interpretation procedure" width="100%">
+        <figcaption>
+            Figure 3. Diagram of KE 3/1 STS DA data interpretation procedure.
+        </figcaption>
+    </figure>
+</div>
+
+<h2 id="standard-workflow">Standard Workflow</h2>
+<h3 id="stan-step-2">Step 2: Upload Data</h3>
+<p>To upload the data, first click “Browse” and select your file using the dialog box that opens. Then click “Upload” to load the data into the app. Prior to uploading data, ensure that the data meet the data and formatting requirements.</p>
+<p>The app provides a demo data set that can be used to build an understanding of how to use the app. Check the box labeled “Use demo data” to load the demo data set.</p>
+
+<h4>Data and Formatting Requirements</h4>
+<h5>General</h5>
+<ol>
+    <li>The file can be comma-delimited (.csv), tab-delimited (.tsv,.txt), or a Microsoft Excel workbook (.xls,.xlsx).</li>
+    <li>Data should be in a tabular format with each row corresponding to a single substance and a column for each required assay endpoint.</li>
+    <li>The first row should contain column names. Column names must be unique.</li>
+    <li>There should be no merged cells.</li>
+    <li>Missing values should be indicated by a blank cell or as 'NA' (without quotes).</li>
+</ol>
+
+<h5>Assay Endpoints</h5>
+<p>Each assay endpoint that is required for implementing the DAs should have a column that is formatted appropriately. Values that do not meet the formatting requirements will be treated as missing data and will not be used to derive predictions.</p>
+<h6>Required Endpoints</h6>
+
+<p>
+    The <b>2o3</b> requires three columns:
+    <ol>
+        <li>Binary hazard call from a KE1 assay.
+            <ul>
+                <li>Alternatively, you may provide one column with mean depletion values from the ADRA or DPRA for the app to derive the call.</li>
+                <li>Alternatively, you may provide two columns with NAC and NAL depletion values from the ADRA or cysteine and lysine depletion values from the DPRA.</li>
+            </ul>
+        </li>
+        <li>Binary hazard call from a KE2 assay.</li>
+        <li>Binary hazard call from a KE3 assay.</li>
+    </ol>
+</p>
+
+<p>
+    The <b>ITS</b> requires four columns:
+    <ol>
+        <li>Mean depletion values from the ADRA or DPRA.</li>
+            <ul>
+                <li>Alternatively, you may provide two columns with NAC and NAL depletion values from the ADRA or cysteine and lysine depletion values from the DPRA.</li>
+            </ul>
+        </li>
+        <li>Quantitative endpoint values from a KE3 assay.</li>
+            <ul>
+                <li>GARDskin: Input concentration (μM)</li>
+                <li>H-CLAT: Minimum induction threshold (μg/mL)</li>
+                <li>U-SENS: EC150 (μg/mL)</li>
+            </ul>
+        </li>
+        <li>Binary hazard call from an in silico model.</li>
+        <li>Applicability domain (AD) indicator corresponding to the binary hazard call column.</li>
+    </ol>
+</p>
+
+<p>
+    The <b>KE 3/1 STS</b> requires two columns:
+    <ol>
+        <li>Binary hazard call from the DPRA.
+<ul>
+    <li>Alternatively, you may provide one column with mean depletion values from the DPRA for the app to derive the call.</li>
+    <li>Alternatively, you may provide two columns with cysteine and lysine depletion values from the DPRA.</li>
+</ul>
+        </li>
+        <li>Minimum induction threshold from the h-CLAT.</li>
+    </ol>
+</p>
+
+<h6>Formatting Requirements</h6>
+<ol>
+    <li>Binary hazard calls should only contain the values:
+      <ul>
+        <li>“sensitizer”, “sensitiser”, “active”, “a”, “positive”, “pos”, “p”, or “1” to indicate positive outcomes.</li>
+        <li>“non-sensitizer”, “non-sensitiser”, “inactive”, “i”, “negative”, “neg”, “n”, or “0” to indicate positive outcomes. Values are not case sensitive.</li>
+      </ul>
+    </li>
+    <li>KE1 depletion values should only contain numbers. Values with symbols (e.g., “&lt;2000”) are not valid.</li>
+    <li>KE3 quantitative endpoint values should only contain:
+      <ul>
+        <li>Numbers corresponding to the endpoint value for positive assay outcomes.</li>
+        <li>"Inf", "NI", "non-sensitizer", "non-sensitiser", "i", "inactive", "n", "neg", "negative", or "0" to indicate negative assay outcomes.</li>
+      </ul>
+    </li>
+    <li>The in silico AD indicator should only contain the values:
+      <ul>
+        <li>"in" or "1" to indicate the chemical is within the AD.</li>
+        <li>"out" or "0" to indicate the chemical is outside the AD. Values for chemicals outside of the AD will not be evaluated.</li>
+      </ul>
+    </li>
+  </ol>
+
+<h4>Column Names</h4>
+<p>Columns do not need to have specific names. However, if you use the column names in Table 3, the data columns will be automatically selected for you in the next step. </p>  
+
+<table>
+    <tr>
+      <th>Required Endpoint</th>
+      <th>Column Names for Auto Select</th>
+    </tr>
+    <tr>
+      <td>KE1 Call</td>
+      <td>
+        <ul>
+          <li>ADRA_call</li>
+          <li>DPRA_call</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>KE1 Mean Depletion</td>
+      <td>
+        <ul>
+          <li>ADRA_mean_dep</li>
+          <li>DPRA_mean_dep</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>KE1 Cysteine Depletion</td>
+      <td>
+        <ul>
+          <li>ADRA_NAC_dep</li>
+          <li>DPRA_Cys_dep</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>KE1 Lysine Depletion</td>
+      <td>
+        <ul>
+          <li>ADRA_NAL_dep</li>
+          <li>DPRA_Lys_dep</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>KE2 Call</td>
+      <td>
+        <ul>
+          <li>KeratinoSens_call</li>
+          <li>LuSens_call</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>KE3 Call</td>
+      <td>
+        <ul>
+          <li>GARDskin_call</li>
+          <li>hCLAT_call</li>
+          <li>USENS_call</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>KE3 Quantitative Endpoint</td>
+      <td>
+        <ul>
+          <li>GARDskin_input_conc</li>
+          <li>hCLAT_MIT</li>
+          <li>USENS_EC150</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>In Silico Prediction</td>
+      <td>
+        <ul>
+          <li>insil_call</li>
+          <li>Derek_prediction</li>
+          <li>iSafeRat_prediction</li>
+          <li>Leadscope_prediction</li>
+          <li>OECDQSARTB_prediction</li>
+          <li>StopTox_prediction</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>In Silico Applicability Domain</td>
+      <td>
+        <ul>
+          <li>insil_ad</li>
+          <li>Derek_ad</li>
+          <li>iSafeRat_ad</li>
+          <li>Leadscope_ad</li>
+          <li>OECDQSARTB_ad</li>
+          <li>StopTox_ad</li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+  
+  <h4>Data for Comparison</h4>
+<p>If you would like to compare the DA results against reference data, you can provide hazard and potency reference data as additional columns in your input file. The DASS App can generate performance metrics and figures comparing the DA results with your reference data. You may also provide quantitative data to generate contextualized figures of the comparison results.  </p>  
+
+<ul>
+    <li>
+        Binary hazard calls should only contain the values:
+        <ul>
+            <li>“sensitizer”, “sensitiser”, “active”, “a”, “positive”, “pos”, “p”, or “1” to indicate positive outcomes.</li>
+            <li>“non-sensitizer”, “non-sensitiser”, “inactive”, “i”, “negative”, “neg”, “n”, or “0” to indicate positive outcomes. Values are not case sensitive.</li>
+        </ul>
+    </li>
+    <li>Potency values should only be “1A”, “1B”, “NC”, or “Inconclusive”. </li>
+    <li>Quantitative data should only contain numeric values. No symbols.</li>
+</ul>
+
+<h4>Data Template</h4>
+<p>A downloadable data template is provided in tab-delimited and Excel format. The template is filled with example data that must be deleted before entering your data. The template contains a column for CASRNs and columns for every possible endpoint. Additional columns (e.g., other chemical identifiers) can be added to the file if needed. If an assay endpoint will not be used, the corresponding column can be deleted but that is not required.
+
+    </p>
+    <p>   Use of the template is not required.</p>
+
+    <h4>Complete Data Upload</h4>
+    <p>If you have uploaded an Excel file, select the appropriate worksheet from the dropdown menu. The data will be displayed for your review. Use the scroll bars on the right side and bottom of the display window to view your entire data set. Once you have reviewed your data, click “Done” to proceed to the next step.
+    </p>
+
+    <h3 id="stan-step-3">Step 3: Select Data Columns for Predictions</h3>
+    <p>All endpoints required by the selected DA will be shown. The dropdown lists under each endpoint contain all column names from your uploaded data. Use the dropdown lists to select the name of the column corresponding to the required endpoint. Each column should only be selected once. The app will automatically select a column for an endpoint if that column name matches the labels in Table 3.</p>
+    <p>In cases where interpretation of the endpoint data depends on the assay, ensure you select the correct assay used. </p>
+    <p>When you are done selecting columns, click “Done” to proceed to the next step. The app will not allow you to proceed unless you have specified a column from your uploaded data for each required input.</p>
+
+    <h3 id="stan-step-4">Step 4: Review Selection</h3>
+
+    <p>The selected columns will be evaluated against the data and formatting requirements. A table with three columns will be displayed allowing you to review your inputs. The first column, “Endpoint”, contains the name of the required endpoint. The second column, “Selected Column”, contains the name of the data column that was selected in the previous step. If the data column contains any invalid values, a warning message will appear at the top of the section, and the third column of the table, “Flag” will read “true”. A warning message will also appear at the top of the section if a unique column was selected for more than one assay endpoint.</p>
+    <p>Verify that the selected columns are correct. If needed, return to the previous step to change column selections. Clicking “Done” in Step 3 will update the table.</p>
+    <p>Rows corresponding to a flagged user column will contain orange text. If these appear, first review your selection in Step 3 to verify whether the flag was triggered by an incorrect column selection. If the flag was triggered by incorrect formatting in the source data, correct the invalid value and reupload your data file. You will have to complete Step 3 again.</p>
+    <p>After reviewing the warnings and flags, click “Run” to generate the DASS predictions.</p>
+    <p>The DASS App will allow you to proceed with generating predictions if your data have unresolved flags. Any invalid values will be marked as missing data and will not be used for predictions.</p>
+    
+    <h3 id="stan-step-5">Step 5: Results</h3>
+    <p>After the DA has been applied, a table will display your input data with the DASS predictions added as new columns. By default, the table only shows the first three columns of your data, the selected input columns, and the DA results.  To hide or show specific columns, click on “Column Visibility” and use the menu to select or deselect columns. You can also use the Download Results dropdown menu to download the results table as a tab-delimited or Excel file, which may allow easier viewing of the entire table.</p>
+    <ul>
+    <li>The data columns that were selected are highlighted in yellow. The column names are annotated with an asterisk. These data columns are reformatted for use in the DAs.</li>
+    <li>The reformatted columns are appended to the original data columns and highlighted in pink. The corresponding column names begin with “input”. For values that were calculated by the app, the column name will also end with “calculated”. These columns are hidden by default. </li>
+    <li>The DASS predictions are appended to the uploaded data and are highlighted in blue. If the ITS DA was selected, then the individual and total ITS scores are also appended and highlighted in blue. </li>
+    </ul>
+
+    <p>It may be useful to review the selected columns against the reformatted columns to ensure your data were properly interpreted, especially if the DAs were run with flagged data. The data are reformatted as:</p>
+    <ul>
+    <li>Binary hazard calls are transformed to "0" for negative outcomes and "1" for positive outcomes.</li>
+    <li>Invalid numeric values are replaced with "NA".</li>
+    <li>For the ITS, negative KE3 results are replaced with "Inf".</li>
+    <li>For the ITS, applicability domain values are transformed to "0" to indicate "out of domain" and "1" to indicate "in domain".</li>
+</ul>
+
+<h3 id="compare">Compare</h3>
+<h4>Input</h4>
+<p>You can compare the DA predictions against reference data. Choose the prediction you want to evaluate (hazard or potency). If you provided reference data in your data file, use the dropdown lists to select the column(s) containing the reference data. You can also compare the DA results against reference chemical lists that were used in the development of GL 497. </p>
+<ul>
+<li>OECD Defined Approach to Skin Sensitization: Human (R) contains hazard and potency results from human predictive patch test data for 66 chemicals.</li>
+<li>OECD Defined Approach to Skin Sensitization: LLNA (R) contains hazard and potency results from the murine local lymph node assay for 156 chemicals.</li>
+</ul>
+<p>If your data contain chemicals in the reference lists, you can compare the reference data against the DA predictions by providing chemical identifiers. Specify the type of chemical identifier in your data and the column containing the chemical identifiers in your data file. When you are done setting up the reference data, click “Compare Data” to generate results.</p>
+
+<h4>Output</h4>
+<p>The output shows confusion matrices and performance metrics for the selected comparisons. If you specified more than one reference data set, two tables can be shown at a time. The tables are uniquely labeled by the names of the selected reference data used for comparison. Use the “Select Reference” dropdown lists to select the output you want to view. Click the “Download Tables” button to open a menu with options for exporting the results. Confusion matrices and performance metrics can be downloaded as a PDF. The results can also be downloaded in tabular format as an Excel file or text file.</p>  
+<p>Below the table, a bar chart summarizes the results of one comparison. If you specified more than one comparison, use the first dropdown list to select the comparison you want to view. If you provide quantitative data in your data input, you can generate density plots and scatter plots of the quantitative data, overlayed with the comparison results. Use the second dropdown list to select a column containing quantitative values in your data. The figure will update based on your selection. </p>   
+<p>When you hover over the figure, a tool bar appears in the top right corner displaying several icons for interacting with the figure. </p>   
+<ul>
+<li>Camera: Download the figure as a PNG.</li>
+<li>Zoom (magnifying glass): Zoom into an area of interest by clicking and dragging a box.</li>
+<li>Pan (four-sided arrow): Click and drag to navigate across the figure. Especially helpful when zoomed in.</li>
+<li>Zoom in (+)</li>
+<li>Zoom out (-)</li>
+<li>Reset axes (house): Readjust axes to the original scale.</li>
+<li>The last two icons let you choose what information is shown when you hover over the figure.</li>
+</ul>
+
+<h5>Performance Metric Derivation</h5>
+<h6>Hazard</h6>
+<ul>
+<li>N = The number of valid reference values</li>
+<li>Accuracy = (True positives + True negatives) / (All positives + All negatives)</li>
+<li>Balanced Accuracy = (True positive rate + True negative rate)/2</li>
+<li>F1 Score = (2×True positives) / (2×True positives + False positives + False negatives)</li>
+<li>True Positive Rate (Sensitivity) = True positives / All positives</li>
+<li>False Positive Rate = False positives / All positives</li>
+<li>True Negative Rate (Specificity) = True negatives / All negatives</li>
+<li>False Negative Rate = False negatives / All negatives</li>
+</ul>
+<h6>Potency</h6>
+<ul>
+<li>N = The number of valid reference values</li>
+<li>Accuracy = The percentage of predicted values equal to reference values</li>
+<li>Overpredicted = The percentage of predicted values with a more potent GHS category than the corresponding reference value</li>
+<li>Underpredicted = The percentage of predicted values with a less potent GHS category than the corresponding reference value</li>
+</ul>
+
+<h2 id="borderline-workflow">Borderline Workflow (2o3)</h2>
+<p>The DASS App enables you to apply borderline decision trees to your data prior to running the 2o3. Borderline evaluation is available for the ADRA, DPRA, GARDskin, h-CLAT, IL8-Luc, KeratinoSens, LuSens, and U-SENS test methods. </p>
+<h3 id="bl-step-2">Step 2: Upload Data</h3>
+<p>To upload the data, first click “Browse” and select your file using the dialog box that opens. Then click “Upload” to load the data into the app. Prior to uploading data, ensure that the data meet the data and formatting requirements.</p>
+<h4>Data and Formatting Requirements</h4>
+<h5>General</h5>
+<ol>
+<li>The file should be a Microsoft Excel workbook (.xls, .xlsx) with three worksheets, one for each assay.</li>
+<li>In each worksheet, the first row should contain column names. Column names must be unique. </li>
+<li>There should be no merged cells. </li>
+<li>Missing values should be indicated by a blank cell or as 'NA' (without quotes).</li>
+</ol>
+<h5>Required Columns</h5>
+<p>Every worksheet should have a chemical identifier column so that results can be appropriately aggregated for the 2o3. There must be a chemical identifier for every row of data. Leaving the cell blank will cause the row to be omitted.</p>
+<p>Each assay requires a unique set of columns for implementing the borderline evaluation. The required data columns for each assay should be formatted appropriately. Values that do not meet the formatting requirements will be treated as missing data and will not be used to derive predictions. Unless otherwise stated, columns corresponding to assay endpoints should only contain numeric values, with no symbols. </p>
+
+<h6>Key Event 1 Assays</h6>
+<p>The ADRA requires four columns, with each row containing data for one run:</p>
+<ol>
+    <li>Chemical identifier</li>
+    <li>N-acetyl cysteine (NAC) depletion (%)</li>
+    <li>N-acetyl lysine (NAL) depletion (%)</li>
+    <li>NAC only indicator: “y” if only the NAC value should be used. “n” if both the NAC and NAL values should be used.</li>
+</ol>
+
+<p>The DPRA requires four columns, with each row containing data for one run:</p>
+<ol>
+    <li>Chemical identifier</li>
+    <li>Cysteine depletion (%)</li>
+    <li>Lysine depletion (%)</li>
+    <li>Cysteine only indicator: “y” if only the cysteine values should be used. “n” if both the cysteine and lysine values should be used. </li>
+</ol>
+<p></p>
+<p></p>
+<h6>Key Event 2 Assays</h6>
+<p>The KeratinoSens assay evaluation sheet includes automatic assessment of borderline outcomes. Therefore, the DASS App does not process KeratinoSens data and instead takes the borderline outcomes provided by the test method developers. The KeratinoSens requires two columns, with each row corresponding to a unique chemical:
+</p>
+<ol>
+    <li>Chemical identifier</li>
+    <li>Outcome from KeratinoSens evaluation sheet (European Commission, JRC 2019). This value must be “Positive”, “Negative”, or “Borderline”. Case insensitive.</li>
+</ol>
+<p>The LuSens requires six columns, with each row containing data for one concentration from one run: 
+</p>
+<ol>
+    <li>Chemical identifier</li>
+    <li>Run identifier. This will be used to group results for evaluation.</li>
+    <li>Concentration (&micro;M)</li>
+    <li>Fold induction</li>
+    <li>Cell viability (%)</li>
+    <li>P-value from t-test comparing the concentration group against vehicle control</li>
+</ol>
+
+<h6>Key Event 3 Assays</h6>
+<p>The GARDskin requires three columns, with each row containing data for one run:</p>
+<ol>
+    <li>Chemical identifier</li>
+    <li>Mean decision value</li>
+</ol>
+
+<p>The h-CLAT requires five columns, with each row containing data for one concentration from one run:
+</p>
+<ol>
+    <li>Chemical identifier</li>
+    <li>Run identifier. This will be used to group results for evaluation.</li>
+    <li>Relative fluorescence intensity of CD86 cell surface molecules</li>
+    <li>Relative fluorescence intensity of CD54 cell surface molecules</li>
+    <li>Cell viability (%)</li>
+</ol>
+
+<p>The IL-8 Luc requires six columns, with each row containing data for one concentration from one run:</p>
+<ol>
+    <li>Chemical identifier</li>
+    <li>Run identifier. This will be used to group results for evaluation.</li>
+    <li>Induction of normalized SLO luciferase activity, Ind-IL8LA</li>
+    <li>The lower limit of the 95% confidence interval for Ind-IL8LA</li>
+    <li>Inhibition of SLR luciferase activity, Inh-GAPLA</li>
+    <li>Water solubility indicator: “y” if the chemical is water soluble at 20mg/mL. “n” if the chemical is not water soluble at 20mg/mL. For each unique chemical, the app will use the value in the first row for that chemical. </li>
+</ol>
+
+<p>The U-SENS requires five columns, with each row containing data for one concentration from one run:</p>
+<ol>
+    <li>Chemical identifier</li>
+    <li>Run identifier. This will be used to group results for evaluation.</li>
+    <li>Concentration (μg/mL)</li>
+    <li>Stimulation index of CD86 cells</li>
+    <li>Cell viability (%)</li>
+</ol>
+
+<h4>Data Template</h4>
+<p>A downloadable data template is provided in Excel format. The template is filled with example data that must be deleted before entering your data. The template contains one worksheet for each assay available. Within each worksheet, all required data columns are shown. The chemical identifier column has CASRNs listed, but you may enter any identifier of your choice. The same chemical must have the same identifier across the three worksheets. You can delete worksheets for the remaining assays, but that is not required. </p>
+<p>Use of the template is not required.</p>
+
+<h4>Complete Data Upload</h4>
+<p>Data in the first worksheet of your uploaded file will be shown. Use the dropdown list to view other worksheets. Once you have reviewed your data, click “Done” to proceed to the next step. 
+</p>
+
+<h3 id="bl-step-3">Step 3: Select Data Columns</h3>
+<p>Column selection is split by KE. Under each KE, select the assay that was run and use the dropdown list to select the worksheet containing data for that assay. Dropdown lists containing the column names from your selected worksheet will be shown for each of the assay’s required endpoints. Use the dropdown lists to select the name of the column corresponding to the required endpoint. Each column should only be selected once.
+    </p>
+<p>When you are done selecting columns, click “Done” to proceed to the next step. The app will not allow you to proceed unless you have specified a column from your uploaded data for each required input.
+</p>
+
+<h3 id="bl-step-4">Step 4: Review Selection</h3>
+<p>The selected columns will be evaluated against the data and formatting requirements. For each KE, a table with three columns will be displayed allowing you to review your inputs. The first column, “Required Endpoint”, contains the name of the required endpoint. The second column, “Selected Column”, contains the name of the data column that was selected in the previous step. If the data column contains any invalid values the third column of the table, “Flagged” will read “true”. </p>
+<p>Chemical identifiers from the three worksheets will be compared. The fourth table shows the unique chemical identifiers and indicates if the chemical was found in a given worksheet. The last column “Flagged” will read “true” if a chemical was only found in one worksheet, since there will not be enough data to perform the 2o3 for that chemical. </p>
+<p>Verify that the selected columns are correct. If needed, return to the previous step to change column selections. Clicking “Done” in Step 3 will update the table.</p>
+<p>If any data are flagged, first review your selection in Step 3 to verify whether the flag was triggered by an incorrect column selection. If the flag was triggered by incorrect formatting in the source data, correct the invalid value and reupload your data file. You will have to complete Step 3 again.</p>
+<p>After reviewing the warnings and flags, click “Run” to generate the DASS predictions.</p>
+<p>The DASS App will allow you to proceed with generating predictions if your data have unresolved flags. Any invalid values will be marked as missing data and will not be used for predictions.</p>
+
+<h3 id="bl-step-5">Step 5: Results</h3>
+<p>After the DA has been applied, a table will display the overall assay outcomes and 2o3 hazard prediction for each chemical. Below the DA results, tables for each KE assay display the individual run outcomes from the assay decision tree. If KeratinoSens was used, a KE2 table will not be shown. More details about the decision trees can be found in Appendix 1.</p>
+<p>Click the “Download Results” button to download an Excel file with the displayed tables.</p>
+
+<h2 id="references">References</h2>
+<ol>
+    <li>Bauch C, Kolle SN, Ramirez T, Eltze T, Fabian E, Mehling A, Teubner W, van Ravenzwaay B, Landsiedel R. 2012. Putting the parts together: combining in vitro methods to test for skin sensitizing potential. Regul Toxicol Pharmacol, 63:489-504. <a href="https://doi.org/10.1016/j.yrtph.2012.05.013">https://doi.org/10.1016/j.yrtph.2012.05.013</a>.</li>
+    <li>EPA. 2018. Interim Science Policy: Use of Alternative Approaches for Skin Sensitization as a Replacement for Laboratory Animal Testing Draft for Public Comment. EPA’s Office of Chemical Safety and Pollution Prevention. <a href="https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090">https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090</a>.</li>
+    <li>European Commission, Joint Research Centre (JRC). 2019. EURL ECVAM dataset on alternative methods to animal experimentation (DB-ALM) Protocol 155: KeratinoSensTM. (Supplemental Material). <a href="https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EURL-ECVAM/datasets/DBALM/LATEST/online/dbalm.html?search=155">https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EURL-ECVAM/datasets/DBALM/LATEST/online/dbalm.html?search=155</a>.</li>
+    <li>Kleinstreuer NC, Hoffmann S, Alépée N, Allen D, Ashikaga T, Casey W, Clouet E, Cluzel M, Desprez B, Gellatly N, Göbel C, Kern PS, Klaric M, Kühnl J, Martinozzi-Teissier S, Mewes K, Miyazawa M, Strickland J, van Vliet E, Zang Q, Petersohn D. 2018. Non-animal methods to predict skin sensitization (II): an assessment of defined approaches. Crit Rev Toxicol. 48(5):359-374. <a href="https://doi.org/10.1080/10408444.2018.1429386">https://doi.org/10.1080/10408444.2018.1429386</a>.</li>
+    <li>Nukada Y, Miyazawa M, Saitou K, Sakaguchi H, Nishiyama N. 2013. Data integration of non-animal tests for the development of a test battery to prediction the skin sensitizing potential and potency of chemicals. Toxicol. In Vitro 27: 609–618. <a href="http://dx.doi.org/10.1016/j.tiv.2012.11.006">http://dx.doi.org/10.1016/j.tiv.2012.11.006</a>.</li>
+    <li>OECD. 2014. The Adverse Outcome Pathway for Skin Sensitisation Initiated by Covalent Binding to Proteins. OECD Series on Testing and Assessment, No. 168. <a href="https://doi.org/10.1787/9789264221444-en">https://doi.org/10.1787/9789264221444-en</a>.</li>
+    <li>OECD. 2022a. Test No. 442C: In Chemico Skin Sensitisation Assays addressing the Adverse Outcome Pathway key event on covalent binding to proteins, OECD Guidelines for the Testing of Chemicals, Section 4. <a href="https://doi.org/10.1787/9789264229709-en">https://doi.org/10.1787/9789264229709-en</a>.</li>
+    <li>OECD. 2022b. Test No. 442D: In Vitro Skin Sensitisation. ARE-Nrf2 Luciferase Test Method, OECD Guidelines for the Testing of Chemicals, Section 4. <a href="https://doi.org/10.1787/9789264229822-en">https://doi.org/10.1787/9789264229822-en</a>.</li>
+    <li>OECD. 2022c. Test No. 442E: In Vitro Skin Sensitisation. In Vitro Skin Sensitisation assays addressing the Key Event on activation of dendritic cells on the Adverse Outcome Pathway for Skin Sensitisation, OECD Guidelines for the Testing of Chemicals, Section 4. <a href="https://doi.org/10.1787/9789264264359-en">https://doi.org/10.1787/9789264264359-en</a>.</li>
+    <li>OECD. 2023. Guideline No. 497: Defined Approaches on Skin Sensitisation. OECD Guidelines for the Testing of Chemicals, Section 4. <a href="https://doi.org/10.1787/b92879a4-en">https://doi.org/10.1787/b92879a4-en</a>.</li>
+    <li>R Core Team (2024). R: A Language and Environment for Statistical Computing. R Foundation for Statistical Computing, Vienna, Austria. <a href="https://www.R-project.org">https://www.R-project.org</a>.</li>
+    <li>Takenouchi O, Fukui S, Okamoto K, Kurotani S, Imai N, Fujishiro M, Kyotani D, Kato Y, Kasahara T, Fujita M, Toyoda A. 2015. Test battery with the human cell line activation test, direct peptide reactivity assay and DEREK based on a 139 chemical data set for predicting skin sensitizing potential and potency of chemicals. J Appl Toxicol. 735:1318–32. <a href="https://doi.org/10.1002/jat.3127">https://doi.org/10.1002/jat.3127</a>.</li>
+    <li>Urbisch D, Mehling A, Guth K, Ramirez T, Honarvar N, Kolle S, Landsiedel R, Jaworska J, Kern PS, Gerberick F, Natsch A, Emter R, Ashikaga T, Miyazawa M, Sakaguchi H. 2015. Assessing skin sensitization hazard in mice and men using non-animal test methods, Regul Toxicol Pharmacol, 71:337-51. <a href="https://doi.org/10.1016/j.yrtph.2014.12.008">https://doi.org/10.1016/j.yrtph.2014.12.008</a>.</li>
+    <li>Yordanova D, Schultz TW, Kuseva C, Tankova K, Ivanova H, Dermen I, Pavlov T, Temelkov S, Chapkanov A, Georgiev M, Gissi A. 2019. Automated and standardized workflows in the OECD QSAR Toolbox. Comput Toxicol 10:89–104. <a href="https://doi.org/10.1016/j.comtox.2019.01.006">https://doi.org/10.1016/j.comtox.2019.01.006</a>.</li>
+  </ol>
+
+</body>
+</html>
+
+
+

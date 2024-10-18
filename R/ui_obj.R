@@ -104,10 +104,10 @@ welcome_panel <- fluidRow(tags$header(
         tags$a(
           class = "btn btn-default external-link",
           id = "user_guide_button",
-          href = "user_guide.pdf",
+          href = "user_guide.html",
           target = "_blank",
           "User Guide",
-          tags$span(class = "sr-only", "Opens PDF in new window.")
+          tags$span(class = "sr-only", "Opens in new window.")
         )
       ),
       tags$li(

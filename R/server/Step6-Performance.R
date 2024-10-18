@@ -496,7 +496,6 @@ perf_shown <- reactive({
     if (input$perf_fig_quant_col == "None") {
       plot_out <- ggplotly(perf_table[["base_plot"]], tooltip = "text")
       plot_out$x$layout$margin$t <- plot_out$x$layout$title$font$size*3
-      plot_out
     } else {
       quant_val <- suppressWarnings(as.numeric(dt_analyze()[[input$perf_fig_quant_col]]))
       if (all(is.na(quant_val))) {
@@ -552,9 +551,9 @@ perf_shown <- reactive({
           return(val)
         })
         plot_out$x$layout$margin$t <- plot_out$x$layout$title$font$size*3
-        plot_out
       }
     }
+    config(plot_out, modeBarButtonsToRemove = c("autoScale", "select2d", "lasso2d"))
   }
 })
 
