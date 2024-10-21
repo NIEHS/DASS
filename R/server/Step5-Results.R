@@ -80,6 +80,9 @@ run_dass <- reactive({
     data_select$ke1_mean_c_l_dep_col$converted_values <-
       (data_select$ke1_c_dep_col$converted_values +
          data_select$ke1_l_dep_col$converted_values)/2
+    
+    data_select$ke1_mean_c_l_dep_col$flagged <- (data_select$ke1_c_dep_col$flagged | data_select$ke1_l_dep_col$flagged)
+    
   }
   
   if (ke1_get_call()) {
@@ -93,6 +96,12 @@ run_dass <- reactive({
     )$outcome
     
     data_select$ke1_call_col$converted_values <- as.numeric(tmp == "Positive")
+    
+    if (is.null(data_select$ke1_c_dep_col$flagged)) {
+      data_select$ke1_call_col$flagged <- data_select$ke1_mean_c_l_dep_col$flagged
+    } else {
+      data_select$ke1_call_col$flagged <- (data_select$ke1_mean_c_l_dep_col$flagged | data_select$ke1_c_dep_col$flagged)
+    }
   }
   
   if (input$selected_da == "da_2o3") {
