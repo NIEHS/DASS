@@ -22,7 +22,7 @@ observeEvent(input$do_compare, {
         duration = 10
       )
     } else {
-      ref_user_data <- as.list(all_out$result_df[,input$perf_ref_col,drop=F])
+      ref_user_data <- as.list(dt_analyze()[,input$perf_ref_col,drop=F])
       n_comp <- n_comp + 1
     }
   }
@@ -58,7 +58,7 @@ observeEvent(input$do_compare, {
           Hazard = grep_ci("binary hazard", names(hppt_ref), value = T),
           Potency = grep_ci("potency", names(hppt_ref), value = T)
         )
-        ref_hppt_data <- as.list(hppt_ref[match(all_out$result_df[[input$perf_ice_user_identifier]], hppt_ref[[id]]), rcol, drop = F])
+        ref_hppt_data <- as.list(hppt_ref[match(dt_analyze()[[input$perf_ice_user_identifier]], hppt_ref[[id]]), rcol, drop = F])
       }
       
       if ("llna" %in% input$perf_ice_ref_cql) {
@@ -67,7 +67,7 @@ observeEvent(input$do_compare, {
           Hazard = grep_ci("binary hazard", names(llna_ref), value = T),
           Potency = grep_ci("potency", names(llna_ref), value = T)
         )
-        ref_llna_data <- as.list(llna_ref[match(all_out$result_df[[input$perf_ice_user_identifier]], llna_ref[[id]]), rcol, drop = F])
+        ref_llna_data <- as.list(llna_ref[match(dt_analyze()[[input$perf_ice_user_identifier]], llna_ref[[id]]), rcol, drop = F])
       }
       n_comp <- n_comp + 1
     }
