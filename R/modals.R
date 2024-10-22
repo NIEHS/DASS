@@ -365,6 +365,7 @@ info_modals <- list(
     trigger = "info_blr_ke1Columns",
     size = "large",
     title = "Key Event 1 Assay Data Columns",
+    p("Chemicals with borderline results must have data from at least two runs to generate an overall outcome."),
     tags$details(
       open = "open",
       tags$summary("ADRA"),
@@ -439,6 +440,10 @@ info_modals <- list(
         tags$dl(
           tags$dt("Chemical Identifier"),
           tags$dd(format_info[["blr_cid"]])
+        ),
+        tags$dl(
+          tags$dt("Outcome"),
+          tags$dd("The overall outcome from the KeratinoSens evaluation template. Only one outcome should be provided for a chemical. The DASS App does not process KeratinoSens data and instead takes the borderline outcomes provided by the test method developers. The template is available as supplementary material to the KeratinoSens protocol in the", tags$a(href = "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EURL-ECVAM/datasets/DBALM/LATEST/online/dbalm.html?search=155", target = "_blank", class = "external-link", "DB-ALM dataset"))
         )
       )
     ),
@@ -450,7 +455,7 @@ info_modals <- list(
           tags$dt("Chemical Identifier"),
           tags$dd(format_info[["blr_cid"]]),
           tags$dt("Run Identifier"),
-          tags$dd(format_info[["blr_run"]]),
+          tags$dd(format_info[["blr_run"]], p("Each chemical should have data from at least two runs.")),
           tags$dt("Concentration (\u03BCM)"),
           tags$dd(format_info[["conc_numeric"]]),
           tags$dt("Fold Induction"),
@@ -513,7 +518,7 @@ info_modals <- list(
           tags$dt("Chemical Identifier"),
           tags$dd(format_info[["blr_cid"]]),
           tags$dt("Run Identifier"),
-          tags$dd(format_info[["blr_run"]]),
+          tags$dd(format_info[["blr_run"]], p("Each chemical should have data from at least two runs.")),
           tags$dt("Concentration (\u03BCM)"),
           tags$dd(format_info[["conc_numeric"]]),
           tags$dt("CD54 Relative Fluorescence Intensity"),
@@ -533,7 +538,7 @@ info_modals <- list(
           tags$dt("Chemical Identifier"),
           tags$dd(format_info[["blr_cid"]]),
           tags$dt("Run Identifier"),
-          tags$dd(format_info[["blr_run"]]),
+          tags$dd(format_info[["blr_run"]], p("Each chemical should have data from at least two runs.")),
           tags$dt("Concentration (\u03BCM)"),
           tags$dd(format_info[["conc_numeric"]]),
           tags$dt("Ind-IL8LA"),
@@ -559,7 +564,7 @@ info_modals <- list(
           tags$dt("Chemical Identifier"),
           tags$dd(format_info[["blr_cid"]]),
           tags$dt("Run Identifier"),
-          tags$dd(format_info[["blr_run"]]),
+          tags$dd(format_info[["blr_run"]], p("Each chemical should have data from at least two runs.")),
           tags$dt("Concentration (\u03BCM)"),
           tags$dd(format_info[["conc_numeric"]]),
           tags$dt("CD86 SI"),

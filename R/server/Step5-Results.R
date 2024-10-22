@@ -355,13 +355,24 @@ run_borderline <- reactive({
   )
   
   ke1_overall <- unlist(as.list(by(ke1_out, ke1_out$cid, function(x) {
-    if (nrow(x) > 1) {
-      out_count <- unlist(table(x[["outcome_bl"]]))
-      out <- names(out_count)[out_count == max(out_count)]
-      if (length(out) == 1) {
-        return(out)
+    if(all(is.na(x[["outcome"]]))) {
+      return(NA)
+    } else {
+      if (nrow(x) == 1) {
+        if (grepl("^BL|Borderline", x[["outcome"]])) {
+          return("Inconclusive")
+        } else {
+          return(x[["outcome"]])
+        }
       } else {
-        return("Inconclusive")
+        outcome_tmp <- gsub("^BL\\s+", "", x[["outcome"]])
+        out_count <- unlist(table(outcome_tmp))
+        out <- names(out_count)[out_count == max(out_count)]
+        if (length(out) == 1) {
+          return(out)
+        } else {
+          return("Inconclusive")
+        }
       }
     }
   })))
@@ -374,6 +385,18 @@ run_borderline <- reactive({
       cid = ke2$ke2_blr_cid_col$values,
       ke2_overall = ke2$ke2_blr_ks_call_col$converted_values
     )
+    
+    ke2_overall <- by(ke2_overall, ke2_overall$cid, function(x) {
+      if (nrow(x) == 1) {
+        return(x)
+      } else {
+        tmp <- x[1,]
+        tmp$ke2_overall <- NA
+        return(tmp)
+      }
+    })
+    
+    ke2_overall <- do.call("rbind", ke2_overall)
   } else if (input$ke2_blr_assay_name == "lusens") {
     
     lusens <- Map(function(col_id, ke2_list) {
@@ -403,13 +426,18 @@ run_borderline <- reactive({
     ke2_out <- do.call("rbind", ke2_out)  
 
     ke2_overall <- unlist(as.list(by(ke2_out, ke2_out$compound_id, function(x) {
-      if (nrow(x) > 1) {
-        out_count <- unlist(table(x[["outcome_bl"]]))
-        out <- names(out_count)[out_count == max(out_count)]
-        if (length(out) == 1) {
-          return(out)
-        } else {
-          return("Inconclusive")
+      if(all(is.na(x[["outcome_bl"]]))) {
+        return(NA)
+      } else {
+        if (nrow(x) > 1) {
+          out_count <- unlist(table(x[["outcome_bl"]]))
+          print(out_count)
+          out <- names(out_count)[out_count == max(out_count)]
+          if (length(out) == 1) {
+            return(out)
+          } else {
+            return("Inconclusive")
+          }
         }
       }
     })))
@@ -485,16 +513,21 @@ run_borderline <- reactive({
     names(ke3_out) <- c("Compound ID", input$ke3_blr_run_col, "Outcome")
   }
   ke3_overall <- unlist(as.list(by(ke3_out, ke3_out[["Compound ID"]], function(x) {
-    if (nrow(x) > 1) {
-      out_count <- unlist(table(x[["Outcome"]]))
-      out <- names(out_count)[out_count == max(out_count)]
-      if (length(out) == 1) {
-        return(out)
-      } else {
-        return("Inconclusive")
-      }
-    } else {
+    if(all(is.na(x[[3]]))) {
       return(NA)
+    } else {
+      n_req <- ifelse(input$ke3_blr_assay_name == "gard", 1, 2)
+      if (nrow(x) >= n_req) {
+        out_count <- unlist(table(x[[3]]))
+        out <- names(out_count)[out_count == max(out_count)]
+        if (length(out) == 1) {
+          return(out)
+        } else {
+          return("Inconclusive")
+        }
+      } else {
+        return(NA)
+      }
     }
   })))
   ke3_overall <- data.frame(cid = names(ke3_overall), ke3_overall, row.names = NULL)
@@ -526,10 +559,10 @@ run_borderline <- reactive({
     abbrev[input$ke3_blr_assay_name],
     "DA 2o3 Hazard")
 
-  ke1_out <- ke1_out[,c("cid", "mean_c_l_dep", "c_dep", "outcome_bl")]
+  ke1_out <- ke1_out[,c("cid", "mean_c_l_dep", "c_dep", "outcome")]
   names(ke1_out) <- c("Compound ID", "Mean Depletion", "Cys/NAC Depletion", "Outcome")
   ke1_out[["Compound ID"]] <- as.factor(ke1_out[["Compound ID"]])
-  ke1_out[["Outcome"]] <- factor(ke1_out[["Outcome"]], levels = c("Positive", "Negative", "Borderline", "Inconclusive"))
+  ke1_out[["Outcome"]] <- factor(ke1_out[["Outcome"]], levels = c("Positive", "BL Positive", "Borderline", "BL Negative", "Negative", "Inconclusive"))
   
   ke3_out[["Compound ID"]] <- as.factor(ke3_out[["Compound ID"]])
   ke3_out[["Outcome"]] <- factor(ke3_out[["Outcome"]], levels = c("Positive", "Negative", "Borderline", "Inconclusive"))

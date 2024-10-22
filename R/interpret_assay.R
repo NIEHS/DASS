@@ -1,61 +1,87 @@
 # KE1 -----
 ke1_call_thresholds <- list(
   adra = list(
-    mean_c_l_dep = c(call = 4.9, bl_ll = 4.06, bl_ul = 5.94),
-    c_dep = c(call = 5.6, bl_ll = 4.67, bl_ul = 6.83)
+    mean_c_l_dep = c(
+      call = 4.9,
+      concl_neg_ul = 3,
+      bl_neg_ul = 4.06,
+      bl_ul = 5.94,
+      bl_pos_ul = 10
+    ),
+    c_dep = c(
+      call = 5.9,
+      concl_neg_ul = 4,
+      bl_neg_ul = 4.67,
+      bl_ul = 6.83,
+      bl_pos_ul = 11
+    )
   ),
   dpra = list(
-    mean_c_l_dep = c(call = 6.38, bl_ll = 4.95, bl_ul = 8.32),
-    c_dep = c(call = 13.89, bl_ll = 10.56, bl_ul = 18.47)
+    mean_c_l_dep = c(
+      call = 6.38,
+      concl_neg_ul = 3,
+      bl_neg_ul = 4.95,
+      bl_ul = 8.32,
+      bl_pos_ul = 10
+    ),
+    c_dep = c(
+      call = 13.89,
+      concl_neg_ul = 9,
+      bl_neg_ul = 10.56,
+      bl_ul = 17,
+      bl_pos_ul = 18.47
+    )
   )
 )
 
 ke1Call <- function(assay, mean_c_l_dep = NULL, c_dep = NULL, borderline = F) {
-  
+
   if (is.null(mean_c_l_dep) & is.null(c_dep)) {
     stop("No data provided")
   }
-  
+
   if (is.null(c_dep)) {
     c_dep <- rep(NA, length(mean_c_l_dep))
   }
-  
+
   if (is.null(mean_c_l_dep)) {
     mean_c_l_dep <- rep(NA, length(c_dep))
   }
-  
+
   if (length(c_dep) != length(mean_c_l_dep)) {
     stop("Vectors are not the same length.")
   }
-  
+
   use_c <- is.na(mean_c_l_dep) & !is.na(c_dep)
-  
+
   out <- data.frame(
-    mean_c_l_dep, 
+    mean_c_l_dep,
     c_dep,
     outcome = NA
   )
   
-  c_thresh <- ke1_call_thresholds[[assay]][["c_dep"]][["call"]]
-  out$outcome[use_c] <- ifelse(c_dep[use_c] >= c_thresh, "Positive", "Negative")
-  
-  mean_thresh <- ke1_call_thresholds[[assay]][["mean_c_l_dep"]][["call"]]
-  out$outcome[!use_c] <- ifelse(mean_c_l_dep[!use_c] >= mean_thresh, "Positive", "Negative")
+  c_thresh <- ke1_call_thresholds[[assay]][["c_dep"]]
+  mean_thresh <- ke1_call_thresholds[[assay]][["mean_c_l_dep"]]
   
   if (borderline) {
-    out$outcome_bl <- out$outcome
     
-    c_thresh_ll <- ke1_call_thresholds[[assay]][["c_dep"]][["bl_ll"]]
-    c_thresh_ul <- ke1_call_thresholds[[assay]][["c_dep"]][["bl_ul"]]
+    out$outcome[use_c] <- ifelse(c_dep[use_c] <= c_thresh[["concl_neg_ul"]], "Negative",
+                                 ifelse(c_dep[use_c] <= c_thresh[["bl_neg_ul"]], "BL Negative",
+                                        ifelse(c_dep[use_c] <= c_thresh[["bl_ul"]], "Borderline",
+                                               ifelse(c_dep[use_c] <= c_thresh[["bl_pos_ul"]], "BL Positive",
+                                                      ifelse(c_dep[use_c] > c_thresh[["bl_pos_ul"]], "Positive", "Inconclusive")))))
     
-    out$outcome_bl[use_c][(c_dep[use_c] > c_thresh_ll) & (c_dep[use_c] <= c_thresh_ul)] <- "Borderline"
+    out$outcome[!use_c] <- ifelse(mean_c_l_dep[!use_c] <= mean_thresh[["concl_neg_ul"]], "Negative",
+                                 ifelse(mean_c_l_dep[!use_c] <= mean_thresh[["bl_neg_ul"]], "BL Negative",
+                                        ifelse(mean_c_l_dep[!use_c] <= mean_thresh[["bl_ul"]], "Borderline",
+                                               ifelse(mean_c_l_dep[!use_c] <= mean_thresh[["bl_pos_ul"]], "BL Positive",
+                                                      ifelse(mean_c_l_dep[!use_c] > mean_thresh[["bl_pos_ul"]], "Positive", "Inconclusive")))))
     
-    mean_thresh_ll <- ke1_call_thresholds[[assay]][["mean_c_l_dep"]][["bl_ll"]]
-    mean_thresh_ul <- ke1_call_thresholds[[assay]][["mean_c_l_dep"]][["bl_ul"]]
-    
-    out$outcome_bl[!use_c][(mean_c_l_dep[!use_c] > mean_thresh_ll) & (mean_c_l_dep[!use_c] <= mean_thresh_ul)] <- "Borderline"
+  } else if (!borderline) {
+    out$outcome[use_c] <- ifelse(c_dep[use_c] >= c_thresh[["call"]], "Positive", "Negative")
+    out$outcome[!use_c] <- ifelse(mean_c_l_dep[!use_c] >= mean_thresh[["call"]], "Positive", "Negative")
   }
-  
+
   return(out)
 }
 

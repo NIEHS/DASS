@@ -842,6 +842,7 @@ review_selection_panel <- tabPanel(
         p(
           "Your selections are summarized below. The KE assay sections show a table with your data column selections. Values in these columns are checked against formatting requirements and flagged if any issues are identified. Chemical identifier columns are flagged if any chemical identifiers do not have enough data to perform the 2o3."
         ),
+        p(tags$strong("Note. The data are not checked for the appropriate number of runs. If data from too few or too many runs are provided, an overall outcome will not be returned.")),
         p(
           "The last section lists the unique chemical identifiers from your data and indicates which worksheets contain those identifiers. The identifier is flagged if it does not have values in at least two worksheets."
         ),
