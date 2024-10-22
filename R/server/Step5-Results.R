@@ -355,8 +355,15 @@ run_borderline <- reactive({
   )
   
   ke1_overall <- unlist(as.list(by(ke1_out, ke1_out$cid, function(x) {
-    if (nrow(x) > 1) {
-      out_count <- unlist(table(x[["outcome_bl"]]))
+    if (nrow(x) == 1) {
+      if (grepl("^BL|Borderline", x[["outcome"]])) {
+        return("Inconclusive")
+      } else {
+        return(x[["outcome"]])
+      }
+    } else {
+      outcome_tmp <- gsub("^BL\\s+", "", x[["outcome"]])
+      out_count <- unlist(table(outcome_tmp))
       out <- names(out_count)[out_count == max(out_count)]
       if (length(out) == 1) {
         return(out)
@@ -374,6 +381,18 @@ run_borderline <- reactive({
       cid = ke2$ke2_blr_cid_col$values,
       ke2_overall = ke2$ke2_blr_ks_call_col$converted_values
     )
+    
+    ke2_overall <- by(ke2_overall, ke2_overall$cid, function(x) {
+      if (nrow(x) == 1) {
+        return(x)
+      } else {
+        tmp <- x[1,]
+        tmp$ke2_overall <- NA
+        return(tmp)
+      }
+    })
+    
+    ke2_overall <- do.call("rbind", ke2_overall)
   } else if (input$ke2_blr_assay_name == "lusens") {
     
     lusens <- Map(function(col_id, ke2_list) {
