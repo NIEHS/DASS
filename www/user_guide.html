@@ -85,6 +85,8 @@ figure, table {
     </ul>
     </li>
     <li><a href="#references">References</a></li>
+    <li><a href="#appendix-1">Appendix 1: Borderline Decision Trees</a></li>
+
 </ul>
 
 <h2 id="release-notes">Release Notes</h2>
@@ -585,8 +587,9 @@ figure, table {
     <li>Lysine depletion (%)</li>
     <li>Cysteine only indicator: “y” if only the cysteine values should be used. “n” if both the cysteine and lysine values should be used. </li>
 </ol>
-<p></p>
-<p></p>
+
+<p>Chemicals with borderline results should have data from at least two runs in order to generate an overall outcome.</p>
+
 <h6>Key Event 2 Assays</h6>
 <p>The KeratinoSens assay evaluation sheet includes automatic assessment of borderline outcomes. Therefore, the DASS App does not process KeratinoSens data and instead takes the borderline outcomes provided by the test method developers. The KeratinoSens requires two columns, with each row corresponding to a unique chemical:
 </p>
@@ -594,6 +597,7 @@ figure, table {
     <li>Chemical identifier</li>
     <li>Outcome from KeratinoSens evaluation sheet (European Commission, JRC 2019). This value must be “Positive”, “Negative”, or “Borderline”. Case insensitive.</li>
 </ol>
+<p>There should only be one outcome per chemical.</p>
 <p>The LuSens requires six columns, with each row containing data for one concentration from one run: 
 </p>
 <ol>
@@ -604,7 +608,7 @@ figure, table {
     <li>Cell viability (%)</li>
     <li>P-value from t-test comparing the concentration group against vehicle control</li>
 </ol>
-
+<p>There should be data from at least two runs per chemical.</p>
 <h6>Key Event 3 Assays</h6>
 <p>The GARDskin requires three columns, with each row containing data for one run:</p>
 <ol>
@@ -640,6 +644,8 @@ figure, table {
     <li>Stimulation index of CD86 cells</li>
     <li>Cell viability (%)</li>
 </ol>
+
+<p>For the h-CLAT, IL-8 Luc and U-SENS assays, chemicals should have data from at least two runs.</p>
 
 <h4>Data Template</h4>
 <p>A downloadable data template is provided in Excel format. The template is filled with example data that must be deleted before entering your data. The template contains one worksheet for each assay available. Within each worksheet, all required data columns are shown. The chemical identifier column has CASRNs listed, but you may enter any identifier of your choice. The same chemical must have the same identifier across the three worksheets. You can delete worksheets for the remaining assays, but that is not required. </p>
@@ -684,6 +690,93 @@ figure, table {
     <li>Urbisch D, Mehling A, Guth K, Ramirez T, Honarvar N, Kolle S, Landsiedel R, Jaworska J, Kern PS, Gerberick F, Natsch A, Emter R, Ashikaga T, Miyazawa M, Sakaguchi H. 2015. Assessing skin sensitization hazard in mice and men using non-animal test methods, Regul Toxicol Pharmacol, 71:337-51. <a href="https://doi.org/10.1016/j.yrtph.2014.12.008">https://doi.org/10.1016/j.yrtph.2014.12.008</a>.</li>
     <li>Yordanova D, Schultz TW, Kuseva C, Tankova K, Ivanova H, Dermen I, Pavlov T, Temelkov S, Chapkanov A, Georgiev M, Gissi A. 2019. Automated and standardized workflows in the OECD QSAR Toolbox. Comput Toxicol 10:89–104. <a href="https://doi.org/10.1016/j.comtox.2019.01.006">https://doi.org/10.1016/j.comtox.2019.01.006</a>.</li>
   </ol>
+
+<h2 id="appendix-1">Appendix 1: Borderline Decision Trees</h2>
+
+<h3>Key Event 1</h3>
+<h4>ADRA</h4>
+<div style = "width: fit-content; display: block; margin:auto;">
+  <figure>
+      <img src = "blr_diagrams/0_ke1_adra_tree.png" alt = "Diagram of ADRA decision tree with borderlines." width="100%">
+      <figcaption>
+          Figure A1.1. The amino acid reactivity assay (ADRA) measures depletion of two peptides containing either cysteine or lysine derivatives (NAC and NAL, respectively) due to covalent binding.The borderline range for the mean NAC and NAL % depletion is [4.06, 5.94]. If only NAC % depletion can be evaluated, the borderline range is [4.67, 6.83]. If the first run yields a borderline result, a second run should be conducted.
+      </figcaption>
+  </figure>
+</div>
+
+<h4>DPRA</h4>
+<div style = "width: fit-content; display: block; margin:auto;">
+  <figure>
+      <img src = "blr_diagrams/1_ke1_dpra_tree.png" alt = "Diagram of DPRA decision tree with borderlines." width="100%">
+      <figcaption>
+          Figure A1.2. The direct peptide reactivity assay (DPRA) measures depletion of two peptides containing either cysteine or lysine residues due to covalent binding.The borderline range for the mean cysteine and lysine % depletion is [4.95, 8.32]. If only cysteine % depletion can be evaluated, the borderline range is [10.56, 18.47]. If the first run yields a borderline result, a second run should be conducted.
+      </figcaption>
+  </figure>
+</div>
+
+<h3>Key Event 2</h3>
+<h4>KeratinoSens</h4>
+<div style = "width: fit-content; display: block; margin:auto;">
+  <figure>
+      <img src = "blr_diagrams/2_ke2_keratinosens_tree.png" alt = "Diagram of KeratinoSens decision tree with borderlines." width="100%">
+      <figcaption>
+          Figure A1.3. The ARE-Nrf2 Luciferase KeratinoSens test method assesses activation of the Nrf2-Keap1 pathway. The borderline range for maximal average fold induction (Imax) is (1.35, 1.67). Note, the DASS App does not apply the KeratinoSens decision tree, because borderline results can be obtained from the KeratinoSens data evaluation template. 
+      </figcaption>
+  </figure>
+</div>
+
+<h4>LuSens</h4>
+<div style = "width: fit-content; display: block; margin:auto;">
+  <figure>
+      <img src = "blr_diagrams/3_ke2_lusens_tree.png" alt = "Diagram of LuSens decision tree with borderlines." width="100%">
+      <figcaption>
+          Figure A1.4. The ARE-Nrf2 Luciferase LuSens test method assesses activation of the Nrf2-Keap1 pathway. The borderline range for luciferase induction threshold is (1.28, 1.76).
+      </figcaption>
+  </figure>
+</div>
+
+<h3>Key Event 3</h3>
+<h4>GARDskin</h4>
+<div style = "width: fit-content; display: block; margin:auto;">
+  <figure>
+      <img src = "blr_diagrams/4_ke3_gardskin_tree.png" alt = "Diagram of GARDskin decision tree with borderlines." width="100%">
+      <figcaption>
+          Figure A1.5. The Genomic Allergen Rapid Detection (GARD) for Assessment of Skin Sensitisers (GARDskin) method assesses genomic biomarker signatures associated with dendritic cell activation. The borderline range for the decision value (DV) is (-0.450, 0.450).
+      </figcaption>
+  </figure>
+</div>
+
+<h4>h-CLAT</h4>
+<div style = "width: fit-content; display: block; margin:auto;">
+  <figure>
+      <img src = "blr_diagrams/5_ke3_hclat_tree.png" alt = "Diagram of h-CLAT decision tree with borderlines." width="100%">
+      <figcaption>
+          Figure A1.6. The Human Cell Line Activation Test (h-CLAT) quantifies changes in the expression of cell surface markers associated with the process of activation of monocytes and dendritic cells (CD86 and CD54). The borderline range for CD86 induction is (122, 184]. The borderline range for CD54 induction is (157, 255].
+      </figcaption>
+  </figure>
+</div>
+
+<h4>IL-8 Luc</h4>
+<div style = "width: fit-content; display: block; margin:auto;">
+  <figure>
+      <img src = "blr_diagrams/6_ke3_il8luc_tree.png" alt = "Diagram of IL-8 Luc decision tree with borderlines." width="100%">
+      <figcaption>
+          Figure A1.7. The Interleukin-8 Reporter Gene (IL-8 Luc) assay quantifies changes in IL-8 expression, a cytokine associated with the activation of dendritic cells. The borderline range for luciferase induction reflecting IL-8 promoter activity is [1.25, 1.67).
+      </figcaption>
+  </figure>
+</div>
+
+
+<h4>U-SENS</h4>
+<div style = "width: fit-content; display: block; margin:auto;">
+  <figure>
+      <img src = "blr_diagrams/7_ke3_usens_tree.png" alt = "Diagram of U-SENS decision tree with borderlines." width="100%">
+      <figcaption>
+          Figure A1.8. The U937 Cell Line Activation (U-SENS) test quantifies changes in the expression of cell surface markers associated with the process of activation of monocytes and dendritic cells (CD86) in the human histiocytic lymphoma cell line U937. 
+      </figcaption>
+  </figure>
+</div>
+
 
 </body>
 </html>

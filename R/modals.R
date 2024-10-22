@@ -411,7 +411,7 @@ info_modals <- list(
     id = "info_blr_ke2AssayName_modal",
     trigger = "info_blr_ke2AssayName",
     title = "Key Event 2 Assay",
-    p("The 2o3 uses results from a KE2 assay. You can apply decision trees specific to the KeratinoSens or LuSens KE2 test methods."),
+    p("The 2o3 uses results from a KE2 assay. You can provide data for the KeratinoSens and LuSens KE2 test methods."),
     div(
       class = "slideshow-container",
       div(
