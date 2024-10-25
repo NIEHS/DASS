@@ -410,6 +410,16 @@ input[type="checkbox"]:hover {
   color: white;
 }
 
+.datatables table.dataTable thead tr th.sorting:after,
+.datatables table.dataTable thead tr th.sorting:before {
+  line-height: 1em;
+  opacity: 1;
+}
+
+.datatables table.dataTable thead tr td[data-type] > div:nth-child(2) {
+  color: black;
+}
+
 .table-plain {
   width: fit-content;
 }

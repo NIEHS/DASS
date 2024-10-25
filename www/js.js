@@ -54,6 +54,7 @@ function updateSelectUI(ke31=true) {
 // ## STARTUP
 $(document).on('shiny:connected', function() {
   $(".hiddenBlock").hide();
+  $(".tabbable .tab-content").attr("aria-live", "assertive");
   
   $("input[name='selected_da'][value='da_2o3']").attr("aria-labelledby", "2o3_radio_label");
   $("input[name='selected_da'][value='da_its']").attr("aria-labelledby", "its_radio_label");

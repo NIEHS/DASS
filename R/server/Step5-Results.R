@@ -562,7 +562,10 @@ run_borderline <- reactive({
   ke1_out <- ke1_out[,c("cid", "mean_c_l_dep", "c_dep", "outcome")]
   names(ke1_out) <- c("Compound ID", "Mean Depletion", "Cys/NAC Depletion", "Outcome")
   ke1_out[["Compound ID"]] <- as.factor(ke1_out[["Compound ID"]])
-  ke1_out[["Outcome"]] <- factor(ke1_out[["Outcome"]], levels = c("Positive", "BL Positive", "Borderline", "BL Negative", "Negative", "Inconclusive"))
+  ke1_out[["Outcome"]] <- gsub("^BL\\s+", "", ke1_out[["Outcome"]])
+  ke1_out[["Outcome"]] <- factor(ke1_out[["Outcome"]], levels = c("Positive", "Borderline", "Negative", "Inconclusive"))
+  
+  # ke1_out[["Outcome"]] <- factor(ke1_out[["Outcome"]], levels = c("Positive", "BL Positive", "Borderline", "BL Negative", "Negative", "Inconclusive"))
   
   ke3_out[["Compound ID"]] <- as.factor(ke3_out[["Compound ID"]])
   ke3_out[["Outcome"]] <- factor(ke3_out[["Outcome"]], levels = c("Positive", "Negative", "Borderline", "Inconclusive"))

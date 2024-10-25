@@ -365,7 +365,7 @@ info_modals <- list(
     trigger = "info_blr_ke1Columns",
     size = "large",
     title = "Key Event 1 Assay Data Columns",
-    p("Chemicals with borderline results must have data from at least two runs to generate an overall outcome."),
+    p("During the evaluation, if depletion values indicate that a second run was required, but data from only one run is provided, the result will not be used in the 2o3."),
     tags$details(
       open = "open",
       tags$summary("ADRA"),
@@ -590,11 +590,16 @@ info_modals <- list(
     title = "DA Result Table Key",
     trigger = "showTableKey",
     tags$dl(
-      tags$dt("Yellow columns"),
+      tags$dt("Selected Data Columns (Yellow)"),
       tags$dd(
         "The data columns that you selected in Step 3 are yellow and the column names are annotated with an asterisk."
       ),
-      tags$dt("Pink columns"),
+      tags$dt("DA Prediction Column(s) (Blue)"),
+      tags$dd(
+        p("DA predictions are appended to the table as blue columns. If the ITS DA was selected, then the individual and total ITS scores are also appended and highlighted in blue."),
+        p("For assigning potency predictions, the DASS App uses categories established by the United Nations Globally Harmonized System for Classification and Labelling of Chemicals (GHS).")
+      ),
+      tags$dt("Processed Data Columns (Pink, Hidden by Default)"),
       tags$dd(
         p("The DASS App processes your data columns for evaluation."),
         tags$ul(
@@ -607,11 +612,7 @@ info_modals <- list(
         p("For values that were derived by the app (i.e., assay call, mean depletion values), the column name will end with \"calculated\"."),
         p("The values in these columns are the actual values used for evaluation. It may be useful to review the selected columns and their transformations to ensure your data were properly interpreted, especially if the DAs were run with flagged data.")
       ),
-      tags$dt("Blue columns"),
-      tags$dd(
-        p("DA predictions are appended to the table as blue columns. If the ITS DA was selected, then the individual and total ITS scores are also appended and highlighted in blue."),
-        p("For assigning potency predictions, the DASS App uses categories established by the United Nations Globally Harmonized System for Classification and Labelling of Chemicals (GHS).")
-      )
+
     )
   ),
   ## Compare -----

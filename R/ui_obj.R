@@ -149,7 +149,7 @@ welcome_panel <- fluidRow(tags$header(
         tags$span(class = "sr-only", "External link. Opens in new window.")
       ),
       br(),
-      "Last updated: 2023-Oct-20"
+      "Last updated: 2024-Oct-25"
     )
   )
 ))
@@ -211,6 +211,7 @@ select_da_panel <- tabPanel(
 # Step 2: Upload Data -----
 upload_data_panel <- tabPanel(
   title = tabNames[2],
+  tags$h2(class = "sr-only", "Step 2. Upload Data"),
   fluidRow(
     id = "upload_data_ui",
     class = "bordered-panel hiddenBlock",
@@ -275,6 +276,7 @@ upload_data_panel <- tabPanel(
     column(
       width = 12,
       id = "upload_block",
+      # Generates read-only input with text after Browse. SR flagged b/c no label. 
       fileInput(
         inputId = "fpath",
         label = "Click 'Browse' below and select your file.",
@@ -318,7 +320,8 @@ upload_data_panel <- tabPanel(
         selectInput(
           inputId = "blr_data_worksheet_select",
           label = "Select worksheet to view",
-          choices = NULL
+          choices = NULL,
+          selectize = F
         )
       ),
       DT::dataTableOutput("dt_analyze"),
@@ -828,7 +831,7 @@ review_selection_panel <- tabPanel(
       column(
         width = 12,
         p(
-          "Your selections are summarized below. When you are done reviewing your selections, click 'Run' to run the DASS. If you need to change a selected column, return to the 'Select Data Columns' page. If you need to upload new or updated data, return to the 'Upload Data' page."
+          "The table below summarizes your selections for each of the required endpoints. Values in the selected column are evaluated against formatting requirements. The third column \"Flagged\" will be \"true\" if invalid values were found in the corresponding column and \"false\" otherwise. When you are done reviewing your selections, click 'Run' to run the DASS. If you need to change a selected column, return to the 'Select Data Columns' page. If you need to upload new or updated data, return to the 'Upload Data' page."
         ),
         uiOutput("review_contents_standard_ui")
       )
@@ -900,11 +903,11 @@ results_panel <- tabPanel(
             ),
           )
         ),
-        actionButton(inputId = "goToCompare", label = "Compare Results"),
         actionButton(inputId = "showTableKey", label = "Table Key")
       )),
       br(),
-      dataTableOutput("dt_results")
+      dataTableOutput("dt_results"),
+      actionButton(inputId = "goToCompare", label = "Compare Results", width = "100%")
     ),
     div(
       id = "result_contents_blr",
