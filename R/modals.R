@@ -12,7 +12,7 @@
 get_link <- list(
   gl497 = list(
     url = "https://doi.org/https://doi.org/10.1787/b92879a4-en",
-    label = "OECD Guideline No. 497 (GL497): Defined Approaches on Skin Sensitisation"
+    label = "OECD Guideline No. 497 (TG497): Defined Approaches on Skin Sensitisation"
   ),
   tg442c = list(
     url = "https://doi.org/10.1787/9789264229709-en",
@@ -31,7 +31,7 @@ get_link <- list(
     label = "Interim Science Policy: Use of Alternative Approaches for Skin Sensitization as a Replacement for Laboratory Animal Testing Draft for Public Comment" 
   ),
   user_guide = list(
-    url = "user_guide.pdf",
+    url = "user_guide.html",
     label = "User Guide"
   )
 )
@@ -43,13 +43,13 @@ get_da_fig <- list(
   da2o3 = list(
     url = "da_diagrams/2o3_diagram-v2.png",
     alt = "Diagram of 2o3 data interpretation procedure",
-    caption = "\u2020 GL497 evaluates the 2o3 DA using DPRA, KeratinoSens, and h-CLAT. The additional key event assays are under evaluation for inclusion in GL497."
+    caption = "\u2020 TG497 evaluates the 2o3 DA using DPRA, KeratinoSens, and h-CLAT. The additional key event assays are under evaluation for inclusion in TG497."
   ),
   
   daits = list(
     url = "da_diagrams/ITS_diagram-v2.png",
     alt = "Diagram of ITS data interpretation procedure",
-    caption = "\u2020 GL497 evaluates the ITS DA using DPRA, h-CLAT, and either OECD QSAR Toolbox or Derek Nexus. The additional key event assays and in silico models are under evaluation for inclusion in GL497."
+    caption = "\u2020 TG497 evaluates the ITS DA using DPRA, h-CLAT, and either OECD QSAR Toolbox or Derek Nexus. The additional key event assays and in silico models are under evaluation for inclusion in TG497."
   ),
   
   dake31 = list(
@@ -351,9 +351,10 @@ info_modals <- list(
         actionLink(class = "prev", inputId = "ke1_blr_prev", HTML("&#9664;")),
         selectInput(
           inputId = "ke1_blr_caro_img",
-          label = NULL,
+          label = "Choose assay decision tree to view",
           width = "20ch",
-          choices = blr_label_ids[["ke1"]]
+          choices = blr_label_ids[["ke1"]],
+          selectize = F
         ),
         actionLink(class = "next", inputId = "ke1_blr_next", HTML("&#9654;"))
       ),
@@ -419,9 +420,10 @@ info_modals <- list(
         actionLink(class = "prev", inputId = "ke2_blr_prev", HTML("&#9664;")),
         selectInput(
           inputId = "ke2_blr_caro_img",
-          label = NULL,
+          label = "Choose assay decision tree to view",
           width = "20ch",
-          choices = blr_label_ids[["ke2"]]
+          choices = blr_label_ids[["ke2"]],
+          selectize = F
         ),
         actionLink(class = "next", inputId = "ke2_blr_next", HTML("&#9654;"))
       ),
@@ -484,9 +486,10 @@ info_modals <- list(
         actionLink(class = "prev", inputId = "ke3_blr_prev", HTML("&#9664;")),
         selectInput(
           inputId = "ke3_blr_caro_img",
-          label = NULL,
+          label = "Choose assay decision tree to view",
           width = "20ch",
-          choices = blr_label_ids[["ke3"]]
+          choices = blr_label_ids[["ke3"]],
+          selectize = F
         ),
         actionLink(class = "next", inputId = "ke3_blr_next", HTML("&#9654;"))
       ),

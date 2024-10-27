@@ -165,6 +165,7 @@ observeEvent(input$blr_data_worksheet_select, {
 output$dt_analyze <- DT::renderDataTable({
   datatable(dt_analyze(),
             class = "table-bordered stripe",
+            rownames = FALSE,
             options = list(
               scrollY = TRUE,
               scrollX = TRUE

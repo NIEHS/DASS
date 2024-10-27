@@ -166,8 +166,9 @@ run_dass <- reactive({
   updateRadioButtons(inputId = "perf_pred_col", choices = switch(input$selected_da, da_2o3 = "Hazard", da_its = c("Hazard", "Potency"), da_ke31 = c("Hazard", "Potency")))
   updateSelectInput(inputId = "perf_ref_col", choices = names(dt_analyze()))
   updateSelectInput(inputId = "perf_ice_user_identifier", choices = c("", names(dt_analyze())))
-  
 })
+
+
 
 output$dt_results <- renderDataTable({
   req(all_out$result_df)
@@ -182,11 +183,14 @@ output$dt_results <- renderDataTable({
     filter = "top",
     selection = "none",
     extensions = "Buttons",
-    callback = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
+    callback = JS("table.on('column-visibility.dt', function (e, settings, column, state) {
+addFilterLabel('dt_results');
+});"),
     options = list(
       dom = "Brtp",
       scrollX = T,
       scrollY = T,
+      initComplete = JS("function() {addFilterLabel('dt_results')}"),
       buttons = list(
         list(extend = "colvis", text = "Column Visibility", collectionLayout = "columns", attr = list(id = "resColPicker")),
         list(extend = "colvisGroup", text = "Hide All Columns", hide = ":visible"),
@@ -592,8 +596,13 @@ output$dass_results_blr <- renderDataTable({
     rownames  = F,
     filter    = "top",
     selection = "none",
-    callback  = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
-    options   = list(dom = "lrtip")
+    callback = JS("table.on('column-visibility.dt', function (e, settings, column, state) {addFilterLabel('dass_results_blr');});"),
+    options   = list(
+      scrollX = T,
+      scrollY = T,
+      dom = "lrtip",
+      initComplete = JS("function() {addFilterLabel('dass_results_blr')}")
+      )
     )
 })
 
@@ -604,30 +613,46 @@ output$ke1_blr_indiv <- renderDataTable({
     rownames  = F,
     filter    = "top",
     selection = "none",
-    callback  = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
-    options   = list(dom = "lrtip")
+    callback = JS("table.on('column-visibility.dt', function (e, settings, column, state) {addFilterLabel('ke1_blr_indiv');});"),
+    options   = list(
+      dom = "lrtip",
+      scrollX = T,
+      scrollY = T,
+      initComplete = JS("function() {addFilterLabel('ke1_blr_indiv')}")
+      )
   )
 })
 
 output$ke2_blr_indiv <- renderDataTable({
-  datatable(all_out_blr$ke2_run_outcome,
-            class     = "table-bordered table-condensed stripe",
-            rownames  = F,
-            filter    = "top",
-            selection = "none",
-            callback  = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
-            options   = list(dom = "lrtip")
+  datatable(
+    all_out_blr$ke2_run_outcome,
+    class     = "table-bordered table-condensed stripe",
+    rownames  = F,
+    filter    = "top",
+    selection = "none",
+    callback = JS("table.on('column-visibility.dt', function (e, settings, column, state) {addFilterLabel('ke2_blr_indiv');});"),
+    options   = list(
+      dom = "lrtip",
+      scrollX = T,
+      scrollY = T,
+      initComplete = JS("function() {addFilterLabel('ke2_blr_indiv')}"))
   )
 })
 
 output$ke3_blr_indiv <- renderDataTable({
-  datatable(all_out_blr$ke3_run_outcome,
-            class     = "table-bordered table-condensed stripe",
-            rownames  = F,
-            filter    = "top",
-            selection = "none",
-            callback  = JS("$('#dt_results .dataTables_scrollBody').each((i, e) => e.setAttribute('tabIndex', 0))"),
-            options   = list(dom = "lrtip")
+  datatable(
+    all_out_blr$ke3_run_outcome,
+    class     = "table-bordered table-condensed stripe",
+    rownames  = F,
+    filter    = "top",
+    selection = "none",
+    callback = JS("table.on('column-visibility.dt', function (e, settings, column, state) {addFilterLabel('ke3_blr_indiv');});"),
+    options   = list(
+      dom = "lrtip",
+      scrollX = T,
+      scrollY = T,
+      initComplete = JS("function() {addFilterLabel('ke3_blr_indiv')}")
+    )
   )
 })
 

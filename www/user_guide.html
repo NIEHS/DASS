@@ -50,10 +50,10 @@
         margin-bottom: 1em;
     }
 
-figure, table {
-    margin-top: 2em;
-    margin-bottom: 2em;
-}
+    figure, table {
+        margin-top: 2em;
+        margin-bottom: 2em;
+    }
   </style>
 </head>
 <body>
@@ -90,7 +90,7 @@ figure, table {
 </ul>
 
 <h2 id="release-notes">Release Notes</h2>
-<h3>25 October 2024</h3>
+<h3>26 October 2024</h3>
 <p>
     Version 2.0
     <ul>
@@ -114,7 +114,7 @@ figure, table {
 
 <h2 id = "about">About</h2>
 <p>
-    The DASS App is a user-friendly web tool for applying defined approaches on skin sensitization (DASS) that are described in Guideline No. 497 (GL497) from the Organisation for Economic Co-operation and Development (OECD 2023) and the U.S. Environmental Protection Agency (EPA) Interim Science Policy: Use of Alternative Approaches for Skin Sensitization as a Replacement for Laboratory Animal Testing (EPA 2018). The DASS App predicts both skin sensitization hazard (either a sensitizer or non-sensitizer) and potency for chemicals of interest. For assigning potency predictions to query chemicals, the DASS App uses categories established by the United Nations Globally Harmonized System for Classification and Labelling of Chemicals (GHS).
+    The DASS App is a user-friendly web tool for applying defined approaches on skin sensitization (DASS) that are described in Guideline No. 497 (TG 497) from the Organisation for Economic Co-operation and Development (OECD 2023) and the U.S. Environmental Protection Agency (EPA) Interim Science Policy: Use of Alternative Approaches for Skin Sensitization as a Replacement for Laboratory Animal Testing (EPA 2018). The DASS App predicts both skin sensitization hazard (either a sensitizer or non-sensitizer) and potency for chemicals of interest. For assigning potency predictions to query chemicals, the DASS App uses categories established by the United Nations Globally Harmonized System for Classification and Labelling of Chemicals (GHS).
 </p>
 <p>
     Defined approaches (DAs) consist of a defined set of information sources (e.g., in vitro or in chemico assays, in silico models) used in a fixed data interpretation procedure (DIP) to provide predictions without the need for expert judgement. Assays that are applicable to DAs in the DASS App are based on key events (KEs) in the Adverse Outcome Pathway for Skin Sensitisation Initiated by Covalent Binding to Proteins (OECD 2014). OECD test guidelines (TGs) describe such KE-based assays: 
@@ -144,7 +144,7 @@ figure, table {
         </li>
     </ol>
 </p>
-<p>GL497 and the EPA's draft policy only define DPRA, KeratinoSens, and h-CLAT as acceptable TG information sources, however additional validated test methods from the TGs are relevant to DASS (Kleinstreuer 2018) and are included in the DASS App. In addition, one of the DAs, the Integrated Testing Strategy (ITS) method, integrates an in silico prediction of skin sensitization potential..</p>
+<p>TG 497 and the EPA's draft policy only define DPRA, KeratinoSens, and h-CLAT as acceptable TG information sources, however additional validated test methods from the TGs are relevant to DASS (Kleinstreuer 2018) and are included in the DASS App. In addition, one of the DAs, the Integrated Testing Strategy (ITS) method, integrates an in silico prediction of skin sensitization potential..</p>
 <p>The app runs the DA analysis using data from a file you provide; data templates are provided to help you correctly format your data. No data is provided by or retained by the app, and it can thus be used to analyze data from substances in development.</p>
 <p>This app was developed by the National Toxicology Program Interagency Center for the Evaluation of Alternative Toxicological Methods (NICEATM). Version 2.0 was tested on Windows 11 using R v.4.4.1 (R Core Team 2024) and Google Chrome v.129. The DASS App is available at <a href = "https://ntp.niehs.nih.gov/go/952311">https://ntp.niehs.nih.gov/go/952311</a>.</p>
 <p>For more information or to report a problem with the app, please contact NICEATM at <a href = "mailto:ICE-support@niehs.nih.gov">ICE-support@niehs.nih.gov</a>.</p>
@@ -162,7 +162,7 @@ figure, table {
 
 <div style = "width: fit-content; display: block; margin:auto;">
 <figure>
-    <img src = "da_diagrams/2o3_diagram-v2.png" alt = "Diagram of 2o3 data interpretation procedure" width = "100%">
+    <img src = "da_diagrams/2o3_diagram-v2.png" alt = "Diagram of 2o3 data interpretation procedure" width = "100%" style = "min-width:400px; max-width: 500px;">
     <figcaption>Figure 1. Diagram of the 2o3 DA data interpretation procedure</figcaption>
 </figure>
 </div>
@@ -173,10 +173,10 @@ figure, table {
 
 <h3>Integrated Testing Strategy DA</h3>
 <p>The ITS DA predicts skin sensitization hazard and GHS potency category based on KEs 1 and 3 and in silico predictions (Nukada et al. 2013; Takenouchi et al. 2015). Results from each information source are scored and the summed scores are used to predict chemical hazard and potency (Figure 2).</p>
-<p>GL497 describes the ITS using the DPRA, h-CLAT, and either <a href="https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm">Derek Nexus</a> or the OECD QSAR Toolbox (Yordanova et al. 2019). The DASS App includes ITS scoring schemes for additional validated KE assays.</p>
+<p>TG 497 describes the ITS using the DPRA, h-CLAT, and either <a href="https://www.lhasalimited.org/products/skin-sensitisation-assessment-using-derek-nexus.htm">Derek Nexus</a> or the OECD QSAR Toolbox (Yordanova et al. 2019). The DASS App includes ITS scoring schemes for additional validated KE assays.</p>
 <div style = "width: fit-content; display: block; margin:auto;">
     <figure>
-        <img src = "da_diagrams/ITS_diagram-v2.png" alt = "Diagram of ITS data interpretation procedure" width="100%">
+        <img src = "da_diagrams/ITS_diagram-v2.png" alt = "Diagram of ITS data interpretation procedure" width="100%" style = "min-width: 1000px max-width: 1300px;">
         <figcaption>
             Figure 2. Diagram of the ITS data interpretation procedure. 1A = strong sensitizer; 1B = weak sensitizer; NC = not classified; 1* = sensitizer, inconclusive for potency.
         </figcaption>
@@ -261,7 +261,7 @@ figure, table {
 
 <div style = "width: fit-content; display: block; margin:auto;">
     <figure>
-        <img src = "da_diagrams/KE31STS_diagram-v1.png" alt = "Diagram of KE 3/1 STS data interpretation procedure" width="100%">
+        <img src = "da_diagrams/KE31STS_diagram-v1.png" alt = "Diagram of KE 3/1 STS data interpretation procedure" width="100%" style = "min-width: 400px; max-width:500px;">
         <figcaption>
             Figure 3. Diagram of KE 3/1 STS DA data interpretation procedure.
         </figcaption>
@@ -697,7 +697,7 @@ figure, table {
 <h4>ADRA</h4>
 <div style = "width: fit-content; display: block; margin:auto;">
   <figure>
-      <img src = "blr_diagrams/0_ke1_adra_tree.png" alt = "Diagram of ADRA decision tree with borderlines." width="100%">
+      <img src = "blr_diagrams/0_ke1_adra_tree.png" alt = "Diagram of ADRA decision tree with borderlines." width="100%" style = "min-width:400px; max-width: 550px;">
       <figcaption>
           Figure A1.1. The amino acid reactivity assay (ADRA) measures depletion of two peptides containing either cysteine or lysine derivatives (NAC and NAL, respectively) due to covalent binding.The borderline range for the mean NAC and NAL % depletion is [4.06, 5.94]. If only NAC % depletion can be evaluated, the borderline range is [4.67, 6.83]. If the first run yields a borderline result, a second run should be conducted.
       </figcaption>
@@ -707,7 +707,7 @@ figure, table {
 <h4>DPRA</h4>
 <div style = "width: fit-content; display: block; margin:auto;">
   <figure>
-      <img src = "blr_diagrams/1_ke1_dpra_tree.png" alt = "Diagram of DPRA decision tree with borderlines." width="100%">
+      <img src = "blr_diagrams/1_ke1_dpra_tree.png" alt = "Diagram of DPRA decision tree with borderlines." width="100%" style = "min-width:400px; max-width: 550px;">
       <figcaption>
           Figure A1.2. The direct peptide reactivity assay (DPRA) measures depletion of two peptides containing either cysteine or lysine residues due to covalent binding.The borderline range for the mean cysteine and lysine % depletion is [4.95, 8.32]. If only cysteine % depletion can be evaluated, the borderline range is [10.56, 18.47]. If the first run yields a borderline result, a second run should be conducted.
       </figcaption>
@@ -718,7 +718,7 @@ figure, table {
 <h4>KeratinoSens</h4>
 <div style = "width: fit-content; display: block; margin:auto;">
   <figure>
-      <img src = "blr_diagrams/2_ke2_keratinosens_tree.png" alt = "Diagram of KeratinoSens decision tree with borderlines." width="100%">
+      <img src = "blr_diagrams/2_ke2_keratinosens_tree.png" alt = "Diagram of KeratinoSens decision tree with borderlines." width="100%" style = "min-width:650px; max-width: 1200px;">
       <figcaption>
           Figure A1.3. The ARE-Nrf2 Luciferase KeratinoSens test method assesses activation of the Nrf2-Keap1 pathway. The borderline range for maximal average fold induction (Imax) is (1.35, 1.67). Note, the DASS App does not apply the KeratinoSens decision tree, because borderline results can be obtained from the KeratinoSens data evaluation template. 
       </figcaption>
@@ -728,7 +728,7 @@ figure, table {
 <h4>LuSens</h4>
 <div style = "width: fit-content; display: block; margin:auto;">
   <figure>
-      <img src = "blr_diagrams/3_ke2_lusens_tree.png" alt = "Diagram of LuSens decision tree with borderlines." width="100%">
+      <img src = "blr_diagrams/3_ke2_lusens_tree.png" alt = "Diagram of LuSens decision tree with borderlines." width="100%" style = "min-width:850px;">
       <figcaption>
           Figure A1.4. The ARE-Nrf2 Luciferase LuSens test method assesses activation of the Nrf2-Keap1 pathway. The borderline range for luciferase induction threshold is (1.28, 1.76).
       </figcaption>
@@ -739,7 +739,7 @@ figure, table {
 <h4>GARDskin</h4>
 <div style = "width: fit-content; display: block; margin:auto;">
   <figure>
-      <img src = "blr_diagrams/4_ke3_gardskin_tree.png" alt = "Diagram of GARDskin decision tree with borderlines." width="100%">
+      <img src = "blr_diagrams/4_ke3_gardskin_tree.png" alt = "Diagram of GARDskin decision tree with borderlines." width="100%" style = "min-width: 350px; max-width: 550px">
       <figcaption>
           Figure A1.5. The Genomic Allergen Rapid Detection (GARD) for Assessment of Skin Sensitisers (GARDskin) method assesses genomic biomarker signatures associated with dendritic cell activation. The borderline range for the decision value (DV) is (-0.450, 0.450).
       </figcaption>
@@ -749,7 +749,7 @@ figure, table {
 <h4>h-CLAT</h4>
 <div style = "width: fit-content; display: block; margin:auto;">
   <figure>
-      <img src = "blr_diagrams/5_ke3_hclat_tree.png" alt = "Diagram of h-CLAT decision tree with borderlines." width="100%">
+      <img src = "blr_diagrams/5_ke3_hclat_tree.png" alt = "Diagram of h-CLAT decision tree with borderlines." width="100%" style = "min-width: 350px; max-width: 550px">
       <figcaption>
           Figure A1.6. The Human Cell Line Activation Test (h-CLAT) quantifies changes in the expression of cell surface markers associated with the process of activation of monocytes and dendritic cells (CD86 and CD54). The borderline range for CD86 induction is (122, 184]. The borderline range for CD54 induction is (157, 255].
       </figcaption>
@@ -759,7 +759,7 @@ figure, table {
 <h4>IL-8 Luc</h4>
 <div style = "width: fit-content; display: block; margin:auto;">
   <figure>
-      <img src = "blr_diagrams/6_ke3_il8luc_tree.png" alt = "Diagram of IL-8 Luc decision tree with borderlines." width="100%">
+      <img src = "blr_diagrams/6_ke3_il8luc_tree.png" alt = "Diagram of IL-8 Luc decision tree with borderlines." width="100%" style = "min-width: 550px; max-width: 750px">
       <figcaption>
           Figure A1.7. The Interleukin-8 Reporter Gene (IL-8 Luc) assay quantifies changes in IL-8 expression, a cytokine associated with the activation of dendritic cells. The borderline range for luciferase induction reflecting IL-8 promoter activity is [1.25, 1.67).
       </figcaption>
@@ -770,7 +770,7 @@ figure, table {
 <h4>U-SENS</h4>
 <div style = "width: fit-content; display: block; margin:auto;">
   <figure>
-      <img src = "blr_diagrams/7_ke3_usens_tree.png" alt = "Diagram of U-SENS decision tree with borderlines." width="100%">
+      <img src = "blr_diagrams/7_ke3_usens_tree.png" alt = "Diagram of U-SENS decision tree with borderlines." width="100%" style = "min-width: 550px; max-width: 750px">
       <figcaption>
           Figure A1.8. The U937 Cell Line Activation (U-SENS) test quantifies changes in the expression of cell surface markers associated with the process of activation of monocytes and dendritic cells (CD86) in the human histiocytic lymphoma cell line U937. 
       </figcaption>
@@ -780,6 +780,3 @@ figure, table {
 
 </body>
 </html>
-
-
-

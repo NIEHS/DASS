@@ -3,17 +3,11 @@
 # Original Creator: Kim To
 # Contact Information: ICE-support@niehs.nih.gov
 # Date Created: 2021-12-03
-# Last Modified: 2024-10-08
+# Last Modified: 2024-10-27
 # License: MIT
 # Version: 1.0
 # Description: Loads required packages. Reads in functions. Loads UI and
 # server files to build app.
-# Required Packages:
-# - data.table, DT
-# - ggplot2, grid, gridExtra
-# - openxlsx
-# - readxl
-# - shiny shinyBS shinyjqui shinyjs
 #=============================================================================#
 
 # Load packages
@@ -54,7 +48,6 @@ ui <- fluidPage(
 )
 
 attr(ui, "lang") <- "en"
-
 
 # Read in server files
 server <- function(input, output, session) {

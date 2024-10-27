@@ -149,7 +149,7 @@ welcome_panel <- fluidRow(tags$header(
         tags$span(class = "sr-only", "External link. Opens in new window.")
       ),
       br(),
-      "Last updated: 2024-Oct-25"
+      "Last updated: 2024-Oct-27"
     )
   )
 ))
@@ -276,7 +276,7 @@ upload_data_panel <- tabPanel(
     column(
       width = 12,
       id = "upload_block",
-      # Generates read-only input with text after Browse. SR flagged b/c no label. 
+      # Generates read-only input with text after Browse. Wave flagged b/c no label. Must resolve SR text for entire form group. After file selection, NVDA announces Browse button with 'No file chosen' and placeholder text.
       fileInput(
         inputId = "fpath",
         label = "Click 'Browse' below and select your file.",
@@ -317,6 +317,7 @@ upload_data_panel <- tabPanel(
           class = "warningText",
           tags$strong("WARNING: Expected at least three worksheets in file.")
         ),
+        # Disable selectize on all selectInputs. Removes some enhancements, but selectize control label is not being announced
         selectInput(
           inputId = "blr_data_worksheet_select",
           label = "Select worksheet to view",
@@ -456,7 +457,8 @@ select_columns_panel <- tabPanel(
             selectInput(
               inputId = "ke2_call_col",
               label = "Call Column",
-              choices = NULL
+              choices = NULL,
+              selectize = F
             )
           )
           
@@ -588,7 +590,8 @@ select_columns_panel <- tabPanel(
               selectInput(
                 inputId = "ke1_blr_ws",
                 label = "KE1 Worksheet",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               )
             ),
             tags$h2(
@@ -600,22 +603,26 @@ select_columns_panel <- tabPanel(
               selectInput(
                 inputId = "ke1_blr_cid_col",
                 label = "Chemical Identifier Column",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               ),
               selectInput(
                 inputId = "ke1_blr_c_dep_col",
                 label = "Cys/NAC Depletion (%) Column",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               ),
               selectInput(
                 inputId = "ke1_blr_l_dep_col",
                 label = "Lys/NAL Depletion (%) Column",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               ),
               selectInput(
                 inputId = "ke1_blr_c_only_col",
                 label = "Cys-Only Indicator Column",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               )
             )
           )
@@ -645,7 +652,8 @@ select_columns_panel <- tabPanel(
               selectInput(
                 inputId = "ke2_blr_ws",
                 label = "KE2 Worksheet",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               )
             ),
             tags$h2(
@@ -657,39 +665,46 @@ select_columns_panel <- tabPanel(
               selectInput(
                 inputId = "ke2_blr_cid_col",
                 label = "Chemical Identifier Column",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               ),
               selectInput(
                 inputId = "ke2_blr_ks_call_col",
                 label = "KeratinoSens Outcome Column",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               ),
               div(
                 id = "ke2_blr_lusens_col_select",
                 selectInput(
                   inputId = "ke2_blr_run_col",
                   label = "Run Identifier Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 ),
                 selectInput(
                   inputId = "ke2_blr_conc_col",
                   label = "Concentration Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 ),
                 selectInput(
                   inputId = "ke2_blr_fi_col",
                   label = "Fold Induction Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 ),
                 selectInput(
                   inputId = "ke2_blr_cv_col",
                   label = "Cell Viability (%) Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 ),
                 selectInput(
                   inputId = "ke2_blr_p_col",
                   label = "T Test p-value Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 )
               )
             )
@@ -720,7 +735,8 @@ select_columns_panel <- tabPanel(
               selectInput(
                 inputId = "ke3_blr_ws",
                 label = "KE3 Worksheet",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               )
             ),
             tags$h2(
@@ -732,40 +748,47 @@ select_columns_panel <- tabPanel(
               selectInput(
                 inputId = "ke3_blr_cid_col",
                 label = "Chemical Identifier Column",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               ),
               
               selectInput(
                 inputId = "ke3_blr_run_col",
                 label = "Run Identifier Column",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               ),
               selectInput(
                 inputId = "ke3_blr_conc_col",
                 label = "Concentration Column",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               ),
               selectInput(
                 inputId = "ke3_blr_gard_meanDV_col",
                 label = "GARDSkin Mean DV Column",
-                choices = NULL
+                choices = NULL,
+                selectize = F
               ),
               div(
                 id = "ke3_blr_hclat_col_select",
                 selectInput(
                   inputId = "ke3_blr_hclat_cd54_col",
                   label = "H-CLAT CD54 RFI Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 ),
                 selectInput(
                   inputId = "ke3_blr_hclat_cd86_col",
                   label = "H-CLAT CD86 RFI Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 ),
                 selectInput(
                   inputId = "ke3_blr_hclat_cv_col",
                   label = "H-CLAT Viability (%) Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 )
               ),
               div(
@@ -773,12 +796,14 @@ select_columns_panel <- tabPanel(
                 selectInput(
                   inputId = "ke3_blr_usens_cd86_col",
                   label = "U-SENS CD86 SI Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 ),
                 selectInput(
                   inputId = "ke3_blr_usens_cv_col",
                   label = "U-SENS Viability (%) Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 )
               ),
               div(
@@ -786,22 +811,26 @@ select_columns_panel <- tabPanel(
                 selectInput(
                   inputId = "ke3_blr_il8_ind_col",
                   label = "IL-8 Luc Ind-IL8LA Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 ),
                 selectInput(
                   inputId = "ke3_blr_il8_indLCL_col",
                   label = "IL-8 Luc Ind-IL8LA LCL Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 ),
                 selectInput(
                   inputId = "ke3_blr_il8_inh_col",
                   label = "IL-8 Luc Inh-GAPLA Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 ),
                 selectInput(
                   inputId = "ke3_blr_il8_ws_col",
                   label = "IL-8 Luc Solubility Column",
-                  choices = NULL
+                  choices = NULL,
+                  selectize = F
                 )
               )
             )
@@ -1009,16 +1038,17 @@ compare_panel <- tabPanel(
             value = TRUE
           ),
           conditionalPanel(
+            id = "ref_col_block",
             condition = "input.perf_use_my_data",
             p(
               "Use the dropdown list to select the columns from your input file that contain reference data. You can select more than one column."
             ),
             selectInput(
               inputId = "perf_ref_col",
-              label = "Select Reference Column(s)",
+              label = "Select One or More Reference Columns",
               choices = NULL,
-              selectize = T,
-              multiple = T
+              multiple = T,
+              width = "100%"
             )
           )
         )
@@ -1057,7 +1087,7 @@ compare_panel <- tabPanel(
               inputId = "perf_ice_user_identifier",
               label = "Select Chemical Identifier Column",
               choices = NULL,
-              selectize = T
+              selectize = F
             )
           )
         )
@@ -1090,7 +1120,8 @@ compare_panel <- tabPanel(
         selectInput(
           inputId = "reference_perf_1",
           label = "Select Reference",
-          choices = NULL
+          choices = NULL,
+          selectize = F
         ),
         plotOutput("perf_table_1")
       ),
@@ -1101,7 +1132,8 @@ compare_panel <- tabPanel(
         selectInput(
           inputId = "reference_perf_2",
           label = "Select Reference",
-          choices = NULL
+          choices = NULL,
+          selectize = F
         ),
         plotOutput("perf_table_2")
       ),
@@ -1115,12 +1147,14 @@ compare_panel <- tabPanel(
         selectInput(
           inputId = "perf_fig_comparison",
           label = "Select Reference to Visualize",
-          choices = NULL
+          choices = NULL,
+          selectize = F
         ),
         selectInput(
           inputId = "perf_fig_quant_col",
           label = "Select Quantiative Data to Visualize",
-          choices = NULL
+          choices = NULL,
+          selectize = F
         ),
         plotlyOutput("perf_fig", height = "75rem")
       )

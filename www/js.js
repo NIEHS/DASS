@@ -7,10 +7,6 @@ License: MIT
 Description: js for DASS App
 */
 
-let data0;
-let row0;
-let thisapi0;
-
 // ## GENERAL
 function resetHiddenTab(tabName) {
   $(".tab-pane[data-value='"+tabName+"']").find(".hiddenBlock").hide();
@@ -24,6 +20,13 @@ function showNA() {
       $(this.api().cell(row, i).node()).css({"color": "red"})
     }
   }
+}
+
+function addFilterLabel(table_name) {
+  let head_names = $(`#${table_name} .dataTables_scrollHead thead tr th`);
+  $(`#${table_name} .dataTables_scrollHead thead tr td`). each(function(idx, tde) {
+    $(tde).find("input[type = 'search']").attr("aria-label", `Filter for column ${head_names[idx].innerHTML}`);
+  })
 }
 
 function styleWarnRow(row, data) {
@@ -51,6 +54,11 @@ function updateSelectUI(ke31=true) {
   }
 }
 
+function addLabel(mutationList, observer) {
+  console.log("oy");
+    $("#ref_col_block .selectize-control").prepend("<label class='control-label' for = 'perf_ref_col-selectized'>Select Reference Columns</label>")
+}
+
 // ## STARTUP
 $(document).on('shiny:connected', function() {
   $(".hiddenBlock").hide();
@@ -60,5 +68,16 @@ $(document).on('shiny:connected', function() {
   $("input[name='selected_da'][value='da_its']").attr("aria-labelledby", "its_radio_label");
   $("input[name='selected_da'][value='da_ke31']").attr("aria-labelledby", "ke31_radio_label");
   $("#do_da_2o3_bl").attr("aria-labelledby", "2o3_bl_cb_label");
+  $(".blr_caro_nav label").addClass("sr-only");
+  $("#perf_ref_col-label").attr("aria-hidden", "true");
+  $("#perf_ref_col-label").attr("for", "");
   
+  /*
+    Want to use selectize for multiselect input, but need to add label. Add when user navigates to compare tab. 
+    Can't add to input element at shiny:connected b/c label gets removed when values are updated after result generation
+  */
+  $("#goToCompare").on("click", () => {
+    $("#perf_ref_col-selectized").attr("aria-label", "Select one or more reference columns");
+  });
+  $("#step_set li a[data-value='Compare']").on("focus", () => {$("#perf_ref_col-selectized").attr("aria-label", "Select one or more reference columns");})
 });
