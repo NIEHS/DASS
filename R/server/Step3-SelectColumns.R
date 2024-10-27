@@ -287,6 +287,7 @@ observe({
 })
 
 observe({
+  req(blr())
   ke1_cols <- unlist(ke1_blr_id[[1]], use.names = F)
   ws_cols <- names(isolate(blrSheets())[[input$ke1_blr_ws]])
   for (i in 1:length(ke1_cols)) {
