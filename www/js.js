@@ -1,83 +1,97 @@
-/*
-File Name: jd.js
-Original Creator: ktto
-Contact Information: ICE-support@niehs.nih.gov
-Date Created: 2023-08-05
-License: MIT
-Description: js for DASS App
-*/
+// GENERAL 
+//// hide child elements of jq_selector with class hiddenBlock 
+function resetHidden(jq_selector) {
+  $(`${jq_selector}`).find(".hiddenBlock").hide()
+}
 
-// ## GENERAL
+//// hide child elements of tabName with class hiddenBlock */
 function resetHiddenTab(tabName) {
   $(".tab-pane[data-value='"+tabName+"']").find(".hiddenBlock").hide();
 }
 
-// ## DATA TABLE
-// Makes tables show NA instead of blank
-function showNA() {
-  for (let i = 0; i < data.length; i++) {
-    if (data[i]===null) {
-      $(this.api().cell(row, i).node()).css({"color": "red"})
-    }
-  }
+function tabFocus(tabName) {
+  $(`a.nav-link[data-value='${tabName}']`).focus();
 }
 
-function addFilterLabel(table_name) {
-  let head_names = $(`#${table_name} .dataTables_scrollHead thead tr th`);
-  $(`#${table_name} .dataTables_scrollHead thead tr td`). each(function(idx, tde) {
-    $(tde).find("input[type = 'search']").attr("aria-label", `Filter for column ${head_names[idx].innerHTML}`);
-  })
+function resetFileInputText(input_id) {
+  Shiny.setInputValue(`${input_id}`, null);
+  $(`#${input_id}-fname`).val("");
+  $(`#${input_id}-fname`).attr("placeholder", "No file selected.");
 }
 
+// TABLES
+//// DT callback, makes table body tabbable
+function tabBody(tbl) {
+  let dt=tbl.table().body();
+  $(dt).attr('tabindex', '0');
+}
+
+//// Style flagged rows in review table
 function styleWarnRow(row, data) {
   if(data[data.length-1]===true) {
     row.setAttribute("class", "warningText");
   }
 }
 
-// ## SELECT UI
-function updateSelectUI(ke31=true) {
-  if(ke31) {
-    $('#ke1_select_ui summary').html('Key Event 1 - DPRA');
-    $("#ke1_call_select h2 span").html("DPRA Call");
-    $("#ke1_dep_select h2 span").html("DPRA Mean Depletion Value");
-
-    $('#ke3_select_ui summary').html('Key Event 3 - h-CLAT');
-    $("#ke3_quant_ui h2 span").html("h-CLAT MIT");
-  } else {
-    $('#ke1_select_ui summary').html('Key Event 1');
-    $("#ke1_call_select h2 span").html("KE1 Call");
-    $("#ke1_dep_select h2 span").html("KE1 Mean Depletion Value");
-
-    $('#ke3_select_ui summary').html('Key Event 3');
-    $("#ke3_quant_ui h2 span").html("KE3 Quantitative Endpoint");
+//// initComplete callback for std results table
+function updateDT(table_name, colvis=false) {
+  // Add aria label to column filters
+  let head_names = $(`#${table_name} .table thead tr th`);
+  $(`#${table_name} table thead tr td`). each(function(idx, tde) {
+    $(tde).find("input[type = 'search']").attr("aria-label", `Filter for column ${head_names[idx].innerHTML}`);
+  });
+  
+  // Put table in scrollbox
+  $(`#${table_name} table`).wrap("<div style = 'overflow:auto'></div>");
+  /* in place of scrollX b/c scrollX causes unexpected scrolling behavior */
+  
+  if(colvis) {
+    // Add title to each column name
+    $(`#${table_name} .buttons-collection`).on("click", function(e1) {
+      let $cvis_btn=$(e1.currentTarget);
+      $cvis_btn
+        .siblings(".dropdown-menu")
+        .find("a.buttons-collection")
+        .on("click", function(e2) {
+          $cvis_btn
+            .siblings(".dropdown-menu")
+            .find("a.buttons-columnVisibility")
+            .each(function(idx, btn) {
+              $(btn).attr("title", btn.innerText);
+            });
+        })
+    })
   }
 }
 
-function addLabel(mutationList, observer) {
-  console.log("oy");
-    $("#ref_col_block .selectize-control").prepend("<label class='control-label' for = 'perf_ref_col-selectized'>Select Reference Columns</label>")
-}
-
 // ## STARTUP
-$(document).on('shiny:connected', function() {
+$(document).on('shiny:sessioninitialized', function() {
   $(".hiddenBlock").hide();
-  $(".tabbable .tab-content").attr("aria-live", "assertive");
   
-  $("input[name='selected_da'][value='da_2o3']").attr("aria-labelledby", "2o3_radio_label");
-  $("input[name='selected_da'][value='da_its']").attr("aria-labelledby", "its_radio_label");
-  $("input[name='selected_da'][value='da_ke31']").attr("aria-labelledby", "ke31_radio_label");
-  $("#do_da_2o3_bl").attr("aria-labelledby", "2o3_bl_cb_label");
+  /* Updates placeholder text when file input changes. */
+  $("input[type='file'").each(function(i, obj) {
+    let input_id = $(obj).attr("id");
+    $(obj).change(function(e) {
+      fname = $(obj).val().split('\\').pop();
+      $(`#${input_id}-fname`).val(fname);
+      $(`#${input_id}-fname`).attr("placeholder", fname)
+      $(`#${input_id}-fname`).focus();
+    })
+  })
+
   $(".blr_caro_nav label").addClass("sr-only");
-  $("#perf_ref_col-label").attr("aria-hidden", "true");
-  $("#perf_ref_col-label").attr("for", "");
-  
-  /*
-    Want to use selectize for multiselect input, but need to add label. Add when user navigates to compare tab. 
-    Can't add to input element at shiny:connected b/c label gets removed when values are updated after result generation
-  */
-  $("#goToCompare").on("click", () => {
-    $("#perf_ref_col-selectized").attr("aria-label", "Select one or more reference columns");
-  });
-  $("#step_set li a[data-value='Compare']").on("focus", () => {$("#perf_ref_col-selectized").attr("aria-label", "Select one or more reference columns");})
+
+  /* Enable keyboard nav for file input */
+  $("label[for='fpath'] span")
+    .on("keyup", function(e) {
+      if (e.key === "Enter") {
+        $("#fpath").click();
+      }
+    })
+
+  $(".modal").each(function(i, obj) {
+    $(obj)
+      .on("shown.bs.modal", function(e) {$(e.target).attr("aria-hidden", false)})
+      .on("hidden.bs.modal", function(e) {$(e.target).attr("aria-hidden", true)});
+  })
 });

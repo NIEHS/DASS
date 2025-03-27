@@ -1,14 +1,54 @@
-# =============================================================================#
-# File Name: modals.R
-# Original Creator: Kim To
-# Contact Information: ICE-support@niehs.nih.gov
-# Date Created: 2024-05-08
-# License: MIT
-# Description: UI for modals
-# =============================================================================#
+# Modal Functions -----
+#' Create UI for modal
+#' Assign call and potency using ITS scores
+#' @param id The modal id. For info boxes, this should be {info box id}_modal.
+#' @param title modal title
+#' @param size 'm', 'l', or 'xl'
+#' @param footer modal footer UI 
+#' @param ... additional ui elements for the modal body
+modal_ui <- function(id, title, ..., size = "m", footer = modalButton("Close")) {
+  div(
+    class = "modal fade",
+    id = id,
+    tabindex = "-1",
+    # `aria-hidden`=T,
+    div(
+      class = switch(
+        size,
+        m="modal-dialog",
+        l="modal-dialog modal-lg",
+        xl="modal-dialog modal-xl"),
+      div(
+        class = "modal-content",
+        div(
+          class = "modal-header",
+          title,
+          tags$button(
+            type = "button",
+            class = "btn-close",
+            `data-bs-dismiss` = "modal",
+            `aria-label` = "Close"
+          )
+        ),
+        div(
+          class = "modal-body",
+          list(...)
+        ),
+        div(
+          class = "modal-footer",
+          footer
+        )
+      )
+    )
+  )
+}
 
-# DICTIONARIES -----
-## Links -----
+#' toggle modal with given id
+modal_toggle <- function(id, e = "toggle") {
+  shinyjs::runjs(sprintf("$('#%s').modal('%s');", id, e))
+}
+
+# Links -----
 get_link <- list(
   gl497 = list(
     url = "https://doi.org/https://doi.org/10.1787/b92879a4-en",
@@ -28,37 +68,34 @@ get_link <- list(
   ),
   epaopp = list(
     url = "https://www.regulations.gov/document/EPA-HQ-OPP-2016-0093-0090",
-    label = "Interim Science Policy: Use of Alternative Approaches for Skin Sensitization as a Replacement for Laboratory Animal Testing Draft for Public Comment" 
+    label = "Interim Science Policy: Use of Alternative Approaches for Skin Sensitization as a Replacement for Laboratory Animal Testing Draft for Public Comment"
   ),
   user_guide = list(
     url = "user_guide.html",
     label = "User Guide"
   )
 )
-# //
 get_link <- lapply(get_link, function(x) a(href = x[[1]], target = "_blank", class = "external-link", x[[2]]))
 
-## DA Figures -----
+# DA Figures -----
 get_da_fig <- list(
   da2o3 = list(
     url = "da_diagrams/2o3_diagram-v2.png",
     alt = "Diagram of 2o3 data interpretation procedure",
     caption = "\u2020 TG497 evaluates the 2o3 DA using DPRA, KeratinoSens, and h-CLAT. The additional key event assays are under evaluation for inclusion in TG497."
   ),
-  
   daits = list(
     url = "da_diagrams/ITS_diagram-v2.png",
     alt = "Diagram of ITS data interpretation procedure",
     caption = "\u2020 TG497 evaluates the ITS DA using DPRA, h-CLAT, and either OECD QSAR Toolbox or Derek Nexus. The additional key event assays and in silico models are under evaluation for inclusion in TG497."
   ),
-  
   dake31 = list(
     url = "da_diagrams/KE31STS_diagram-v1.png",
     alt = "Diagram of KE 3/1 STS data interpretation procedure",
     caption = ""
   )
 )
-# //
+
 get_da_fig <- lapply(get_da_fig, function(x) {
   tags$figure(
     a(
@@ -70,7 +107,51 @@ get_da_fig <- lapply(get_da_fig, function(x) {
   )
 })
 
-## BLR Figures -----
+# Data Formats -----
+format_info <- list(
+  binary_call = p(
+    "The column corresponding to this endpoint should only contain the values:",
+    tags$ul(
+      tags$li("\"sensitizer\", \"sensitiser\", \"a\", \"active\", \"p\", \"pos\", \"positive\", or \"1\" to indicate positive assay outcomes.*"),
+      tags$li("\"non-sensitizer\", \"non-sensitiser\", \"i\", \"inactive\", \"n\", \"neg\", \"negative\", or \"0\" to indicate negative assay outcomes.*"),
+      tags$li("Missing values should be blank or labeled as \"NA\".")
+    ),
+    span(style = "font-size: 90%", "*Case insensitive")
+  ),
+  binary_call_ke1 = p("Alternatively, depletion values can be used to derive binary calls using the prediction models in", get_link[["tg442c"]], "."),
+  numeric = p("The column corresponding to this endpoint should only contain numeric values. Missing values should be blank or labeled as \"NA\"."),
+  ke3_value = p(
+    "The column corresponding this endpoint should only contain:",
+    tags$ul(
+      tags$li("Numeric values corresponding to positive assay outcomes"),
+      tags$li("\"Inf\", \"NI\", \"non-sensitizer\", \"non-sensitiser\", \"i\", \"inactive\", \"n\", \"neg\", \"negative\", or \"0\" to indicate negative assay outcomes.*")
+    )
+  ),
+  insilico_ad = p(
+    "The column corresponding to this endpoint should only contain the values:",
+    tags$ul(
+      tags$li("\"in\" or \"1\" to indicate the chemical is within the AD.*"),
+      tags$li("\"out\" or \"0\" to indicate the chemical is outside the AD.* Values for chemicals outside of the AD will not be evaluated."),
+      tags$li("Missing values should be blank or labeled as \"NA\".")
+    ),
+    span(style = "font-size: 90%", "*Case insensitive")
+  ),
+  bl_cid = p("A chemical identfier must be entered in every row of the data worksheet. Results from the KE1, KE2, and KE3 assays will be matched based on these identifiers."),
+  cys_ind = p(
+    "The column corresponding to this endpoint should only contain the values:",
+    tags$ul(
+      tags$li("\" FALSE\", \" F\", \" No\", \"n\", or \"0\" to use the average of both depletion values.*"),
+      tags$li("\"TRUE\", \"T\", \" Yes\", \" y\", or \" 1\" to use only the cysteine depletion value.*"),
+      tags$li("Missing values should be blank or labeled as \"NA\".")
+    ),
+    span(style = "font-size: 90%", "*Case insensitive")
+  ),
+  bl_run = p("A run ID must be entered for every row of the data worksheet. The run ID is used to group results from the same run for evaluation."),
+  conc_numeric = p("The column corresponding to concentration should only contain numeric values and will be sorted during the evaluation. Missing values should be blank or labeled as \"NA\"."),
+  potency_ref = p("The column corresponding to this endpoint should only contain GHS potency categories \"1A\", \"1B\", or \"NC\".")
+)
+
+# BL Figures -----
 get_blr_fig <- list(
   ke1 = list(
     adra_blr = list(
@@ -135,14 +216,14 @@ get_blr_fig <- list(
     )
   )
 )
-# //
+
 blr_img_ids <- lapply(get_blr_fig, function(x) unname(sapply(x, function(y) y[["img_id"]])))
 blr_label_ids <- lapply(get_blr_fig, function(x) unname(sapply(x, function(y) y[["label"]])))
 get_blr_fig <- lapply(get_blr_fig, function(x) {
   lapply(x, function(y) {
     div(
-      class = "caro-fig", 
-      id = y[["img_id"]], 
+      class = "caro-fig",
+      id = y[["img_id"]],
       tags$figure(
         a(
           title = "Click to open in new window.",
@@ -155,164 +236,86 @@ get_blr_fig <- lapply(get_blr_fig, function(x) {
   })
 })
 
-## Data Format -----
-format_info <- list(
-  binary_call = p(
-    "The column corresponding to this endpoint should only contain the values:",
-    tags$ul(
-      tags$li("\"sensitizer\", \"sensitiser\", \"a\", \"active\", \"p\", \"pos\", \"positive\", or \"1\" to indicate positive assay outcomes.*"),
-      tags$li("\"non-sensitizer\", \"non-sensitiser\", \"i\", \"inactive\", \"n\", \"neg\", \"negative\", or \"0\" to indicate negative assay outcomes.*"),
-      tags$li("Missing values should be blank or labeled as \"NA\".")
+# Modals -----
+modal_list <- tagList(
+  ## Select DA -----
+    modal_ui(
+      id = "info_2o3_modal",
+      title = h4("2 out of 3"),
+      p("The 2 out of 3 (2o3) DA predicts skin sensitization hazard based on at least 2 concordant results among a set of KE1, KE2, and KE3 assays. For more details, see", get_link[["gl497"]], "."),
+      get_da_fig[["da2o3"]]
     ),
-    span(style = "font-size: 90%", "*Case insensitive")
+    modal_ui(
+      id = "info_its_modal",
+      title = h4("Integrated Testing Strategy"),
+      p("The Integrated Testing Strategy (ITS) DA predicts skin sensitization hazard and GHS potency category by scoring results from a KE1 assay, KE3 assay, and an in silico model. For more details, see", get_link[["gl497"]], "."),
+      get_da_fig[["daits"]],
+      size = "xl"
     ),
-  binary_call_ke1 = p("Alternatively, depletion values can be used to derive binary calls using the prediction models in", get_link[["tg442c"]], "."),
-  numeric = p("The column corresponding to this endpoint should only contain numeric values. Missing values should be blank or labeled as \"NA\"."),
-  ke3_value = p(
-    "The column corresponding this endpoint should only contain:",
-    tags$ul(
-      tags$li("Numeric values corresponding to positive assay outcomes"),
-      tags$li("\"Inf\", \"NI\", \"non-sensitizer\", \"non-sensitiser\", \"i\", \"inactive\", \"n\", \"neg\", \"negative\", or \"0\" to indicate negative assay outcomes.*")
-    )
-  ),
-  insilico_ad = p(
-    "The column corresponding to this endpoint should only contain the values:",
-    tags$ul(
-      tags$li("\"in\" or \"1\" to indicate the chemical is within the AD.*"),
-      tags$li("\"out\" or \"0\" to indicate the chemical is outside the AD.* Values for chemicals outside of the AD will not be evaluated."),
-      tags$li("Missing values should be blank or labeled as \"NA\".")
+    modal_ui(
+      id = "info_ke31_modal",
+      title = h4("Key Event 3/1 Sequential Testing Strategy"),
+      p("The Key Event 3/1 (KE 3/1) Sequential Testing Strategy (STS) is a sequential testing strategy that predicts skin sensitization hazard and GHS potency category. Predictions are based on the minimum induction threshold from the human cell line activation test (h-CLAT) and hazard results from the direct peptide reactivity assay (DPRA). For more details, see EPA's", get_link[["epaopp"]], "."),
+      get_da_fig[["dake31"]]
     ),
-    span(style = "font-size: 90%", "*Case insensitive")
+    modal_ui(
+      id = "info_2o3_bl_modal",
+      title = h4("2 out of 3 Borderline Evaluation"),
+      p("The 2 out of 3 (2o3) DA uses hazard outcomes from a set of KE1, KE2, and KE3 assays. Results from the assays may fall within a 'borderline range' of the assay decision threshold, which can yield inconclusive 2o3 results. Assay-specific decision trees can be applied to generate conclusive positive, conclusive negative, and borderline outcomes. For more details, see", get_link[["gl497"]], "."),
+      p("You may upload data from individual assay runs. The data will be processed using assay-specific decision trees and the results will be used to generate 2o3 predictions. Data formatting information is available in the next step and in the", get_link[["user_guide"]], ".")
     ),
-  blr_cid = p("A chemical identfier must be entered in every row of the data worksheet. Results from the KE1, KE2, and KE3 assays will be matched based on these identifiers."),
-  cys_ind = p(
-    "The column corresponding to this endpoint should only contain the values:",
-    tags$ul(
-      tags$li("\" FALSE\", \" F\", \" No\", \"n\", or \"0\" to use the average of both depletion values.*"),
-      tags$li("\"TRUE\", \"T\", \" Yes\", \" y\", or \" 1\" to use only the cysteine depletion value.*"),
-      tags$li("Missing values should be blank or labeled as \"NA\".")
-    ),
-    span(style = "font-size: 90%", "*Case insensitive")
-    ),
-  blr_run = p("A run ID must be entered for every row of the data worksheet. The run ID is used to group results from the same run for evaluation."),
-  conc_numeric = p("The column corresponding to concentration should only contain numeric values and will be sorted during the evaluation. Missing values should be blank or labeled as \"NA\"."),
-  potency_ref = p("The column corresponding to this endpoint should only contain GHS potency categories \"1A\", \"1B\", or \"NC\".")
-)
-
-# MODAL LIST -----
-info_modals <- list(
-  ## Step 1: Select DA -----
-  ### 2o3 -----
-  bsModal(
-    id = "info_2o3_modal",
-    trigger = "info_2o3",
-    title = "2 out of 3",
-    p("The 2 out of 3 (2o3) DA predicts skin sensitization hazard based on at least 2 concordant results among a set of KE1, KE2, and KE3 assays. For more details, see", get_link[["gl497"]], "."),
-    get_da_fig[["da2o3"]]
-  ),
-  ### ITS -----
-  bsModal(
-    id = "info_its_modal",
-    trigger = "info_its",
-    size = "large",
-    title = "Integrated Testing Strategy",
-    p("The Integrated Testing Strategy (ITS) DA predicts skin sensitization hazard and GHS potency category by scoring results from a KE1 assay, KE3 assay, and an in silico model. For more details, see", get_link[["gl497"]], "."),
-    get_da_fig[["daits"]]
-  ),
-  ### KE 3/1 sts
-  bsModal(
-    id = "info_ke31_modal",
-    trigger = "info_ke31",
-    title = "Key Event 3/1 Sequential Testing Strategy",
-    p("The Key Event 3/1 (KE 3/1) Sequential Testing Strategy (STS) is a sequential testing strategy that predicts skin sensitization hazard and GHS potency category. Predictions are based on the minimum induction threshold from the human cell line activation test (h-CLAT) and hazard results from the direct peptide reactivity assay (DPRA). For more details, see EPA's", get_link[["epaopp"]], "."),
-    get_da_fig[["dake31"]]
-  ),
-  ### 2o3 Borderline -----
-  bsModal(
-    id = "info_da2o3_blr_modal",
-    size = "large",
-    trigger = "info_2o3_bl",
-    title = "2 out of 3 Borderline Evaluation",
-    p("The 2 out of 3 (2o3) DA uses hazard outcomes from a set of KE1, KE2, and KE3 assays. Results from the assays may fall within a 'borderline range' of the assay decision threshold, which can yield inconclusive 2o3 results. Assay-specific decision trees can be applied to generate conclusive positive, conclusive negative, and borderline outcomes. For more details, see", get_link[["gl497"]], "."),
-    p("You may upload data from individual assay runs. The data will be processed using assay-specific decision trees and the results will be used to generate 2o3 predictions. Data formatting information is available in the next step and in the", get_link[["user_guide"]], ".")
-  ),
-  ## Step 2: Data -----
-  ### XL WS Selector -----
-  bsModal(
-    id = "xl_select_modal",
-    trigger = "select_sheet",
-    title = "Excel sheet selection dialog box",
-    selectInput(
-      inputId = "xl_sheet_list",
-      label = "Select the Excel worksheet to upload",
-      choices = NULL,
-      selectize = FALSE
-    ),
-    actionButton(inputId = "confirm_xl_sheet", label = "Upload Data"),
-    actionButton(inputId = "cancel_xl_sheet", label = "Cancel")
-  ),
-  ### Demo Data -----
-  bsModal(
-    id = "demo_data_modal",
-    title = "Demo Data",
-    trigger = "info_demo",
+  ## Data -----
+  modal_ui(
+    id = "info_demo_data_modal",
+    title = h4("Demo Data"),
     p("Select this option to load a demo data set instead of uploading your own data."),
-    p("The data set includes values for all possible endpoints across the available DAs. The column names are set up so that the selections in the next step are automatically assigned.")
+    p("For the standard workflow, the demo data set includes values for all possible endpoints across the available DAs. The column names are set up so that the selections in the next step are automatically assigned."),
+    p("For the 2o3 borderline workflow, the demo data set includes data for all possible assays and required endpoints. Use the worksheet dropdown list to view data for a specific assay. The worksheet and column names are set up so that the selections in the next step are automatically assigned.")
   ),
-  ## Step 3: Select Columns -----
+  ## Select Columns -----
   ### Standard -----
-  #### KE1 -----
-  bsModal(
-    id = "info_ke1Call_modal",
-    trigger = "info_ke1Call",
-    title = "Key Event 1 Assay Endpoint: Call",
+  modal_ui(
+    id = "info_ke1_call_modal",
+    title = h4("Key Event 1 Assay Endpoint: Call"),
     p("Binary hazard results (sensitizer or non-sensitizer) from a KE1 assay are used in the 2o3 and KE3/1 STS defined approaches."),
     format_info[["binary_call"]],
     format_info[["binary_call_ke1"]]
   ),
-  bsModal(
-    id = "info_ke1AssayName_modal",
-    trigger = "info_ke1AssayName",
-    title = "Key Event 1 Assay",
-    p("Hazard identification or potency classification will be based on thresholds specific to the ADRA or DPRA KE1 test methods.")
+  modal_ui(
+    id = "info_ke1_std_assay_modal",
+    title = h4("Key Event 1 Assay"),
+    p("For the 2o3, KE1 calls can be generated using quantitative data from either the ADRA or DPRA test methods."),
+    p("For the ITS, scores can be generated using quantitative data from either the ADRA or DPRA test methods.")
   ),
-  bsModal(
-    id = "info_ke1DepValue_modal",
-    title = "Key Event 1 Assay Endpoint: Mean Depletion Value",
-    trigger = "info_ke1DepValue",
-    p("The ADRA and DPRA measure depletion of two peptides containing either cysteine or lysine residues due to covalent binding. The ITS DA uses mean depletion values to predict potency."),
+  modal_ui(
+    id = "info_ke1_mean_dep_modal",
+    title = h4("Key Event 1 Assay Endpoint: Mean Depletion Value"),
+    p("The ADRA and DPRA KE1 test methods measure depletion of two peptides containing either cysteine or lysine residues due to covalent binding."),
     p("You may provide either the mean depletion values or the individual cysteine and lysine depletion values."),
-    format_info[["numeric"]]
+    format_info[["numeric"]],
+    p("Note: The KE 3/1 STS DA should only be used with data from DPRA.")
   ),
-  
-  #### KE2 -----
-  bsModal(
-    id = "info_ke2Call_modal",
-    trigger = "info_ke2Call",
-    title = "Key Event 2 Assay Endpoint: Call",
+  modal_ui(
+    id = "info_ke2_std_call_modal",
+    title = h4("Key Event 2 Assay Endpoint: Call"),
     p("Binary hazard results (sensitizer or non-sensitizer) from a KE2 assay are used in the 2o3 defined approach."),
     format_info[["binary_call"]]
   ),
-  
-  #### KE3 -----
-  bsModal(
-    id = "info_ke3Call_modal",
-    trigger = "info_ke3_call",
-    title = "Key Event 3 Assay Endpoint: Call",
+  modal_ui(
+    id = "info_ke3_call_modal",
+    title = h4("Key Event 3 Assay Endpoint: Call"),
     p("Binary hazard results (sensitizer or non-sensitizer) from a KE3 assay are used in the 2o3 defined approach."),
     format_info[["binary_call"]]
   ),
-  bsModal(
-    id = "info_ke3_assayName_modal",
-    trigger = "info_ke3_assayName",
-    title = "Key Event 3 Assay",
-    p("Potency classification will be based on thresholds specific to the GARDskin, h-CLAT, or U-SENS test methods.")
+  modal_ui(
+    id = "info_ke3_std_assay_modal",
+    title = h4("Key Event 3 Assay"),
+    p("ITS scores for the the KE3 information source are assigned using thresholds specific to the GARDskin, h-CLAT, or U-SENS KE3 test methods.")
   ),
-  bsModal(
-    id = "info_ke3_value_modal",
-    trigger = "info_ke3_value",
-    title = "Key Event 3 Assay Endpoint: Quantitative Value",
-    p("The ITS uses a quantiative endpoint from a KE3 assay to assign a score.",
+  modal_ui(
+    id = "info_ke3_std_val_modal",
+    title = h4("Key Event 3 Assay Endpoint: Quantitative Value"),
+    p("The ITS uses a quantiative endpoint from a KE3 assay to assign a score. The KE 3/1 uses the minimum induction threshold from h-CLAT.",
       tags$dl(
         tags$dt("GARDskin: Input Concentration"),
         tags$dd(format_info[["ke3_value"]]),
@@ -324,11 +327,9 @@ info_modals <- list(
           format_info[["ke3_value"]])
       ))
   ),
-  #### In Silico Model -----
-  bsModal(
+  modal_ui(
     id = "info_insil_pred_modal",
-    trigger = "info_insil_pred",
-    title = "In Silico Model",
+    title = h4("In Silico Model"),
     p("The ITS uses in silico binary hazard results (sensitizer or non-sensitizer). You must provide the prediction and the applicability domain."),
     tags$dl(
       tags$dt("In Silico Call Prediction"),
@@ -338,43 +339,38 @@ info_modals <- list(
     )
   ),
   ### Borderline -----
-  #### KE1 -----
-  bsModal(
-    id = "info_blr_ke1AssayName_modal",
-    trigger = "info_blr_ke1AssayName",
-    title = "Key Event 1 Assay",
+  modal_ui(
+    id = "info_ke1_bl_assay_modal",
+    title = h4("Key Event 1 Assay"),
     p("The 2o3 uses results from a KE1 assay. You can apply decision trees specific to the ADRA or DPRA KE1 test methods."),
     div(
       class = "slideshow-container",
       div(
         class = "blr_caro_nav",
         actionLink(class = "prev", inputId = "ke1_blr_prev", HTML("&#9664;")),
-        selectInput(
+        pickerInput(
           inputId = "ke1_blr_caro_img",
-          label = "Choose assay decision tree to view",
-          width = "20ch",
+          label = span(class = "sr-only", "Choose assay decision tree to view"),
+          width = "fit-content",
           choices = blr_label_ids[["ke1"]],
-          selectize = F
         ),
         actionLink(class = "next", inputId = "ke1_blr_next", HTML("&#9654;"))
       ),
       get_blr_fig[["ke1"]]
     )
   ),
-  bsModal(
-    id = "info_blr_ke1Columns_modal",
-    trigger = "info_blr_ke1Columns",
-    size = "large",
-    title = "Key Event 1 Assay Data Columns",
+  modal_ui(
+    id = "info_ke1_bl_columns_modal",
+    title = h4("Key Event 1 Assay Data Columns"),
     p("During the evaluation, if depletion values indicate that a second run was required, but data from only one run is provided, the result will not be used in the 2o3."),
     tags$details(
       open = "open",
-      tags$summary("ADRA"),
+      tags$summary(h5("ADRA")),
       div(
         class = "detailsBody",
         tags$dl(
           tags$dt("Chemical Identifier"),
-          tags$dd(format_info[["blr_cid"]]),
+          tags$dd(format_info[["bl_cid"]]),
           tags$dt("NAC Depletion"),
           tags$dd(format_info[["numeric"]]),
           tags$dt("NAL Depletion"),
@@ -388,12 +384,12 @@ info_modals <- list(
       )
     ),
     tags$details(
-      tags$summary("DPRA"),
+      tags$summary(h5("DPRA")),
       div(
         class = "detailsBody",
         tags$dl(
           tags$dt("Chemical Identifier"),
-          tags$dd(format_info[["blr_cid"]]),
+          tags$dd(format_info[["bl_cid"]]),
           tags$dt("Cys Depletion"),
           tags$dd(format_info[["numeric"]]),
           tags$dt("Lys Depletion"),
@@ -405,35 +401,33 @@ info_modals <- list(
           )
         )
       )
-    )
+    ),
+    size = "l"
   ),
-  #### KE2 -----
-  bsModal(
-    id = "info_blr_ke2AssayName_modal",
-    trigger = "info_blr_ke2AssayName",
-    title = "Key Event 2 Assay",
+  modal_ui(
+    id = "info_ke2_bl_assay_modal",
+    title = h4("Key Event 2 Assay"),
     p("The 2o3 uses results from a KE2 assay. You can provide data for the KeratinoSens and LuSens KE2 test methods."),
     div(
       class = "slideshow-container",
       div(
         class = "blr_caro_nav",
         actionLink(class = "prev", inputId = "ke2_blr_prev", HTML("&#9664;")),
-        selectInput(
+        pickerInput(
           inputId = "ke2_blr_caro_img",
-          label = "Choose assay decision tree to view",
-          width = "20ch",
-          choices = blr_label_ids[["ke2"]],
-          selectize = F
+          label = span(class = "sr-only", "Choose assay decision tree to view"),
+          width = "fit-content",
+          choices = blr_label_ids[["ke2"]]
         ),
         actionLink(class = "next", inputId = "ke2_blr_next", HTML("&#9654;"))
       ),
       get_blr_fig[["ke2"]]
-    )
+    ),
+    size = "l"
   ),
-  bsModal(
-    id = "info_blr_ke2Columns_modal",
-    trigger = "info_blr_ke2Columns",
-    title = "Key Event 2 Assay Data Columns",
+  modal_ui(
+    id = "info_ke2_bl_columns_modal",
+    title = h4("Key Event 2 Assay Data Columns"),
     tags$details(
       open = "open",
       tags$summary("KeratinoSens"),
@@ -441,7 +435,7 @@ info_modals <- list(
         class = "detailsBody",
         tags$dl(
           tags$dt("Chemical Identifier"),
-          tags$dd(format_info[["blr_cid"]])
+          tags$dd(format_info[["bl_cid"]])
         ),
         tags$dl(
           tags$dt("Outcome"),
@@ -455,7 +449,7 @@ info_modals <- list(
         class = "detailsBody",
         tags$dl(
           tags$dt("Chemical Identifier"),
-          tags$dd(format_info[["blr_cid"]]),
+          tags$dd(format_info[["bl_cid"]]),
           tags$dt("Run Identifier"),
           tags$dd(format_info[["blr_run"]], p("Each chemical should have data from at least two runs.")),
           tags$dt("Concentration (\u03BCM)"),
@@ -471,35 +465,33 @@ info_modals <- list(
           )
         )
       )
-    )
+    ),
+    size = "l"
   ),
-  #### KE3 -----
-  bsModal(
-    id = "info_blr_ke3AssayName_modal",
-    trigger = "info_blr_ke3AssayName",
-    title = "Key Event 3 Assay",
+  modal_ui(
+    id = "info_ke3_bl_assay_modal",
+    title = h4("Key Event 3 Assay"),
     p("The 2o3 uses results from a KE3 assay. You can apply decision trees specific to the GARDskin, h-CLAT, IL-8 Luc, or U-SENS KE3 test methods."),
     div(
       class = "slideshow-container",
       div(
         class = "blr_caro_nav",
         actionLink(class = "prev", inputId = "ke3_blr_prev", HTML("&#9664;")),
-        selectInput(
+        pickerInput(
           inputId = "ke3_blr_caro_img",
-          label = "Choose assay decision tree to view",
-          width = "20ch",
-          choices = blr_label_ids[["ke3"]],
-          selectize = F
+          label = span(class = "sr-only", "Choose assay decision tree to view"),
+          width = "fit-content",
+          choices = blr_label_ids[["ke3"]]
         ),
         actionLink(class = "next", inputId = "ke3_blr_next", HTML("&#9654;"))
       ),
       get_blr_fig[["ke3"]]
-    )
+    ),
+    size = "l"
   ),
-  bsModal(
-    id = "info_blr_ke3Columns_modal",
-    trigger = "info_blr_ke3Columns",
-    title = "Key Event 3 Assay Data Columns",
+  modal_ui(
+    id = "info_ke3_bl_columns_modal",
+    title = h4("Key Event 3 Assay Data Columns"),
     tags$details(
       open = "open",
       tags$summary("GARDskin"),
@@ -507,7 +499,7 @@ info_modals <- list(
         class = "detailsBody",
         tags$dl(
           tags$dt("Chemical Identifier"),
-          tags$dd(format_info[["blr_cid"]]),
+          tags$dd(format_info[["bl_cid"]]),
           tags$dt("Mean Decision Value"),
           tags$dd(format_info[["numeric"]])
         )
@@ -519,7 +511,7 @@ info_modals <- list(
         class = "detailsBody",
         tags$dl(
           tags$dt("Chemical Identifier"),
-          tags$dd(format_info[["blr_cid"]]),
+          tags$dd(format_info[["bl_cid"]]),
           tags$dt("Run Identifier"),
           tags$dd(format_info[["blr_run"]], p("Each chemical should have data from at least two runs.")),
           tags$dt("Concentration (\u03BCM)"),
@@ -539,7 +531,7 @@ info_modals <- list(
         class = "detailsBody",
         tags$dl(
           tags$dt("Chemical Identifier"),
-          tags$dd(format_info[["blr_cid"]]),
+          tags$dd(format_info[["bl_cid"]]),
           tags$dt("Run Identifier"),
           tags$dd(format_info[["blr_run"]], p("Each chemical should have data from at least two runs.")),
           tags$dt("Concentration (\u03BCM)"),
@@ -565,7 +557,7 @@ info_modals <- list(
         class = "detailsBody",
         tags$dl(
           tags$dt("Chemical Identifier"),
-          tags$dd(format_info[["blr_cid"]]),
+          tags$dd(format_info[["bl_cid"]]),
           tags$dt("Run Identifier"),
           tags$dd(format_info[["blr_run"]], p("Each chemical should have data from at least two runs.")),
           tags$dt("Concentration (\u03BCM)"),
@@ -576,22 +568,24 @@ info_modals <- list(
           tags$dd(format_info[["numeric"]])
         )
       )
+    ),
+    size = "l"
+  ),
+  ## Review -----
+  modal_ui(
+    id = "run_warning",
+    title = h4("Warning"),
+    p("The selected columns have been flagged. Invalid values will be considered missing (NA) and will", strong("not"), "be included in the analysis. Continue?"),
+    footer = tagList(
+      actionButton(inputId = "confirm_run_dass", label = "Run"),
+      modalButton("Cancel")
     )
   ),
-  ## Step 4: Review -----
-  bsModal(
-    id = "confirm_run_with_flag",
-    title = "Warning",
-    trigger = NULL,
-    p("The selected columns have been flagged for invalid values. Invalid values will be considered missing (NA) and will", strong("not"), "be used to evaluate skin sensitization hazard identification or potency. Continue?"),
-    actionButton(inputId = "run_with_flags", label = "Run"),
-    actionButton(inputId = "cancel_run", label = "Cancel")
-  ),
-  ## Step 5: Results -----
-  bsModal(
-    id = "info_results_table_key",
+  ## Results -----
+  modal_ui(
+    id = "table_key",
     title = "DA Result Table Key",
-    trigger = "showTableKey",
+    size = "l",
     tags$dl(
       tags$dt("Selected Data Columns (Yellow)"),
       tags$dd(
@@ -614,15 +608,13 @@ info_modals <- list(
         p("In the results table, the processed data columns are appended to your data, but hidden by default. Use the column visibility dropdown list to show or hide these columns. The columns are pink and column names are the original column names appended with \"_input\"."),
         p("For values that were derived by the app (i.e., assay call, mean depletion values), the column name will end with \"calculated\"."),
         p("The values in these columns are the actual values used for evaluation. It may be useful to review the selected columns and their transformations to ensure your data were properly interpreted, especially if the DAs were run with flagged data.")
-      ),
-
+      )
     )
   ),
   ## Compare -----
-  bsModal(
-    id = "info_perf_ref_select_modal",
-    title = "Reference Data for Comparisons",
-    trigger = "info_perf_ref_select",
+  modal_ui(
+    id = "info_compare_ref_modal",
+    title = h4("Reference Data for Comparisons"),
     p(
       tags$dl(
         tags$dt("Hazard"),
@@ -632,10 +624,9 @@ info_modals <- list(
       )
     )
   ),
-  bsModal(
-    id = "info_perf_ice_select_modal",
-    title = "Reference Data from ICE",
-    trigger = "info_perf_ice_select",
+  modal_ui(
+    id = "info_compare_ice_modal",
+    title = h4("Reference Data from ICE"),
     p("You can compare the DA results against reference data that was used in the development of ", get_link[["gl497"]], ". The reference data were sourced from the Integrated Chemical Environment. The human reference data comprise human predictive patch test results for 66 chemicals. The local lymph node assay (LLNA) data comprise results for 156 chemicals."),
     p("You must provide chemical identifiers (CASRN, DTXSID, or QSAR-Ready SMILES). The selected identifier will be used to pair DA results and reference data for comparison."),
     p(
@@ -648,14 +639,13 @@ info_modals <- list(
         tags$a(href = "ice_references/2024June13_OECD Defined Approach to Skin Sensitization LLNA (R)_metadata.txt", "Download LLNA reference metadata (.txt)", target = "_blank", download = NA))
     )
   ),
-  bsModal(
-    id = "info_perf_table_modal",
-    title = "Performance Metrics",
-    trigger = "info_perf_table",
+  modal_ui(
+    id = "info_compare_tables_modal",
+    title = h4("Performance Metrics"),
     div(
-      class = "hiddenBlock",
+      # class = "hiddenBlock",
       id = "binary_defs",
-      h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
+      span("Table Definitions", style = "font-size: 1em; text-align: center;"),
       HTML(
         "<table class = 'defTab' border=1>
 <tr> <th> Metric </th> <th> Definition </th>  </tr>
@@ -673,7 +663,7 @@ info_modals <- list(
     div(
       class = "hiddenBlock",
       id = "potency_defs",
-      h2("Table Definitions", style = "font-size: 1em; text-align: center;"),
+      span("Table Definitions", style = "font-size: 1em; text-align: center;"),
       HTML(
         "<table class = 'defTab' border=1>
          <tr> <th> Metric </th> <th> Definition </th>  </tr>
@@ -685,29 +675,27 @@ info_modals <- list(
       )
     )
   ),
-  bsModal(
+  modal_ui(
     id = "download_compare_tables_modal",
-    title = "Download Performance Tables",
-    trigger = "download_compare_tables",
+    title = h4("Download Comparison Tables"),
     div(p("Confusion matrices and performance tables can be downloaded as a PDF file. Use the checkboxes to select the output you would like to download. More details about the performance output are available in the User Guide.")),
     div(
-      actionLink(inputId = "perf_table_all", label = "Select All"), " | ",
-      actionLink(inputId = "perf_table_none", label = "Deselect All"),
-      checkboxGroupInput(inputId = "perf_table_choices", label = "Select Output to Download", choices = NULL, width = "100%"),
-      downloadButton(outputId = "dl_perf_tables", label = "Download Output")
+      actionLink(inputId = "comp_table_all", label = "Select All"), " | ",
+      actionLink(inputId = "comp_table_none", label = "Deselect All"),
+      checkboxGroupInput(inputId = "comp_table_choices", label = "Select Output to Download", choices = NULL, width = "100%"),
+      downloadButton(outputId = "dl_comp_tables", label = "Download Output")
     ),
     br(),
     div(
       p("You can download the results in table format as an Excel file or text file."),
-      downloadButton(outputId = "perf_table_flat_xl", label = "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
-      downloadButton(outputId = "perf_table_flat_txt", label = "Tab-Delimited (.txt) ", icon = icon("file-alt"), class = "btn-dl")
+      downloadButton(outputId = "comp_table_flat_xl", label = "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
+      downloadButton(outputId = "comp_table_flat_txt", label = "Tab-Delimited (.txt) ", icon = icon("file-alt"), class = "btn-dl")
     )
   ),
-  bsModal(
-    id = "perf_fig_modal",
-    title = "Visualizing Results",
-    trigger = "info_perf_fig",
-    p("Two types of figures can be generated."), 
+  modal_ui(
+    id = "info_comp_fig_modal",
+    title = h4("Visualizing Results"),
+    p("Two types of figures can be generated."),
     p("If the quantitative endpoint column is \"None\", a bar chart will summarize the comparison results."),
     p("Otherwise, you must select a column containing numeric data. This will generate density plots and scatter plots of the selected data, with data split based the comparison result. This may provide useful context for exploring your results.")
   )

@@ -1,7 +1,7 @@
 # KE1 -----
 ke1_call_thresholds <- list(
   adra = list(
-    mean_c_l_dep = c(
+    mean_c_k_dep = c(
       call = 4.9,
       concl_neg_ul = 3,
       bl_neg_ul = 4.06,
@@ -17,7 +17,7 @@ ke1_call_thresholds <- list(
     )
   ),
   dpra = list(
-    mean_c_l_dep = c(
+    mean_c_k_dep = c(
       call = 6.38,
       concl_neg_ul = 3,
       bl_neg_ul = 4.95,
@@ -34,60 +34,98 @@ ke1_call_thresholds <- list(
   )
 )
 
-ke1Call <- function(assay, mean_c_l_dep = NULL, c_dep = NULL, borderline = F) {
-
-  if (is.null(mean_c_l_dep) & is.null(c_dep)) {
+#' Assign KE1 Assay Call
+#' @param assay A character string 'dpra' or 'adra'
+#' @param mean_c_k_dep A numeric vector of mean percent depletion values from the ke1 assay
+#' @param c_dep A numeric vector of cys/nac percent depletion values from the ke1 assay
+#' @param borderline Logical. If true, borderline thresholds are used.
+#' 
+#' @return Data frame with KE1 assay call for one run
+ke1Call <- function(assay,
+                    mean_c_k_dep = NULL,
+                    c_dep = NULL,
+                    borderline = F) {
+  if (is.null(mean_c_k_dep) & is.null(c_dep)) {
     stop("No data provided")
   }
-
+  
   if (is.null(c_dep)) {
-    c_dep <- rep(NA, length(mean_c_l_dep))
+    c_dep <- rep(NA, length(mean_c_k_dep))
   }
-
-  if (is.null(mean_c_l_dep)) {
-    mean_c_l_dep <- rep(NA, length(c_dep))
+  
+  if (is.null(mean_c_k_dep)) {
+    mean_c_k_dep <- rep(NA, length(c_dep))
   }
-
-  if (length(c_dep) != length(mean_c_l_dep)) {
+  
+  if (length(c_dep) != length(mean_c_k_dep)) {
     stop("Vectors are not the same length.")
   }
-
-  use_c <- is.na(mean_c_l_dep) & !is.na(c_dep)
-
-  out <- data.frame(
-    mean_c_l_dep,
-    c_dep,
-    outcome = NA
-  )
+  
+  use_c <- is.na(mean_c_k_dep) & !is.na(c_dep)
+  
+  out <- data.frame(mean_c_k_dep, c_dep, outcome = NA)
   
   c_thresh <- ke1_call_thresholds[[assay]][["c_dep"]]
-  mean_thresh <- ke1_call_thresholds[[assay]][["mean_c_l_dep"]]
+  mean_thresh <- ke1_call_thresholds[[assay]][["mean_c_k_dep"]]
   
   if (borderline) {
+    out$outcome[use_c] <- ifelse(
+      c_dep[use_c] <= c_thresh[["concl_neg_ul"]],
+      "Negative",
+      ifelse(
+        c_dep[use_c] <= c_thresh[["bl_neg_ul"]],
+        "BL Negative",
+        ifelse(
+          c_dep[use_c] <= c_thresh[["bl_ul"]],
+          "Borderline",
+          ifelse(
+            c_dep[use_c] <= c_thresh[["bl_pos_ul"]],
+            "BL Positive",
+            ifelse(c_dep[use_c] > c_thresh[["bl_pos_ul"]], "Positive", "Inconclusive")
+          )
+        )
+      )
+    )
     
-    out$outcome[use_c] <- ifelse(c_dep[use_c] <= c_thresh[["concl_neg_ul"]], "Negative",
-                                 ifelse(c_dep[use_c] <= c_thresh[["bl_neg_ul"]], "BL Negative",
-                                        ifelse(c_dep[use_c] <= c_thresh[["bl_ul"]], "Borderline",
-                                               ifelse(c_dep[use_c] <= c_thresh[["bl_pos_ul"]], "BL Positive",
-                                                      ifelse(c_dep[use_c] > c_thresh[["bl_pos_ul"]], "Positive", "Inconclusive")))))
-    
-    out$outcome[!use_c] <- ifelse(mean_c_l_dep[!use_c] <= mean_thresh[["concl_neg_ul"]], "Negative",
-                                 ifelse(mean_c_l_dep[!use_c] <= mean_thresh[["bl_neg_ul"]], "BL Negative",
-                                        ifelse(mean_c_l_dep[!use_c] <= mean_thresh[["bl_ul"]], "Borderline",
-                                               ifelse(mean_c_l_dep[!use_c] <= mean_thresh[["bl_pos_ul"]], "BL Positive",
-                                                      ifelse(mean_c_l_dep[!use_c] > mean_thresh[["bl_pos_ul"]], "Positive", "Inconclusive")))))
+    out$outcome[!use_c] <- ifelse(
+      mean_c_k_dep[!use_c] <= mean_thresh[["concl_neg_ul"]],
+      "Negative",
+      ifelse(
+        mean_c_k_dep[!use_c] <= mean_thresh[["bl_neg_ul"]],
+        "BL Negative",
+        ifelse(
+          mean_c_k_dep[!use_c] <= mean_thresh[["bl_ul"]],
+          "Borderline",
+          ifelse(
+            mean_c_k_dep[!use_c] <= mean_thresh[["bl_pos_ul"]],
+            "BL Positive",
+            ifelse(mean_c_k_dep[!use_c] > mean_thresh[["bl_pos_ul"]], "Positive", "Inconclusive")
+          )
+        )
+      )
+    )
     
   } else if (!borderline) {
     out$outcome[use_c] <- ifelse(c_dep[use_c] >= c_thresh[["call"]], "Positive", "Negative")
-    out$outcome[!use_c] <- ifelse(mean_c_l_dep[!use_c] >= mean_thresh[["call"]], "Positive", "Negative")
+    out$outcome[!use_c] <- ifelse(mean_c_k_dep[!use_c] >= mean_thresh[["call"]], "Positive", "Negative")
   }
-
+  
   return(out)
 }
 
 # KE2 -----
-## LuSens -----
-lusensCall <- function(conc, fold_induction, relative_viability, ttest_p) {
+#' Assign LuSens Assay Call
+#' Inputs the same length and are from the same assay run
+#' @param conc A numeric vector with test concentrations
+#' @param fold_induction A numeric vector of fold induction values from the corresponding test concentration
+#' @param relative_viability A numeric vector of relative viability from the corresponding test concentration
+#' @param ttest_p p-value from t-test comparing the test concentration against vehicle control
+#' 
+#' @return A character string 'Positive', 'Negative', 'Borderline', 'Invalid'
+lusensCall <- function(conc,
+                       fold_induction,
+                       relative_viability,
+                       ttest_p) {
   test <- unique(c(
     length(conc),
     length(fold_induction),
@@ -108,11 +146,12 @@ lusensCall <- function(conc, fold_induction, relative_viability, ttest_p) {
   # Positive
   rv_ge70 <- relative_viability >= 70
   
-  pos_test1 <- fold_induction[rv_ge70] >= 1.76 & ttest_p[rv_ge70] <= 0.05
+  pos_test1 <- fold_induction[rv_ge70] >= 1.76 &
+    ttest_p[rv_ge70] <= 0.05
   pos_test1 <- pos_test1[1:(length(pos_test1) - 1)] + pos_test1[2:length(pos_test1)]
   pos_test1 <- any(pos_test1 == 2)
   pos_test2 <- sum(rv_ge70) >= 3
-
+  
   if (pos_test1 & pos_test2) {
     out <- "Positive"
   } else if (pos_test1 & !pos_test2) {
@@ -125,7 +164,8 @@ lusensCall <- function(conc, fold_induction, relative_viability, ttest_p) {
     if (neg_test1 | neg_test2) {
       out <- "Negative"
     } else {
-      bl_test1 <- (fold_induction[rv_ge70] < 1.76 & fold_induction[rv_ge70] >= 1.28) & ttest_p[rv_ge70] <= 0.05
+      bl_test1 <- (fold_induction[rv_ge70] < 1.76 &
+                     fold_induction[rv_ge70] >= 1.28) & ttest_p[rv_ge70] <= 0.05
       bl_test1 <- bl_test1[1:(length(bl_test1) - 1)] + bl_test1[2:length(bl_test1)]
       bl_test1 <- any(bl_test1 == 2)
       if (bl_test1 & pos_test2) {
@@ -139,18 +179,27 @@ lusensCall <- function(conc, fold_induction, relative_viability, ttest_p) {
 }
 
 # KE3 -----
-## GARD -----
+#' Assign GARDskin Call
+#' @param mean_dv A numeric vector of mean decision values from GARDskin
+#' 
+#' @return A character string 'Positive', 'Negative', 'Borderline'
 gardskinCall <- function(mean_dv) {
-  ifelse(
-    mean_dv < -0.450, "Negative", ifelse(
-      mean_dv > 0.450, "Positive", ifelse(
-        mean_dv >= -0.450 & mean_dv <= 0.450, "Borderline", NA
-      )
-    )
-  )
+  ifelse(mean_dv < -0.450,
+         "Negative",
+         ifelse(
+           mean_dv > 0.450,
+           "Positive",
+           ifelse(mean_dv >= -0.450 & mean_dv <= 0.450, "Borderline", NA)
+         ))
 }
 
-## hCLAT
+#' Assign h-CLAT Call
+#' Inputs the same length and are from the same assay run
+#' @param cd54 A numeric vector of relative fluorescence intensity of CD54 cell surface molecules
+#' @param cd86 A numeric vector of relative fluorescence intensity of CD86 cell surface molecules
+#' @param viability A numeric vector with cell viability, percent
+#' 
+#' @return A character string 'Positive', 'Negative', 'Borderline'
 hclatCall <- function(cd54, cd86, viability) {
   via50 <- viability >= 50
   via50[is.na(via50)] <- FALSE
@@ -170,6 +219,14 @@ hclatCall <- function(cd54, cd86, viability) {
   return(out)
 }
 
+#' Assign IL-8 Call
+#' Inputs the same length and are from the same assay run
+#' @param ind_il8la A numeric vector with induction of normalized SLO luciferase activity
+#' @param ind_il8la_ll A numeric vector with the lower limit of the 95% confidence interval for Ind-IL8LA
+#' @param inh_gapla A numeric vector with inhibition of SLR luciferase activity
+#' @param ws A character string. 'y' if the chemical is water soluble at 20mg/mL. 'n' if the chemical is not water soluble at 20mg/mL. 
+#' 
+#' @return A character string 'Positive', 'Negative', 'Borderline', 'Inconclusive'
 il8Call <- function(ind_il8la, ind_il8la_ll, inh_gapla, ws) {
   ws_test <- na.omit(ws)[1] == "y"
   pos_test <- any(ind_il8la >= 1.67 & ind_il8la_ll < 1)
@@ -194,10 +251,17 @@ il8Call <- function(ind_il8la, ind_il8la_ll, inh_gapla, ws) {
   }
 }
 
+#' Assign U-SENS Call
+#' Inputs the same length and are from the same assay run
+#' @param conc A numeric vector with test concentrations
+#' @param viability A numeric vector with cell viability, percent
+#' @param si_cd86 A numeric vector with stimulation index of CD86 cells
+#' 
+#' @return A character string 'Positive', 'Negative', 'Borderline'
 usensCall <- function(conc, viability, si_cd86) {
   pos_test1 <- any(viability[conc <= 10] < 70)
   pos_test2 <- any(si_cd86 > 169)
-
+  
   if (pos_test1 | pos_test2) {
     return("Positive")
   } else {
