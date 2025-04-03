@@ -7,6 +7,10 @@ llna_ref <- read.table("www/ice_references/2024June13_OECD Defined Approach to S
 compare_pred <- reactiveVal()
 compare_ref <- reactiveVal()
 compare_tables <- reactiveVal()
+point_ids <- reactiveVal()
+compare_flat <- reactiveVal()
+compare_all <- reactiveVal()
+quant_summary <- reactiveVal()
 
 observeEvent(input$compare_bl_ws, {
   req(wf() == "bl")
@@ -52,10 +56,18 @@ observeEvent(input$do_compare, {
       ref_user_data <- as.list(data_tables()[,input$compare_usr_dt_col,drop=F])
     }
 
+    if (input$compare_ice) {
+      point_ids(data_tables()[,input$compare_ice_cid])
+      show_hide(hide = "comp_fig_chem_col")
+    } else {
+      point_ids(NULL)
+      show_hide(show = "comp_fig_chem_col")
+      updatePickerInput(inputId = "comp_fig_chem_col", choices = c("None", names(data_tables())), selected = "None")
+    }
   } else if (wf() == "bl") {
     dass_res <- dass_result_bl()$dass_results
     pred <- dass_res[["DA 2o3 Hazard"]]
-    
+
     if ( input$compare_usr_dt ) {
       if (input$use_demo_data) {
         ref_user_data <- demo_data()[[input$compare_bl_ws]]
@@ -73,8 +85,16 @@ observeEvent(input$do_compare, {
           duration = 10
         )
       }
-      ref_user_data <- as.list(ref_user_data[match(dass_res[["Compound ID"]], ref_cid),input$compare_usr_dt_col,drop=F])
-    }
+      idx <- match(dass_res[["Compound ID"]], ref_cid)
+      ref_list <- list()
+      ref_list[[input$compare_bl_ws]] <- ref_user_data[idx,]
+
+      data_tables(c(isolate(data_tables()), ref_list))
+      ref_user_data <- as.list(ref_user_data[idx,input$compare_usr_dt_col,drop=F])
+    } 
+    
+    point_ids(dass_res[["Compound ID"]])
+    show_hide(hide = "comp_fig_chem_col")
   }
   
   # Get ICE data
@@ -114,7 +134,7 @@ observeEvent(input$do_compare, {
       ref_llna_data <- as.list(llna_tmp[match(chems, llna_tmp[[id]]), rcol, drop = F])
     }
   }
-  
+
   compare_pred(pred)
   compare_ref(c(ref_user_data, ref_hppt_data, ref_llna_data))
 })
@@ -128,6 +148,13 @@ observeEvent({compare_pred(); compare_ref()}, {
   
   all_comps <- lapply(compare_ref(), function(x) NULL)
   ref_cols <- names(all_comps)
+  
+  perf_rows <- c("N", "True Positive", "False Positive","False Negative", "True Negative", "Sensitivity", "Specificity", "Balanced Accuracy", "Accuracy", "F1 Score")
+  perf_flat <- lapply(compare_ref(), function(x) {
+    tmp <- rep(NA, length(perf_rows))
+    names(tmp) <- perf_rows
+    return(tmp)
+  })
   
   for (i in ref_cols) {
     ref <- compare_ref()[[i]]
@@ -146,14 +173,18 @@ observeEvent({compare_pred(); compare_ref()}, {
     
     if (ref_error) {
       out <- list(
+        ref_col = i,
         ref_error = ref_error,
-        label = paste(i, pred_label, sep = " vs. ")
+        pred_error = F,
+        label = paste(i, pred_label, sep = " vs. "),
+        fig = ref_error_ui
         )
     } else if (!ref_error) {
       pred_error <- sum(ref_noMiss & pred_noMiss) < 5
       out <- list(
         ref_col = i,
         ref_dat = ref,
+        ref_error = F,
         pred_col = pred_label,
         pred_dat = pred,
         id = gsub("\\s+|[.]+", "", tolower(paste(i, pred_label, sep = "_"))),
@@ -188,31 +219,60 @@ observeEvent({compare_pred(); compare_ref()}, {
           theme_bw()
         out$base_plot <- base_plot
         
+       perf_add <- sapply(perf$perf_list, function(x) {
+          if(typeof(x) == "double") x <- roundPercent(x)
+          return(x)
+        })
+       names(perf_add) <- names(perf$perf_list) 
+       perf_flat[[i]] <- perf_add
+      } else {
+        out$fig <- pred_error_ui
       }
     }
     all_comps[[i]] <- out
   }
   
+  perf_flat <- lapply(perf_flat, function(x) data.frame(x))
+  perf_flat <- do.call("cbind", perf_flat)
+  colnames(perf_flat) <- ref_cols
+  compare_flat(perf_flat)
+  
   updatePickerInput(session = session, inputId = "compare_table_id_1", choices = ref_cols, selected = ref_cols[1])
-  updatePickerInput(session = session, inputId = "comp_fig_comparison", choices = ref_cols, selected = ref_cols[1])
-  updatePickerInput(session = session, inputId = "comp_fig_quant_col", choices = c("None", names(data_tables())), selected = "None")
+  updatePickerInput(session = session, inputId = "comp_fig_comparison", choices = c("All", ref_cols), selected = ref_cols[1])
+  updatePickerInput(session = session, inputId = "comp_fig_quant_col", 
+                    choices = c("None", 
+                                switch(wf(), std = names(data_tables()), bl = bl_ws_idx()[[input$compare_bl_ws]])), 
+                    selected = "None")
   
   if (length(ref_cols) > 1) {
-    show_hide(show = c("cm_block_vert_2", "div_compare_results"))
+    # show_hide(show = c("cm_block_vert_2", "div_compare_results"))
     updatePickerInput(session = session, inputId = "compare_table_id_2", choices = ref_cols, selected = ref_cols[2])
   } else {
-    show_hide(show = "div_compare_results", hide = "cm_block_vert_2")
+    # show_hide(show = "div_compare_results", hide = "cm_block_vert_2")
     updatePickerInput(session = session, inputId = "compare_table_id_2", choices = NULL)
   }
-  
+  show_hide(show = "div_compare_results")
   updateCheckboxGroupInput(
     session = session,
     inputId = "comp_table_choices",
     choiceValues = unname(sapply(all_comps, function(x) x[["ref_col"]])),
     choiceNames = unname(sapply(all_comps, function(x) x[["label"]])),
-    selected =  unname(sapply(all_comps, function(x) x[["ref_col"]])),)
+    selected =  unname(sapply(all_comps, function(x) x[["ref_col"]])))
   
   compare_tables(all_comps)
+  
+  comp_merged <- lapply(seq_along(all_comps), function(i) {
+    tab <- all_comps[[i]]
+    if (tab$ref_error | tab$pred_error) {
+      out <- data.frame(Reference = names(all_comps)[i], Comparison = "NA", Count = 0)
+    } else {
+      out <- data.frame(names(all_comps)[i], table(all_comps[[i]]$indiv))
+      names(out) <- c("Reference", "Comparison", "Count")
+    }
+    return(out)
+  })
+  comp_merged <- do.call("rbind", comp_merged)
+  compare_all(comp_merged)
   
 })
 
@@ -225,6 +285,13 @@ observeEvent({compare_pred(); compare_ref()}, {
   
   all_comps <- lapply(compare_ref(), function(x) NULL)
   ref_cols <- names(all_comps)
+  
+  perf_rows <- c("N", "True NC", "True 1B","True 1A", "Overpredicted", "Underpredicted", "NA", "Accuracy")
+  perf_flat <- lapply(compare_ref(), function(x) {
+    tmp <- rep(NA, length(perf_rows))
+    names(tmp) <- perf_rows
+    return(tmp)
+  })
   
   for (i in ref_cols) {
     ref <- compare_ref()[[i]]
@@ -244,14 +311,18 @@ observeEvent({compare_pred(); compare_ref()}, {
     
     if (ref_error) {
       out <- list(
+        ref_col = i,
         ref_error = ref_error,
-        label = paste(i, pred_label, sep = " vs. ")
+        pred_error = F,
+        label = paste(i, pred_label, sep = " vs. "),
+        fig = ref_error_ui
       )
     } else if (!ref_error) {
       pred_error <- sum(ref_noMiss & pred_noMiss) < 5
       out <- list(
         ref_col = i,
         ref_dat = ref,
+        ref_error = F,
         pred_col = pred_label,
         pred_dat = pred,
         id = gsub("\\s+|[.]+", "", tolower(paste(i, pred_label, sep = "_"))),
@@ -309,21 +380,36 @@ observeEvent({compare_pred(); compare_ref()}, {
           theme_bw() 
         
         out$base_plot <- base_plot
+        
+        perf_add <- c(N = unname(perf$perf_list$N),
+                      table(perf$indiv),
+                      Accuracy = roundPercent(perf$perf_list$Accuracy))
+        perf_add <- perf_add[perf_rows]
+        perf_flat[[i]] <- perf_add
+      } else {
+        out$fig <- pred_error_ui
       }
     }
     all_comps[[i]] <- out
   }
+  
+  perf_flat <- lapply(perf_flat, function(x) data.frame(x))
+  perf_flat <- do.call("cbind", perf_flat)
+  colnames(perf_flat) <- ref_cols
+  compare_flat(perf_flat)
+  
   updatePickerInput(session = session, inputId = "compare_table_id_1", choices = ref_cols, selected = ref_cols[1])
-  updatePickerInput(session = session, inputId = "comp_fig_comparison", choices = ref_cols, selected = ref_cols[1])
+  updatePickerInput(session = session, inputId = "comp_fig_comparison", choices = c("All", ref_cols), selected = ref_cols[1])
   updatePickerInput(session = session, inputId = "comp_fig_quant_col", choices = c("None", names(data_tables())), selected = "None")
   
   if (length(ref_cols) > 1) {
-    show_hide(show = c("cm_block_vert_2", "div_compare_results"))
+    # show_hide(show = c("cm_block_vert_2", "div_compare_results"))
     updatePickerInput(session = session, inputId = "compare_table_id_2", choices = ref_cols, selected = ref_cols[2])
   } else {
-    show_hide(show = "div_compare_results", hide = "cm_block_vert_2")
+    # show_hide(show = "div_compare_results", hide = "cm_block_vert_2")
     updatePickerInput(session = session, inputId = "compare_table_id_2", choices = NULL)
   }
+  show_hide(show = "div_compare_results")
   
   updateCheckboxGroupInput(
     session = session,
@@ -333,58 +419,73 @@ observeEvent({compare_pred(); compare_ref()}, {
     selected = unname(sapply(all_comps, function(x) x[["ref_col"]])))
   
   compare_tables(all_comps)
+  
+  comp_merged <- lapply(seq_along(all_comps), function(i) {
+    tab <- all_comps[[i]]
+    if (tab$ref_error | tab$pred_error) {
+      out <- data.frame(Reference = names(all_comps)[i], Comparison = "NA", Count = 0)
+    } else {
+      out <- data.frame(names(all_comps)[i], table(all_comps[[i]]$indiv))
+      names(out) <- c("Reference", "Comparison", "Count")
+    }
+    return(out)
+  })
+  
+  comp_merged <- do.call("rbind", comp_merged)
+  compare_all(comp_merged)
+  
 })
 
 ## Tables -----
-ref_error_grob <- textGrob("Error: Fewer than 5 valid reference values.", gp = gpar(col = "#D55E00", fontsize = 16))
-pred_error_grob <- textGrob("Error: Fewer than 5 conclusive prediction values.", gp = gpar(col = "#D55E00", fontsize = 16))
+ref_error_ui <- div(class = "warningText", "Error: Fewer than 5 valid reference values.")
+pred_error_ui <- div(class = "warningText", "Error: Fewer than 5 conclusive prediction values.")
 
-table_shown_1 <- reactiveVal()
-table_alt_1 <- reactiveVal()
-observeEvent(input$compare_table_id_1, {
-  res <- isolate(compare_tables()[[input$compare_table_id_1]])
+output$compare_table_1 <- renderUI({
+  req(input$compare_table_id_1)
+  compare_tables()[[input$compare_table_id_1]]$fig
+})
 
-  if (!is.null(res[["ref_error"]])) {
-    table_shown_1(ref_error_grob)
-    table_alt_1 <- ref_error_grob$label
+output$compare_table_2 <- renderUI({
+  req(input$compare_table_id_2)
+  compare_tables()[[input$compare_table_id_2]]$fig
+})
+
+observe({
+  if (input$compare_show_flat) {
+    show_hide(show = "cm_block_full", hide = c("cm_block_vert_1", "cm_block_vert_2"))
   } else {
-    if (res$pred_error) {
-      table_shown_1(pred_error_grob)
-      table_alt_1 <- pred_error_grob$label
+    if(length(compare_tables()) > 1) {
+      show_hide(show = c("cm_block_vert_1", "cm_block_vert_2"), hide = "cm_block_full")
     } else {
-      table_shown_1(res$fig)
-      table_alt_1 <- res$fig_alt
+      show_hide(show = c("cm_block_vert_1"), hide = c("cm_block_full"))
     }
   }
-  table_alt_1 <- paste(res$label, 
-                       paste(switch(input$compare_type, Hazard = "2", Potency = "3"), "Tables"),
-                       table_alt_1, sep = ". ")
-  table_alt_1(table_alt_1)
-}, ignoreNULL = T)
+})
 
-output$compare_table_1 <- renderPlot({req(table_shown_1()); grid.draw(table_shown_1())}, width = "auto", height = "auto", alt = reactive({table_alt_1()}))
-
-table_shown_2 <- reactiveVal()
-table_alt_2 <- reactiveVal()
-observeEvent(input$compare_table_id_2, {
-  res <- isolate(compare_tables()[[input$compare_table_id_2]])
-  
-  if (!is.null(res[["ref_error"]])) {
-    table_shown_2(ref_error_grob)
-    table_alt_2 <- ref_error_grob$label
-  } else {
-    if (res$pred_error) {
-      table_shown_2(pred_error_grob)
-      table_alt_2 <- pred_error_grob$label
-    } else {
-      table_shown_2(res$fig)
-      table_alt_2 <- res$fig_alt
-    }
-  }
-  table_alt_2 <- paste(res$label, table_alt_2, sep = ". ")
-  table_alt_2(table_alt_2)
-}, ignoreNULL = T)
-output$compare_table_2 <- renderPlot({req(table_shown_2()); grid.draw(table_shown_2())}, width = "auto", height = "auto", alt = reactive({table_alt_2()}))
+output$compare_flat <- renderUI({
+  req(compare_flat())
+  compare_flat <- compare_flat()
+  tags$table(
+    class = "cm-table",
+    tags$caption("Comparison Table"),
+    tags$thead(
+      tags$tr(
+        tags$td(class = "blank-cell"),
+        lapply(names(compare_flat), function (x) tags$th(scope = "col", x))
+      )
+    ),
+    tags$tbody(
+      lapply(1:nrow(compare_flat), function(i) {
+        tags$tr(
+          tags$th(scope = "row", rownames(compare_flat)[i]),
+          lapply(1:ncol(compare_flat), function(j) {
+            tags$td(compare_flat[i,j])
+          })
+        )
+      })
+    )
+  )
+})
 
 ### Download -----
 observeEvent(input$comp_table_all, {
@@ -410,8 +511,7 @@ output$dl_comp_tables <- downloadHandler(
     pdf(con)
     for (i in table_choice) {
       if (i != 1) grid.newpage()
-      grid.draw(compare_tables()[[i]][["fig"]])
-      # if (i != table_choice[length(table_choice)]) grid.newpage()
+      grid.draw(compare_tables()[[i]][["fig_gg"]])
     }
     dev.off()
   }
@@ -476,13 +576,6 @@ output$comp_table_flat_txt <- downloadHandler(
 outputOptions(output, "comp_table_flat_txt", suspendWhenHidden = FALSE)
 
 ## Figures -----
-# observeEvent(input$comp_fig_comparison, {
-#   updatePickerInput(
-#     inputId = "comp_fig_quant_col",
-#     
-#   )
-# })
-
 perf_plot_error_pred <- plot_ly(
   x = 0, 
   y = 0, 
@@ -506,83 +599,235 @@ perf_plot_error_quant$x$layout$xaxis <- list(visible = F)
 perf_plot_error_quant$x$layout$yaxis <- list(visible = F)
 perf_plot_error_quant$x$config$staticPlot <- T
 
+perf_plot <- reactiveVal()
+perf_tab <- reactiveVal()
 
-perf_shown <- reactive({
-  compare_type <- isolate(input$compare_type)
-  perf_table <- compare_tables()[[input$comp_fig_comparison]]
+observeEvent({compare_tables(); input$comp_fig_comparison; input$comp_fig_quant_col; input$comp_fig_chem_col}, {
+  req(input$comp_fig_comparison)
+  req(compare_tables())
+  quant_summary(NULL)
+
+  do_all <- input$comp_fig_comparison == "All"
+  do_quant <- input$comp_fig_quant_col != "None"
+  do_cid <- !is.null(point_ids()) || input$comp_fig_chem_col != "None"
   
-  check_pt <- input$comp_fig_comparison %in% names(compare_tables())
-  req(check_pt)
-  if (!is.null(perf_table[["ref_error"]])) {
-    perf_plot_error_pred
-  } else if (perf_table$pred_error) {
-    perf_plot_error_pred
-  } else {
-    if (input$comp_fig_quant_col == "None") {
-      plot_out <- ggplotly(perf_table[["base_plot"]], tooltip = "text")
-      plot_out$x$layout$margin$t <- plot_out$x$layout$title$font$size*3
-      config(plot_out, modeBarButtonsToRemove = c("autoScale", "select2d", "lasso2d"))
-    } else {
-      quant_val <- suppressWarnings(as.numeric(data_tables()[[input$comp_fig_quant_col]]))
-      if (all(is.na(quant_val))) {
-        perf_plot_error_quant
-      } else {
-        etypes <- switch(
-          compare_type,
-          Hazard  = c("True Positive", "True Negative", "False Positive", "False Negative", NA),
-          Potency = c("True 1A", "True 1B", "True NC", "Overpredicted", "Underpredicted", NA)
-        )
-        
-        cols <- switch(
-          compare_type,
-          Hazard  = c("#882255", "#117733", "#88CCEE", "#332288", "#999999"),
-          Potency = c("#882255", "#CC6677", "#117733", "#88CCEE", "#332288", "#999999")
-        )
-        
-        pt_text <- sprintf(
-          "%s\nReference=%s\nDA Prediction=%s\n%s=%.2f",
-          perf_table$indiv,
-          perf_table$ref_dat,
-          perf_table$pred_dat,
-          input$comp_fig_quant_col,
-          quant_val
-        )
-        
-        pt_plt <- ggplot() + 
-          geom_point(aes(x = quant_val, y = perf_table$indiv, color = perf_table$indiv, text = pt_text), position = position_jitter(width = 0)) +
-          scale_color_manual(name = "Comparison", breaks = etypes, values = cols) + 
-          labs(
-            title = sprintf("DA %s %s Prediction vs. %s", da_dict[[da()]]$abbrev, compare_type, isolate(input$comp_fig_comparison)),
-            y = NULL,
-            x = input$comp_fig_quant_col) +
-          theme_bw()
-        pt_plt <- ggplotly(pt_plt, tooltip = "text")
-        
-        dens_plt <- ggplot() + 
-          geom_density(aes(x = quant_val, fill = perf_table$indiv, 
-                           text = after_stat(sprintf("%s\n%s = %.2f\nDensity = %.2f", fill, input$comp_fig_quant_col, x, density))), alpha = 0.6, color = "#303030") +
-          scale_fill_manual(name = "Comparison", breaks = etypes, values = cols) + 
-          labs(y = "Density", x = input$comp_fig_quant_col) + 
-          theme_bw()
-        dens_plt <- ggplotly(dens_plt, tooltip = "text")
-        dens_plt$x$data <- lapply(dens_plt$x$data, function(val) {
-          val$hoverlabel <- list(bgcolor = val$fillcolor)
-          val
-        })
-        
-        plot_out <- subplot(pt_plt, dens_plt, nrows = 2, heights = c(0.35,0.65), shareX = T, titleX = T, titleY = T)
-        plot_out$x$data <- lapply(plot_out$x$data, function(val) {
-          if (val$mode == "lines") val$showlegend <- F
-          return(val)
-        })
-        plot_out$x$layout$margin$t <- plot_out$x$layout$title$font$size*3
-        config(plot_out, modeBarButtonsToRemove = c("autoScale", "select2d", "lasso2d"))
-      }
+  if (!do_all) {
+    req(input$comp_fig_comparison %in% names(compare_tables()))
+    perf_table <- compare_tables()[[input$comp_fig_comparison]]
+    if (perf_table[["ref_error"]]) {
+      perf_plot(perf_plot_error_pred)
+      req(F)
+    } else if (perf_table$pred_error) {
+      perf_plot(perf_plot_error_pred)
+      req(F)
     }
   }
-})
+  
+  if (do_quant) {
+    quant_val <- suppressWarnings(as.numeric(
+      switch(
+        wf(),
+        std = data_tables()[[input$comp_fig_quant_col]],
+        bl = data_tables()[[input$compare_bl_ws]][[input$comp_fig_quant_col]]
+      )
+    ))
+    
+    if (all(is.na(quant_val))) {
+      perf_plot(perf_plot_error_quant)
+      req(F)
+    }
+  }
+
+  compare_type <- isolate(input$compare_type)
+  
+  etypes <- switch(
+    compare_type,
+    Hazard  = c("True Positive", "True Negative", "False Positive", "False Negative", "NA"),
+    Potency = c("True 1A", "True 1B", "True NC", "Overpredicted", "Underpredicted", "NA")
+  )
+  
+  cols <- switch(
+    compare_type,
+    Hazard  = c("#882255", "#117733", "#88CCEE", "#332288", "#999999"),
+    Potency = c("#882255", "#CC6677", "#117733", "#88CCEE", "#332288", "#999999")
+  )
+  
+  names(cols) <- etypes
+  if (do_all) {
+    if (!do_quant) {
+      compare_all <- compare_all()
+      tt_text <- sprintf(
+        "Reference = %s\nPrediction Type = %s\nCount = %i",
+        compare_all$Reference,
+        compare_all$Comparison,
+        compare_all$Count
+      )
+      plot_out <- ggplot(compare_all, aes(x = Reference, y = Count, fill = Comparison, text = tt_text)) + 
+        geom_bar(stat = "identity", position = position_dodge2(preserve = "single")) + 
+        scale_fill_manual(breaks = etypes, values = cols) +
+        theme_bw()
+      plot_out <- ggplotly(plot_out, tooltip = "text")
+    } else if (do_quant) {
+      compare_tables <- compare_tables()
+      plot_out <- lapply(seq_along(compare_tables), function(i) {
+        tab <- compare_tables[[i]]
+        refCol <- names(compare_tables)[i]
+        if (tab$ref_error | tab$pred_error) {
+          comp <- "NA"
+          dat <- data.frame(Reference = i, Comparison = "NA", Value = NA, tt_text = NA)
+        } else {
+          comp <- ifelse(is.na(tab$indiv), "NA", as.character(tab$indiv))
+          dat <- data.frame(Reference = i, Comparison = comp, Value = quant_val)
+          
+          pt_text <- sprintf(
+            "Reference = %s\nPrediction Type = %s\n%s=%.2f",
+            refCol,
+            dat$Comparison,
+            input$comp_fig_quant_col,
+            quant_val
+          )
+          
+          if (!is.null(point_ids())) {
+            pt_text <- paste(pt_text, "\nID =", point_ids())
+          } else if (do_cid) {
+            pt_text <- paste(pt_text, "\nID =", data_tables()[,input$comp_fig_chem_col])
+          }
+          
+          dat$tt_text <- pt_text
+        }
+
+        dat$Comparison <- factor(dat$Comparison, levels = etypes)
+        dat <- dat[order(dat$Comparison),]
+        dat <- split(dat, dat$Comparison)
+        new_plot <- plot_ly(colors = cols, type = "violin", points = "all")
+        for (j in seq_along(dat)) {
+          plot_data <- dat[[j]]
+          new_plot <- new_plot %>%
+            add_trace(
+              x = plot_data$Comparison,
+              y = plot_data$Value,
+              color = plot_data$Comparison,
+              text = plot_data$tt_text,
+              side = "positive",
+              legendgroup = plot_data$Comparison,
+              showlegend = ifelse(i == 1, T, F),
+              hoverinfo = "text"
+            )
+        }
+        new_plot <- new_plot %>%
+          layout(
+            xaxis = list(title = refCol, categoryarray = etypes, categoryorder = "array"),
+            yaxis = list(title = input$comp_fig_quant_col)
+          )
+        return(new_plot)
+      })
+      plot_out <- subplot(plot_out, shareY = T, titleX = T) %>%
+        layout(title = sprintf("DA %s Predictions vs. References", da_dict[[da()]]$abbrev))
+    } 
+  } else if (!do_all) {
+    if (!do_quant) {
+      plot_out <- ggplotly(perf_table[["base_plot"]], tooltip = "text")
+      plot_out$x$layout$margin$t <- plot_out$x$layout$title$font$size*3
+    } else if (do_quant) {
+      pt_text <- sprintf(
+        "%s\nReference=%s\nDA Prediction=%s\n%s=%.2f",
+        perf_table$indiv,
+        perf_table$ref_dat,
+        perf_table$pred_dat,
+        input$comp_fig_quant_col,
+        quant_val
+      )
+      
+      if (!is.null(point_ids())) {
+        pt_text <- paste(pt_text, "\nID =", point_ids())
+      } else if (do_cid) {
+        pt_text <- paste(pt_text, "\nID =", data_tables()[,input$comp_fig_chem_col])
+      }
+      
+      pt_plt <- ggplot() +
+        geom_point(aes(x = quant_val, y = perf_table$indiv, color = perf_table$indiv, text = pt_text), position = position_jitter(width = 0)) +
+        scale_color_manual(name = "Comparison", breaks = etypes, values = cols) +
+        labs(
+          title = sprintf("DA %s %s Prediction vs. %s", da_dict[[da()]]$abbrev, compare_type, isolate(input$comp_fig_comparison)),
+          y = NULL,
+          x = input$comp_fig_quant_col) +
+        theme_bw()
+      pt_plt <- ggplotly(pt_plt, tooltip = "text")
+      
+      dens_plt <- ggplot() +
+        geom_density(aes(x = quant_val, fill = perf_table$indiv,
+                         text = after_stat(sprintf("%s\n%s = %.2f\nDensity = %.2f", fill, input$comp_fig_quant_col, x, density))), alpha = 0.6, color = "#303030") +
+        scale_fill_manual(name = "Comparison", breaks = etypes, values = cols) +
+        labs(y = "Density", x = input$comp_fig_quant_col) +
+        theme_bw()
+      dens_plt <- ggplotly(dens_plt, tooltip = "text")
+      dens_plt$x$data <- lapply(dens_plt$x$data, function(val) {
+        val$hoverlabel <- list(bgcolor = val$fillcolor)
+        val
+      })
+      
+      plot_out <- subplot(pt_plt, dens_plt, nrows = 2, heights = c(0.35,0.65), shareX = T, titleX = T, titleY = T)
+      plot_out$x$data <- lapply(plot_out$x$data, function(val) {
+        if (val$mode == "lines") val$showlegend <- F
+        return(val)
+      })
+      plot_out$x$layout$margin$t <- plot_out$x$layout$title$font$size*3
+
+      quant_summary <- lapply(etypes, function(e) {
+        idx <- perf_table$indiv == e
+        x <- quant_val[idx]
+        out <- data.frame(
+                   N = sum(!is.na(x)), 
+                   Min = min(x, na.rm = T), 
+                   Mean = mean(x, na.rm = T), 
+                   Median = median(x, na.rm = T), 
+                   Max = max(x, na.rm = T), 
+                   check.names = F)
+        rownames(out) <- e
+        return(out)
+      })
+      quant_summary <- do.call("rbind", quant_summary)
+      quant_summary(quant_summary)
+    }
+  }
+  config(plot_out, modeBarButtonsToRemove = c("autoScale", "select2d", "lasso2d"))
+  perf_plot(plot_out)
+}, priority = -1)
 
 output$comp_fig <- renderPlotly({
   req(input$comp_fig_comparison)
-  perf_shown()
+  perf_plot()
+})
+
+output$compare_table_quant <- renderUI({
+  quant_summary <- quant_summary()
+  if (is.null(quant_summary)) {
+    ""
+  } else {
+    tags$table(
+      class = "cm-table",
+      tags$caption("Quantitative Data Summary"),
+      tags$thead(
+        tags$tr(
+          tags$td(class = "blank-cell"),
+          lapply(colnames(quant_summary), function (x) tags$th(scope = "col", x))
+        )
+      ),
+      tags$tbody(
+        lapply(1:nrow(quant_summary), function(i) {
+          tags$tr(
+            tags$th(scope = "row", rownames(quant_summary)[i]),
+            lapply(1:ncol(quant_summary), function(j) {
+              if (typeof(quant_summary[i,j]) == "double") {
+                tags$td(round(quant_summary[i,j], digits = 2))
+              } else {
+                tags$td(quant_summary[i,j])
+              }
+              
+            })
+          )
+        })
+      )
+    )
+  }
 })

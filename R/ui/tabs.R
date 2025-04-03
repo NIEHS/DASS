@@ -1005,6 +1005,7 @@ tab_compare <- tabPanel(
       h3("Tables", info_button("info_compare_tables", "Performance Metric Information")),
       p("Confusion matrices and performance metrics are shown below. Use the dropdown list to select the comparison you would like to view. Use the 'Download' button to open the download menu."),
       actionButton(inputId = "download_compare_tables", label = "Download Tables", `data-bs-toggle` = "modal", `data-bs-target` = "#download_compare_tables_modal"),
+      checkboxInput(inputId = "compare_show_flat", label = "Show flat table")
     ),
     br(),
     div(
@@ -1018,7 +1019,7 @@ tab_compare <- tabPanel(
           label = "Select Reference",
           choices = NULL
         ),
-        plotOutput("compare_table_1", height = "30rem", width = "100%")
+        uiOutput("compare_table_1")
       ),
       div(
         id = "cm_block_vert_2",
@@ -1029,23 +1030,43 @@ tab_compare <- tabPanel(
           label = "Select Reference",
           choices = NULL
         ),
-        plotOutput("compare_table_2", height = "30rem", width = "100%")
+        uiOutput("compare_table_2")
+      ),
+      div(
+        id = "cm_block_full",
+        class = "cm-block-vert",
+        style = "overflow-x: auto;",
+        h4(class = "sr-only", "Comparison Table, Flat"),
+        uiOutput("compare_flat")
       )
     ),
     div(
-      h3("Create Figures", info_button("info_comp_fig", "Comparison figures information")),
-      p("Use the first dropdown list to select the comparison you want to visualize. Use the second dropdown list to select quantitative data columns from your uploaded data set. Hover over the figure and click the camera icon in the top right corner to download the figure."),
-      pickerInput(
-        inputId = "comp_fig_comparison",
-        label = "Select Reference to Visualize",
-        choices = NULL
+      div(
+        class = "ind1",
+        h3("Create Figures", info_button("info_comp_fig", "Comparison figures information")),
+        p("Use the first dropdown list to select the comparison you want to visualize. Use the second dropdown list to select quantitative data columns from your uploaded data set. Hover over the figure and click the camera icon in the top right corner to download the figure.")
       ),
-      pickerInput(
-        inputId = "comp_fig_quant_col",
-        label = "Select Quantiative Data to Visualize",
-        choices = NULL
+      div(
+        class = "ind1",
+        style = "display: flex; flex-wrap: wrap; gap:1rem",
+        pickerInput(
+          inputId = "comp_fig_comparison",
+          label = "Select Reference to Visualize",
+          choices = NULL
+        ),
+        pickerInput(
+          inputId = "comp_fig_quant_col",
+          label = "Select Quantiative Data to Visualize",
+          choices = NULL
+        ),
+        pickerInput(
+          inputId = "comp_fig_chem_col",
+          label = "Chemical Identifier Labels for Points",
+          choices = NULL
+        )
       ),
-      plotlyOutput("comp_fig", width = "100%", height = "50rem")
+      plotlyOutput("comp_fig", width = "100%", height = "50vh"),
+      uiOutput("compare_table_quant")
     )
   )
 )

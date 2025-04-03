@@ -60,6 +60,7 @@ ui <- page_fluid(
     tab_compare
   ),
   modal_list,
+  div(style = "position: fixed; top: 0;", actionButton("browser", "browser")),
   tags$footer(
     tags$script(src = "js.js")
   )
@@ -71,6 +72,10 @@ server <- function(input, output, session) {
   source("R/server/02-prepareSelection.R", local = T)
   source("R/server/03-analysis.R", local = T)
   source("R/server/04-compare.R", local = T)
+
+  observeEvent(input$browser,{
+    browser()
+  })
 }
 
 # Create App -----

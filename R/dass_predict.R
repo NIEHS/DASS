@@ -244,12 +244,10 @@ daKE31 <- function(ke1_call, ke3_value) {
 # `ref` - factor vector with 0/1. reference for comparing against pred
 # Calculates binary performance metrics
 compareBinary <- function(pred, ref, predCol = NULL, refCol = NULL) {
-  # if (!all(na.omit(pred) %in% c(0,1, "Inconclusive"))) {
-  #   stop("`pred` should be a factor with levels = c(0,1, Inconclusive)")
-  # }
-  # if (!all(na.omit(ref) %in% c(0,1))) {
-  #   stop("`ref` should be a factor with levels = c(0,1)")
-  # }
+
+  if (is.null(predCol)) predCol <- "Prediction Column"
+  if (is.null(refCol)) refCol <- "Reference Column"
+  
   if (length(pred) != length(ref)) {
     stop("`pred` and `ref` should be the same length")
   }
@@ -299,9 +297,8 @@ compareBinary <- function(pred, ref, predCol = NULL, refCol = NULL) {
   )
   perf_tab <- lapply(perf_tab, function(x) {names(x) <- "Value"; return(x)})
 
-  cm <- draw_CM(table(pred, ref, dnn = NULL))
-  perf_fig_tmp <- draw_metTab(perf_tab)
-  perf_fig <- perf_fig_tmp$tab
+  cm <- draw_CM(table(pred, ref))
+  perf_fig <- draw_metTab(perf_tab)
   ref_pred_comp <- factor(ref_pred_comp, levels = c("NA", "TP", "TN", "FP", "FN"), labels = c("NA", "True Positive", "True Negative", "False Positive", "False Negative"))
   ref_pred_comp[is.na(ref_pred_comp)] <- "NA"
   ref_pred_comp <- droplevels(ref_pred_comp)
@@ -309,10 +306,12 @@ compareBinary <- function(pred, ref, predCol = NULL, refCol = NULL) {
    return(list(
     indiv = ref_pred_comp,
     perf_list = perf_tab,
-    fig = tableArrange(tab_list = list(cm, perf_fig),
-                       refCol = refCol,
-                       predCol = predCol),
-    fig_alt = paste(cm$alttext, perf_fig_tmp$alttext, collapse = ". ")
+    fig = div(
+      class = "met-tables", 
+      tags$h4("Comparison Tables", tags$br(), "Reference Column: ", refCol, tags$br(), "Prediction Column: ", predCol),
+      cm$html, perf_fig$html
+      ),
+    fig_gg = tableArrange(list(cm$gg, perf_fig$gg), refCol, predCol)
   ))
 }
 
@@ -378,9 +377,9 @@ compareCat <- function(pred, ref, predCol = NULL, refCol = NULL) {
                      Specificity = sapply(class_perf, function(x) x[["Specificity"]]),
                      `Balanced Accuracy` = sapply(class_perf, function(x) x[["Balanced Accuracy"]]))
 
-  cm <- draw_CM(table(pred, ref, dnn = NULL))
+  cm <- draw_CM(table(pred, ref))
   perf_fig <- draw_metTab(perf_tab)
-  perf_class_fig <- draw_metTab(class_perf, class_perf = T)
+  perf_class_fig <- draw_metTab_byClass(class_perf)
   
   ref_pred_comp <- factor(ref_pred_comp, levels = c("NA", "NC", "1B", "1A", "OP", "UP"), labels = c("NA", "True NC", "True 1B", "True 1A", "Overpredicted", "Underpredicted"))
   ref_pred_comp[is.na(ref_pred_comp)] <- "NA"
@@ -390,166 +389,229 @@ compareCat <- function(pred, ref, predCol = NULL, refCol = NULL) {
     list(
       indiv = ref_pred_comp,
       perf_list = perf_tab,
-      fig = tableArrange(
-        tab_list = list(cm, perf_fig$tab, perf_class_fig$tab),
-        refCol = refCol,
-        predCol = predCol
+      fig = div(
+        class = "met-tables", 
+        tags$h4("Comparison Tables", tags$br(), "Reference Column: ", refCol, tags$br(), "Prediction Column: ", predCol),
+        cm$html, perf_fig$html, perf_class_fig$html
       ),
-      fig_alt = paste(cm$alttext, perf_fig$alttext, perf_class_fig$alttext, sep = " ")
+      fig_gg = tableArrange(list(cm$gg, perf_fig$gg, perf_class_fig$gg), refCol, predCol)
     )
   )
 }
 
 draw_CM <- function(cm) {
+  df <- data.frame(cm)
 
-  colnames(cm)[is.na(colnames(cm))] <- "NA"
-  rownames(cm)[is.na(rownames(cm))] <- "NA"
-  
-  df <- data.frame(matrix(cm, nrow = nrow(cm), dimnames = list(rownames(cm), colnames(cm))), check.names = F)
-  df <- cbind(
-    a = c(rep("", nrow(df) -1), "Predicted"),
-    b = rownames(df), 
-    df
-  ) 
-  df <- rbind(
-    c(rep("", ncol(df) - 1), "Reference"),
-    names(df),
-    df
+  gg_tab <- ggplot(df, aes(x = 1, y = 1)) + 
+    geom_text(aes(label = Freq), size = 10.5/.pt) + 
+    facet_grid(pred ~ ref,  switch = "y") +
+    scale_x_discrete(name = "Reference", position = "top", expand = c(0,0)) +
+    scale_y_discrete(name = "Predicted", position = "left", expand = c(0,0)) +
+    ggtitle("Confusion Matrix") + 
+    theme(
+      axis.title.x.top = element_text(face = "bold", size = 11, vjust = 0.5, margin = margin(5.5,5.5,5.5,5.5)),
+      axis.title.y = element_text(face = "bold", size = 11, vjust = 0.5, angle = 0, margin = margin(5.5,5.5,5.5,5.5)),
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      
+      strip.text = element_text(face = "bold", size = 11),
+      strip.text.y.left = element_text(angle = 0),
+      strip.background = element_rect(fill = "#dae6ee", color = "black"),
+      panel.spacing = unit(0, "cm"),
+      panel.background = element_rect(fill = "white"),
+      panel.border = element_rect(color = "black", fill = NA),
+
+      plot.title = element_text(hjust = 0.5, size = 12),
+      plot.title.position = "plot"
   )
-  df[1:2,1:2] <- ""
+  
+  gg_tab <- ggplot_gtable(ggplot_build(gg_tab))
+  yloc <- grep("ylab-l", gg_tab$layout$name)
+  xloc <- grep("xlab-t", gg_tab$layout$name)
+  
+  gg_tab <- gtable::gtable_add_grob(gg_tab, rectGrob(gp = gpar(fill = "#dae6ee")), gg_tab$layout$t[yloc], gg_tab$layout$r[yloc], gg_tab$layout$b[yloc], gg_tab$layout$l[yloc], z = 0)
+  gg_tab <- gtable::gtable_add_grob(gg_tab, rectGrob(gp = gpar(fill = "#dae6ee")), gg_tab$layout$t[xloc], gg_tab$layout$r[xloc], gg_tab$layout$b[xloc], gg_tab$layout$l[xloc], z = 0)
+  
+  lay_t <- unique(gg_tab$layout$t[grep("panel", gg_tab$layout$name)])
+  gg_tab$heights[lay_t] <- unit(1.25, "lines")
+  
+  lay_r <- unique(gg_tab$layout$r[grep("panel", gg_tab$layout$name)])
+  gg_tab$widths[lay_r] <- unit(1.25, "strwidth", "Inconclusive")
 
-  nCol <- ncol(df)
-  nRow <- nrow(df)
+  head_cells <- list(
+    tags$tr(
+      tags$td(class = "blank-cell", rowspan = 2, colspan = 2),
+      tags$th(colspan = ncol(cm), scope = "colgroup", "Reference")
+    ),
+    tags$tr(
+      lapply(colnames(cm), function(x) tags$th(scope = "col", x))
+  ))
   
-  tab <- tableGrob(df, cols = NULL, rows = NULL, theme = ttheme_default(base_size = 14))
-  
-  blankCells <- tab$layout$t %in% 1:2 & tab$layout$r %in% 1:2
-  refCell <- tab$layout$t == 1 & tab$layout$r == nCol
-  predCell <- tab$layout$l == 1 & tab$layout$b == nRow
-  pnCell <- (tab$layout$t == 2 & tab$layout$r %in% 3:nCol) | (tab$layout$t %in% c(3:nRow) & tab$layout$r == 2)
-  valCells <- tab$layout$t %in% 3:nRow & tab$layout$r %in% 3:nCol
-
-  rectCells <- sapply(tab$grobs, function(x) grepl("rect", x))
-  textCells <- sapply(tab$grobs, function(x) grepl("text", x))
-  
-  tab$grobs[(refCell | predCell | pnCell) & textCells] <- lapply(tab$grobs[(refCell | predCell | pnCell) & textCells], function(x) {
-    x$gp$font <- as.integer(2)
-    return(x)
-  })
-
-  tab$grobs[(refCell | predCell | pnCell) & rectCells] <- lapply(tab$grobs[(refCell | predCell | pnCell) & rectCells], function(x) {
-    x$gp$fill <- "#dae6ee"
-    x$gp$col <- "black"
-    return(x)
-  })
-
-  tab$layout[refCell, "l"] <- 3
-  tab$layout[predCell, "t"] <- 3
-  
-  tab$grobs[blankCells & rectCells] <- lapply(tab$grobs[blankCells & rectCells], function (x) {
-    x$gp$fill <- NULL
-    return(x)
-  })
-  
-  tab$grobs[valCells & rectCells] <- lapply(tab$grobs[valCells & rectCells], function(x) {
-    x$gp$fill <- "white"
-    x$gp$col <- "black"
-    return(x)
-  })
-
-  tab$widths <- rep(max(tab$widths), nCol)
-  
-  tab$alttext <- paste(sprintf("Table 1. Confusion Matrix. %i rows, %i columns.", nrow(cm), ncol(cm)),
-                                       paste(sapply(1:nrow(cm), function(x) {
-                                         paste(sapply(1:ncol(cm), function(y) {
-                                           sprintf("Row %i, Column %i. Predicted = %s, Reference = %s, Count = %i", x, y, rownames(cm)[x], colnames(cm)[y], cm[x,y])
-                                         }), collapse = ". ")
-                                       }), collapse = ". "))
-  
-  return(tab)
-}
-
-draw_metTab <- function(named_list, fixNames = F, class_perf = F) {
-  metricLabels <- names(named_list)
-  if (fixNames) {
-    metricLabels <- gsub("([[:upper:]])", "_\\1", metricLabels) |>
-      strsplit(split = "_")
-    metricLabels <- sapply(X = metricLabels, paste, collapse = " ")
-    metricLabels <- gsub("^(.){1}", "\\U\\1", x = metricLabels, perl = T) |>
-      trimws()
-  }
-  
-  named_list <- lapply(names(named_list), function(x) {
-    tmp <- named_list[[x]]
-    x_names <- names(tmp)
-    if (typeof(tmp) == "double") tmp <- roundPercent(tmp)
-    tmp <- structure(as.character(tmp), names = x_names)
-    return(c(Metric = x, tmp))
-  })
-  
-  df <- data.frame(do.call("rbind", named_list), check.names = F)
-  
-  if (class_perf) {
-    celltext <- NULL
-    for (i in 1:nrow(df)) {
-      for (j in 2:ncol(df)) {
-        celltext <- c(celltext, paste(sprintf("Row %i, Column %i:  Metric GHS %s %s = %s.", i, j-1, names(df)[j], df$Metric[i], df[i,j]), collapse = " "))
-      }
+  cm_cells <- lapply(1:nrow(cm), function(i) {
+    tmp_list <- list(
+      tags$th(scope = "row", rownames(cm)[i]),
+      lapply(1:ncol(cm), function(j) {
+        tags$td(cm[i,j])
+      })
+    )
+    
+    if (i == 1) {
+      tmp_list <- c(list(tags$th(rowspan = nrow(cm), scope = "rowgroup", "Predicted")), tmp_list)
     }
-    alttext <- paste(
-      sprintf("Table 3. Performance by Class Table with %i rows and %i columns.", nrow(df), ncol(df)-1),
-      paste(celltext, collapse = " ")
-    )
-  } else {
-    alttext <- paste(
-      sprintf("Table 2. Performance Table with %i rows and %i columns.", nrow(df), ncol(df)-1),
-      paste(sprintf("Row %i: Metric %s Value %s.", 1:nrow(df), df$Metric, df$Value), collapse = " ")
-    )
-  }
 
-  tab <- tableGrob(df, rows = NULL, cols = names(df), theme = ttheme_default(base_size = 14))
-  
-  metCol <- tab$layout$l == 1 & tab$layout$t != 1
-  header <- tab$layout$t == 1
-  
-  rectCells <- sapply(tab$grobs, function(x) grepl("rect", x))
-  
-  tab$grobs[(metCol | header) & rectCells] <- lapply(tab$grobs[(metCol | header) & rectCells], function(x) {
-    x$gp$fill <- x$gp$fill <- "#dae6ee"
-    return(x)
+    return(tags$tr(tmp_list))
   })
   
-  tab$grobs[rectCells] <- lapply(tab$grobs[rectCells], function(x) {
-    x$gp$col <- "black"
-    return(x)
-  })
-  
-  tab$grobs[!(header | metCol) & rectCells] <- lapply(tab$grobs[!(header | metCol) & rectCells], function(x) {
-    x$gp$fill <- "white"
-    return(x)
-  })
-  return(list(tab=tab, alttext = alttext))
+  html_tab <- tags$table(
+    class = "cm-table",
+    tags$caption("Confusion Matrix"),
+    tags$col(),
+    tags$col(),
+    tags$colgroup(span = ncol(cm)),
+    head_cells, 
+    cm_cells
+  )
+  return(list(html = html_tab, gg = gg_tab))
 }
 
-tableArrange <- function(tab_list, refCol = NULL, predCol = NULL) {
-  if (is.null(refCol)) refCol <- "Reference Column"
-  if (is.null(predCol)) predCol <- "Prediction Column"
+draw_metTab <- function(named_list) {
   
+  df <- Map(function(met, val) {
+    if (typeof(val) == "double") val <- roundPercent(val)
+    data.frame(
+      grp = met,
+      ctype = c("Metric", "Value"),
+      val = c(met, unname(val))
+    )
+  }, names(named_list), named_list)
+ 
+  df <- do.call("rbind", df)
+  df$grp <- factor(df$grp, levels = names(named_list))
+  df$ctype <- factor(df$ctype, levels = c("Metric", "Value"))
+
+  gg_tab <- ggplot(df, aes(x = 1, y = 1)) + 
+    geom_rect(aes(fill = ctype), xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, show.legend = F) +
+    geom_text(aes(label = val), size = 10.5/.pt, fontface = ifelse(df$ctype == "Metric", 2, 1)) +
+    scale_fill_manual(breaks = c("Metric", "Value"), values = c("#dae6ee", "white")) +
+    ggtitle("Performance Metrics") +
+    facet_grid(grp ~ ctype, switch = "y") + 
+    theme(
+      axis.title = element_blank(),
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      strip.text.x = element_text(face = "bold", size = 11),
+      strip.background.x = element_rect(fill = "#dae6ee", color = "black"),
+      strip.text.y = element_blank(),
+      strip.background.y = element_blank(),
+      panel.spacing = unit(0, "cm"),
+      panel.border = element_rect(color = "black", fill = NA),
+      plot.title = element_text(hjust = 0.5, size = 12)
+    )
+
+  gg_tab <- ggplot_gtable(ggplot_build(gg_tab))
+  lay_t <- unique(gg_tab$layout$t[grep("panel", gg_tab$layout$name)])
+  gg_tab$heights[lay_t] <- unit(1.25, "lines")
+  
+  lay_l <- unique(gg_tab$layout$l[grep("panel", gg_tab$layout$name)])
+  gg_tab$widths[lay_l] <- unit(1.25, "strwidth", "Balanced Accuracy")
+
+  html_tab <- tags$table(
+    class = "cm-table",
+    tags$caption("Performance Metrics"),
+    tags$thead(
+      tags$tr(
+        tags$th(scope = "col", "Metric"),
+        tags$th(scope = "col", "Value")
+      )
+    ),
+    tags$tbody(
+      Map(function(met,val) {
+        if (typeof(val) == "double") val <- roundPercent(val)
+        tags$tr(tags$th(scope = "row", met), tags$td(val))
+      }, names(named_list), named_list)
+    )
+  )
+  
+  return(list(html = html_tab, gg = gg_tab))
+}
+
+draw_metTab_byClass <- function(named_list) {
+
+  df <- Map(function(met, val) {
+    data.frame(Metric = met, GHS = names(val), Value = val)
+  }, names(named_list), named_list)
+  df <- do.call("rbind", df)
+  df$Value <- roundPercent(df$Value)
+  df$Metric <- factor(df$Metric, levels = names(named_list))
+  
+  gg_tab <- ggplot(df, aes(x = 1, y = 1)) + 
+    geom_text(aes(label = Value), size = 10.5/.pt) +
+    facet_grid(Metric ~ GHS, switch = "y") + 
+    ggtitle("Performance Metrics by Class") +
+    theme(
+      axis.title = element_blank(),
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      
+      strip.text = element_text(face = "bold", size = 11),
+      strip.text.y.left = element_text(angle = 0),
+      strip.background = element_rect(fill = "#dae6ee", color = "black"),
+
+      panel.spacing = unit(0, "cm"),
+      panel.background = element_rect(fill = "white"),
+      panel.border = element_rect(color = "black", fill = NA),
+      
+      plot.title = element_text(hjust = 0.5, size = 12), 
+      plot.title.position = "plot"
+    )
+  
+  gg_tab <- ggplot_gtable(ggplot_build(gg_tab))
+  
+  lay_t <- unique(gg_tab$layout$t[grep("panel", gg_tab$layout$name)])
+  gg_tab$heights[lay_t] <- unit(1.25, "lines")
+  
+  lay_r <- unique(gg_tab$layout$l[grep("panel", gg_tab$layout$name)])
+  gg_tab$widths[lay_r] <- unit(1.25, "strwidth", "1A1BNC")
+  
+  df <- do.call("rbind", named_list)
+  html_tab <- tags$table(
+    class = "cm-table",
+    tags$caption("Performance Metrics by Class"),
+    tags$thead(
+      tags$tr(
+        tags$th(scope = "col", "Metric"),
+        lapply(1:ncol(df), function(j) tags$th(scope = "col", colnames(df)[j]))
+      )
+    ),
+    tags$tbody(
+      lapply(1:nrow(df), function(i) {
+        tags$tr(
+          tags$th(scope = "row", rownames(df)[i]),
+          lapply(1:ncol(df), function(j) {
+            tags$td(roundPercent(df[i,j]))
+          })
+        )
+      })
+    )
+  )
+  return(list(html = html_tab, gg = gg_tab))
+}
+
+tableArrange <- function(tab_list, refCol, predCol) {
+
   lay_mat <- unlist(lapply(1:length(tab_list), function(x) {
-    rep(x, ceiling(length(tab_list[[x]]$heights) * 1.5))
+    rep(x, ceiling(length(tab_list[[x]]$heights)/2))
   }))
-  lay_mat <- matrix(c(1:3, lay_mat + 3))
+
+  lay_mat <- matrix(c(rep(1, 3), lay_mat + 1))
 
   tabFig <- arrangeGrob(
-    grobs =   c(
+    grobs = c(
       list(
-        textGrob(label = "Confusion Matrix and Performance Metrics", gp = gpar(font = 2, fontsize = 16)),
-        textGrob(label = paste("Reference Column: ", refCol), gp = gpar(fontsize = 14)),
-        textGrob(label = paste("Prediction Column:", predCol), gp = gpar(fontsize = 14))
+        textGrob(label = sprintf("Comparison Tables\nReference Column: %s\nPrediction Column: %s", refCol, predCol), gp = gpar(font = 2, fontsize = 12))
       ), tab_list
-    ),
-      layout_matrix = lay_mat
+    ), layout_matrix = lay_mat
   )
-  
+
   return(tabFig)
 }

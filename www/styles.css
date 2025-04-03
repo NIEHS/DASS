@@ -521,12 +521,10 @@ td.focus {
   border-collapse: collapse !important;
 }
 
-
 table.table-review thead tr th {
   background-color: #fff1d4;
   color: black;
   text-align: center;
-  
 }
 
 .table-review th,
@@ -558,10 +556,42 @@ div.dt-button-collection .dt-button-active:after {
   content: "\2713";
 }
 
+.cm-table {
+  margin: auto;
+  width: fit-content;
+  caption-side: top;
+}
+
+.cm-table th {
+  background-color: var(--lightblue);
+}
+
+.cm-table th:not(.blank-cell),
+.cm-table td:not(.blank-cell) {
+  border: 1px solid black;
+  text-align: center;
+  padding: 0px 8px;
+}
+
+.cm-table caption {
+  text-align: center;
+}
+
+.met-tables {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: center;
+  text-align: center;
+}
+
+
 /* || CONFUSION MATRIX */
 .cm-block {
   display: flex;
   justify-content: space-around;
+  margin-bottom: 1rem;
 }
 
 .cm-block-vert {
@@ -590,4 +620,8 @@ div.dt-button-collection .dt-button-active:after {
 
 .defTab th {
   text-align: center;
+}
+
+label.control-label {
+  text-wrap: nowrap;
 }

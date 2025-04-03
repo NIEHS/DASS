@@ -99,7 +99,8 @@ observeEvent(input$xl_sheet, {
 demo_data <- reactive({
   switch(
     wf(),
-    "bl" = readRDS("www/DASS_demo_data_bl.rds"),
+    # "bl" = readRDS("www/DASS_demo_data_bl.rds"),
+    "bl" = readRDS("www/tmp_demo.rds"),
     "std" = readRDS("www/DASS_demo_data.rds") 
   )
 })
@@ -174,8 +175,6 @@ output$dt_analyze <- DT::renderDataTable({
       selection = "single",
       callback = JS("tabBody(table);")
     )
-
-
 })
 
 output$user_summary_tab2 <- renderUI({
