@@ -68,7 +68,7 @@ ui_header <- div(
     div(
       style = "font-size: 12px;",
       externalLinkTag("dass_github", style = "color: white;"),
-      p("Last updated: 2025-Mar-27")
+      p("Last updated: 2025-May-01")
     )
   )
 )
