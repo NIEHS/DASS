@@ -22,18 +22,18 @@ da2o3 <- function(assayA_call, assayB_call, assayC_call = NULL) {
     stop("Input vectors must be the same length.")
   }
   
-  # Is there anything that is not a 0 or 1?
+  # Is there anything that is not a -1, 0 or 1?
   if (
-    !all(na.omit(assayA_call) %in% c(0,1)) |
-    !all(na.omit(assayB_call) %in% c(0,1)) |
-    !all(na.omit(assayC_call) %in% c(0,1))
+    !all(na.omit(assayA_call) %in% c(-1,0,1)) |
+    !all(na.omit(assayB_call) %in% c(-1,0,1)) |
+    !all(na.omit(assayC_call) %in% c(-1,0,1))
   ) {
-    warning("Values not equal to 0 or 1 will be treated as missing data.")
+    warning("Values not equal to -1, 0 or 1 will be treated as missing data.")
   }
   
-  assayA_call[!assayA_call %in% c(0,1)] <- NA
-  assayB_call[!assayB_call %in% c(0,1)] <- NA
-  assayC_call[!assayC_call %in% c(0,1)] <- NA
+  assayA_call[!assayA_call %in% c(-1,0,1)] <- NA
+  assayB_call[!assayB_call %in% c(-1,0,1)] <- NA
+  assayC_call[!assayC_call %in% c(-1,0,1)] <- NA
   
   tmp <- data.frame(
     assayA_call, assayB_call, assayC_call
@@ -47,7 +47,9 @@ da2o3 <- function(assayA_call, assayB_call, assayC_call = NULL) {
         out <- "Positive"
       } else if (sum(x == 0) >= 2) {
         out <- "Negative"
-      } else {
+      } else if (sum(x == -1) >= 2) {
+        out <- "Borderline"
+      }else {
         out <- "Inconclusive"
       }
     }
@@ -259,9 +261,7 @@ compareBinary <- function(pred, ref, predCol = NULL, refCol = NULL) {
     stop("Fewer than 5 non-missing pairs")
   }
   
-  # pred <- factor(pred, levels = c("1", "0", "Inconclusive"), labels = c("Positive", "Negative", "Inconclusive"))
   pred <- droplevels(pred)
-  # ref <- factor(ref, levels = c("1", "0"), labels = c("Positive", "Negative"))
   ref <- droplevels(ref)
   
   ref_pred_comp <- rep(NA, length = length(ref))
@@ -269,37 +269,43 @@ compareBinary <- function(pred, ref, predCol = NULL, refCol = NULL) {
   ref_pred_comp[ref == "Negative" & pred == "Positive"] <- "FP"
   ref_pred_comp[ref == "Positive" & pred == "Negative"] <- "FN"
   ref_pred_comp[ref == "Negative" & pred == "Negative"] <- "TN"
-  
 
   N <- sum(!is.na(ref_pred_comp))
   tp <- sum(na.omit(ref_pred_comp == "TP"))
   fp <- sum(na.omit(ref_pred_comp == "FP"))
   fn <- sum(na.omit(ref_pred_comp == "FN"))
   tn <- sum(na.omit(ref_pred_comp == "TN"))
-  
+
   acc <- (tp + tn)/N
   sens <- tp/(tp + fn)
   spec <- tn/(tn + fp)
   balAcc <- (sens + spec)/2
   f1 <- (2*tp)/((2*tp) + fp + fn)
   
+  bl <- sum(pred == "Borderline", na.rm = T)
   perf_tab <- list(
     N = N, 
     `True Positive` = tp,
     `False Positive` = fp,
     `False Negative` = fn,
     `True Negative` = tn,
+    Borderline = ifelse(bl > 0, bl, NA),
+    Inconclusive = sum(pred == "Inconclusive", na.rm = T),
     Sensitivity = sens,
     Specificity = spec,
     `Balanced Accuracy` = balAcc,
     Accuracy = acc,
     `F1 Score` = f1
   )
+  if (bl == 0) perf_tab["Borderline"] <- NULL
   perf_tab <- lapply(perf_tab, function(x) {names(x) <- "Value"; return(x)})
-
+  
   cm <- draw_CM(table(pred, ref))
   perf_fig <- draw_metTab(perf_tab)
-  ref_pred_comp <- factor(ref_pred_comp, levels = c("NA", "TP", "TN", "FP", "FN"), labels = c("NA", "True Positive", "True Negative", "False Positive", "False Negative"))
+  
+  ref_pred_comp[pred=="Inconclusive"] <- "Inc."
+  ref_pred_comp[pred=="Borderline"] <- "BL"
+  ref_pred_comp <- factor(ref_pred_comp, levels = c("NA", "Inc.", "BL", "TP", "TN", "FP", "FN"), labels = c("NA", "Inconclusive", "Borderline", "True Positive", "True Negative", "False Positive", "False Negative"))
   ref_pred_comp[is.na(ref_pred_comp)] <- "NA"
   ref_pred_comp <- droplevels(ref_pred_comp)
   
@@ -355,17 +361,9 @@ compareCat <- function(pred, ref, predCol = NULL, refCol = NULL) {
   under <- mean(na.omit(ref_pred_comp) == "UP")
   over <- mean(na.omit(ref_pred_comp) == "OP")
   
-  perf_tab <- list(
-    N = N,
-    Accuracy = acc,
-    Overpredicted = over,
-    Underpredicted = under
-  )
-  perf_tab <- lapply(perf_tab, function(x) {names(x) <- "Value"; return(x)})
-  
   class_perf <- lapply(c("1A", "1B", "NC"), function(i) {
     sensitivity <- mean(ref_pred_comp[!is.na(ref_pred_comp) & ref == i] %in% c("1A", "1B", "NC"))
-    specificity <- mean(pred[!is.na(ref_pred_comp) & ref != "1A"] != "1A")
+    specificity <- mean(pred[!is.na(ref_pred_comp) & ref != i] != i)
     list(
       Sensitivity = sensitivity,
       Specificity = specificity,
@@ -377,11 +375,22 @@ compareCat <- function(pred, ref, predCol = NULL, refCol = NULL) {
                      Specificity = sapply(class_perf, function(x) x[["Specificity"]]),
                      `Balanced Accuracy` = sapply(class_perf, function(x) x[["Balanced Accuracy"]]))
 
-  cm <- draw_CM(table(pred, ref))
+  ref_pred_comp[pred == "Inconclusive"] <- "Inc."
+  perf_tab <- list(
+    N = N,
+    Accuracy = acc,
+    Overpredicted = over,
+    Underpredicted = under,
+    Inconclusive = sum(pred == "Inconclusive", na.rm = T),
+    `NA` = sum(is.na(ref_pred_comp))
+  )
+  perf_tab <- lapply(perf_tab, function(x) {names(x) <- "Value"; return(x)})
+  
+  cm <- draw_CM(table(pred, ref, useNA = "ifany"))
   perf_fig <- draw_metTab(perf_tab)
   perf_class_fig <- draw_metTab_byClass(class_perf)
   
-  ref_pred_comp <- factor(ref_pred_comp, levels = c("NA", "NC", "1B", "1A", "OP", "UP"), labels = c("NA", "True NC", "True 1B", "True 1A", "Overpredicted", "Underpredicted"))
+  ref_pred_comp <- factor(ref_pred_comp, levels = c("NA", "Inc.", "NC", "1B", "1A", "OP", "UP"), labels = c("NA", "Inconclusive", "True NC", "True 1B", "True 1A", "Overpredicted", "Underpredicted"))
   ref_pred_comp[is.na(ref_pred_comp)] <- "NA"
   ref_pred_comp <- droplevels(ref_pred_comp)
 
@@ -599,19 +608,17 @@ draw_metTab_byClass <- function(named_list) {
 
 tableArrange <- function(tab_list, refCol, predCol) {
 
-  lay_mat <- unlist(lapply(1:length(tab_list), function(x) {
-    rep(x, ceiling(length(tab_list[[x]]$heights)/2))
-  }))
-
-  lay_mat <- matrix(c(rep(1, 3), lay_mat + 1))
-
-  tabFig <- arrangeGrob(
-    grobs = c(
-      list(
-        textGrob(label = sprintf("Comparison Tables\nReference Column: %s\nPrediction Column: %s", refCol, predCol), gp = gpar(font = 2, fontsize = 12))
-      ), tab_list
-    ), layout_matrix = lay_mat
-  )
+  tab_title <- textGrob(label = sprintf("Comparison Tables\nReference Column: %s\nPrediction Column: %s", refCol, predCol), gp = gpar(font = 2, fontsize = 12))
+  tabFig <- tab_list[[length(tab_list)]]
+  
+  for (i in rev(seq_along(tab_list))[-1]) {
+    tabFig <- tabFig %>%
+      gtable::gtable_add_rows(heights = grobHeight(tab_list[[i]]) + unit(3,"line"), 0) %>%
+      gtable::gtable_add_grob(tab_list[[i]], t = 1, l = 1, r = ncol(tabFig), clip = "off")
+  }
+  tabFig <- tabFig %>% 
+    gtable::gtable_add_rows(heights = grobHeight(tab_title) + unit(1,"line"), pos = 0) %>%
+    gtable::gtable_add_grob(tab_title, t = 1, l = 1, r = ncol(tabFig), clip = "off")
 
   return(tabFig)
 }

@@ -3,6 +3,7 @@
 call0_str <- c("0", "i", "inactive", "n", "neg", "negative", "non-sensitizer", "non-sensitiser", "nonsensitizer", "nonsensitiser")
 call1_str <- c("1", "a", "active", "p", "pos", "positive", "sensitizer", "sensitiser")
 ke3_0_str <- c("NI", "Inf", "i", "inactive", "n", "neg", "negative", "non-sensitizer", "non-sensitiser", "nonsensitizer", "nonsensitiser")
+bl_str <- c("bl", "borderline", "border")
 
 # Reactives -----
 col_req <- reactiveVal()
@@ -82,7 +83,7 @@ observeEvent(input$review_entries, {
       data_tables <- lapply(
         c(ke1 = input$ke1_bl_ws, ke2 = input$ke2_bl_ws, ke3 = input$ke3_bl_ws), 
         function(x) {
-          tmp <- openxlsx::read.xlsx(input$fpath$datapath, sheet = x)
+          tmp <- data.frame(readxl::read_excel(input$fpath$datapath, sheet = x, na = c("", "na", "NA")))
         }
       )
     }
@@ -109,6 +110,10 @@ observeEvent(input$review_entries, {
         converted_values <- rep(NA, length(tmp$values))
         converted_values[grepl_ci(concatOrString(call1_str), tmp$values)] <- 1
         converted_values[grepl_ci(concatOrString(call0_str), tmp$values)] <- 0
+        
+        if (da() == "da_2o3" & wf() == "std") {
+          converted_values[grepl_ci(concatOrString(bl_str), tmp$values)] <- -1
+        }
         
         tmp$converted_values <- converted_values
         tmp$flagged <- !all(is.na(tmp$values[is.na(converted_values)]))
@@ -146,9 +151,8 @@ observeEvent(input$review_entries, {
         tmp$converted_values <- converted_values
         
         tmp$flagged <- !is.na(tmp$values) & is.na(converted_values)
-        
+
       } else if (tmp$col_type == "ks_bl_outcome") {
-        
         tmp$converted_values <- ifelse(toupper(tmp$values) %in% c("POSITIVE", "NEGATIVE", "BORDERLINE"), tmp$values, NA)
         tmp$flagged <- !is.na(tmp$values) & is.na(tmp$converted_values)
         

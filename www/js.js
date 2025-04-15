@@ -42,7 +42,7 @@ function updateDT(table_name, colvis=false) {
   });
   
   // Put table in scrollbox
-  $(`#${table_name} table`).wrap("<div style = 'overflow:auto'></div>");
+  $(`#${table_name} table`).wrap("<div style = 'overflow:auto; width: 100%;'></div>");
   /* in place of scrollX b/c scrollX causes unexpected scrolling behavior */
   
   if(colvis) {

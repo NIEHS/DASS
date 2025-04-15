@@ -173,6 +173,7 @@ dass_result <- eventReactive(input$confirm_run_dass, {
   )
 })
 
+## Tables -----
 output$results_std <- DT::renderDataTable({
   res <- dass_result()
   
@@ -187,7 +188,7 @@ output$results_std <- DT::renderDataTable({
     selection = "none",
     extensions = "Buttons",
     options = list(
-      dom = "Brtp",
+      dom = "Blrtip",
       initComplete = JS("() => updateDT('results_std', true)"),
       buttons = list(
         list(extend = "", text = "Table Key", action = JS("function(e, dt, node, config) {$('#table_key').modal('show')}")),
@@ -600,7 +601,7 @@ output$results_bl <- renderDataTable({
     selection = "none",
     options   = list(
       dom = "lrtip",
-      initComplete = JS("() => updateDT('results_std')")
+      initComplete = JS("() => updateDT('results_bl')")
     ),
     callback = JS("tabBody(table);")
   )
@@ -615,7 +616,7 @@ output$results_ke1_bl <- renderDataTable({
     selection = "none",
     options   = list(
       dom = "lrtip",
-      initComplete = JS("() => updateDT('results_std')")
+      initComplete = JS("() => updateDT('results_ke1_bl')")
     ),
     callback = JS("tabBody(table);")
   )
@@ -630,7 +631,7 @@ output$results_ke2_bl <- renderDataTable({
     selection = "none",
     options   = list(
       dom = "lrtip",
-      initComplete = JS("() => updateDT('results_std')")
+      initComplete = JS("() => updateDT('results_ke2_bl')")
     ),
     callback = JS("tabBody(table);")
   )
@@ -645,7 +646,7 @@ output$results_ke3_bl <- renderDataTable({
     selection = "none",
     options   = list(
       dom = "lrtip",
-      initComplete = JS("() => updateDT('results_std')")
+      initComplete = JS("() => updateDT('results_ke3_bl')")
     ),
     callback = JS("tabBody(table);")
   )

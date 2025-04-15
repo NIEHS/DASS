@@ -84,6 +84,10 @@ input[type="radio"]:hover {
   cursor: pointer;
 }
 
+label.control-label {
+  text-wrap: nowrap;
+}
+
 /* || HEADER */
 .header-row {
   margin: 2rem 1em;
@@ -422,6 +426,7 @@ details summary:hover {
   padding-bottom: 2vh;
   display: block;
   margin: auto;
+  height: auto;
 }
 
 figcaption {
@@ -471,6 +476,21 @@ dt{
 /* || TABLES */
 .datatables {
   margin: 0 auto;
+}
+
+.dataTables_length,
+.dataTables_info,
+.dataTables_paginate {
+  display: inline-block;
+}
+
+.dataTables_paginate,
+.dataTables_length {
+  float: right;
+}
+
+.datatables .dataTables_length {
+  padding-bottom: 0;
 }
 
 td.focus {
@@ -604,24 +624,4 @@ div.dt-button-collection .dt-button-active:after {
 .cm-block img {
   width:inherit;
   height:inherit;
-}
-
-/* |||| Definitions */
- .defTab {
-  margin: auto;
-}
-
-.defTab th,
-.defTab td {
-  padding: 4px 8px;
-  font-size: 0.75em;
-  border: 1px solid black;
-}
-
-.defTab th {
-  text-align: center;
-}
-
-label.control-label {
-  text-wrap: nowrap;
 }

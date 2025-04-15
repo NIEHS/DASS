@@ -45,7 +45,12 @@ observeEvent(input$confirm_data, {
       warning("unmatched columns")
     }
     for (i in all_selects) {
-      selected <- grep_ci(concatOrString(data_select_autocol[[i]]), names(data_shown()), value = T)[1]
+      string_match <- data_select_autocol[[i]]
+      if (da() == "da_ke31") {
+        ke31_idx <- grep_ci(concatOrString(c("dpra", "hclat")), names(string_match))
+        string_match <- string_match[ke31_idx]
+      }
+      selected <- grep_ci(concatOrString(string_match), names(data_shown()), value = T)[1]
       if (length(selected) == 0) selected <- ""
       updatePickerInput(
         inputId = i,
@@ -58,7 +63,8 @@ observeEvent(input$confirm_data, {
       bl_ws_idx <- lapply(demo_data(), names)
     } else {
       bl_ws_idx <- lapply(xl_sheet_choices(), function(x) {
-        tmp <- openxlsx::read.xlsx(input$fpath$datapath, sheet = x, rows = 1)
+        # tmp <- openxlsx::read.xlsx(input$fpath$datapath, sheet = x, rows = 1)
+        tmp <- data.frame(readxl::read_excel(input$fpath$datapath, sheet = x, n_max=0))
         names(tmp)
       })
       names(bl_ws_idx) <- xl_sheet_choices()

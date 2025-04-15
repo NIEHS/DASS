@@ -2,8 +2,10 @@
 # Setup -----
 usr_dt <- reactiveVal()
 wf <- reactiveVal("std") # id workflow: standard (std) or borderline (bl)
-da <- reactiveVal()
+da <- reactiveVal() # id defined approach
+xl_sheets_usr_dt <- reactiveVal() # Stores sheet names from user data
 
+# user confirms da selection
 observeEvent(input$confirm_da, {
   # Check if da() or wf() have changed and reset ui if needed
   reset_min <- 0
@@ -17,7 +19,6 @@ observeEvent(input$confirm_da, {
       reset_fpath <- 1
       reset_usr_dt <- 1
     }
-    # wf("bl")
     wf <- "bl"
   } else {
     # bl --> std
@@ -30,7 +31,6 @@ observeEvent(input$confirm_da, {
         reset_min <- 3
       }
     }
-    # wf("std")
     wf <- "std"
   }
 
@@ -45,6 +45,8 @@ observeEvent(input$confirm_da, {
   
   da(input$selected_da)
   wf(wf)
+  
+  # Update visible UI
   show_hide(show = c("upload_data", switch(wf(), std = "ui_upload_data_std", bl = "ui_upload_data_bl")))
   tab_change("tabs", tab_names[[2]])
 })
@@ -70,37 +72,25 @@ observeEvent(input$fpath, {
     )
   }
   req(ext_valid)
+  
+  # Reset items
   usr_dt(NULL)
   runjs("resetHidden('#ui_data');")
-  
   if (ext %in% c("xls", "xlsx")) {
     show_hide(show = "ui_xl_select")
-    xl_sheets_usr_dt(openxlsx::getSheetNames(input$fpath$datapath))
+    xl_sheets_usr_dt(readxl::excel_sheets(input$fpath$datapath))
   } else {
+    xl_sheets_usr_dt(NULL)
     usr_dt(read.delim(input$fpath$datapath, sep = switch(ext, txt = "\t", tsv = "\t", csv = ",")))
     show_hide(show = "ui_view_data_upload")
   }
-}, ignoreInit = T)
-
-### Excel Choices -----
-# Stores sheet names from user data
-xl_sheets_usr_dt <- reactiveVal()
-
-# Update user data with selected worksheet
-observeEvent(input$xl_sheet, {
-  req(input$xl_sheet != "")
-  req(!input$use_demo_data)
-  req(input$fpath)
-  usr_dt(openxlsx::read.xlsx(input$fpath$datapath, sheet = input$xl_sheet))
-  show_hide(show = "ui_view_data_upload")
 }, ignoreInit = T)
 
 ## Demo -----
 demo_data <- reactive({
   switch(
     wf(),
-    # "bl" = readRDS("www/DASS_demo_data_bl.rds"),
-    "bl" = readRDS("www/tmp_demo.rds"),
+    "bl" = readRDS("www/DASS_demo_data_bl.rds"),
     "std" = readRDS("www/DASS_demo_data.rds") 
   )
 })
@@ -122,36 +112,45 @@ observeEvent(input$use_demo_data, {
   }
 })
 
-#### Excel Choices -----
-# Switch between user and demo worksheets
-xl_sheet_choices <- reactive({
-  if (input$use_demo_data & wf() == "bl") {
-    names(demo_data())
-  } else if (!input$use_demo_data & !is.null(xl_sheets_usr_dt())) {
-    xl_sheets_usr_dt()
-  } else {
-    # Allows trigger change when demo and user columns are equivalent
-    ""
-  }
-})
+## Excel Choices -----
+xl_sheet_choices <- reactiveVal()
+observeEvent({input$fpath; input$use_demo_data}, {
 
-observeEvent(xl_sheet_choices(), {
+  choices <- ""
+  if (input$use_demo_data & wf() == "bl") {
+    choices <- names(demo_data())
+  } else if (!input$use_demo_data & !is.null(xl_sheets_usr_dt())) {
+    choices <- xl_sheets_usr_dt()
+  } 
+  xl_sheet_choices(choices)
+  
   updatePickerInput(
     inputId = "xl_sheet",
-    choices = xl_sheet_choices(),
-    selected = xl_sheet_choices()[1],
+    choices = choices,
+    selected = choices[1],
     label = switch(
       wf(),
       std = "Select worksheet to upload",
       bl = "Select worksheet to view"
     )
   )
+  runjs(sprintf("Shiny.setInputValue('xl_sheet', '%s', {priority: 'event'});", choices[1]))
+
   if (wf() == "bl" & length(xl_sheet_choices()) < 3) {
     show_hide(show = "bl_xl_warn")
   } else {
     show_hide(hide = "bl_xl_warn")
   }
-}, ignoreNULL = T)
+}, ignoreInit = T)
+
+# Update user data with selected worksheet
+observeEvent(input$xl_sheet, {
+  req(input$xl_sheet != "")
+  req(!input$use_demo_data)
+  req(input$fpath)
+  usr_dt(data.frame(readxl::read_excel(input$fpath$datapath, sheet = input$xl_sheet, na = c("", "na", "NA"))))
+  show_hide(show = "ui_view_data_upload")
+}, ignoreInit = T)
 
 # Table -----
 data_shown <- reactive({
@@ -172,7 +171,12 @@ output$dt_analyze <- DT::renderDataTable({
       data_shown(),
       class = "table-data stripe",
       rownames = F,
-      selection = "single",
+      filter = "top",
+      selection = "none",
+      options = list(
+        dom = "lrtip",
+        initComplete = JS("() => updateDT('dt_analyze')")
+      ),
       callback = JS("tabBody(table);")
     )
 })

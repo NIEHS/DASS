@@ -109,6 +109,7 @@ get_da_fig <- lapply(get_da_fig, function(x) {
 
 # Data Formats -----
 format_info <- list(
+  ### three binary_call items. should only differ in how borderline is described
   binary_call = p(
     "The column corresponding to this endpoint should only contain the values:",
     tags$ul(
@@ -118,6 +119,27 @@ format_info <- list(
     ),
     span(style = "font-size: 90%", "*Case insensitive")
   ),
+  binary_call_2o3_ke13 = p(
+    "The column corresponding to this endpoint should only contain the values:",
+    tags$ul(
+      tags$li("\"sensitizer\", \"sensitiser\", \"a\", \"active\", \"p\", \"pos\", \"positive\", or \"1\" to indicate positive assay outcomes.*"),
+      tags$li("\"non-sensitizer\", \"non-sensitiser\", \"i\", \"inactive\", \"n\", \"neg\", \"negative\", or \"0\" to indicate negative assay outcomes.*"),
+      tags$li("For the 2o3 DA only, \"borderline\", \"border\", or \"bl\" to indicate borderline assay outcomes.*"),
+      tags$li("Missing values should be blank or labeled as \"NA\".")
+    ),
+    span(style = "font-size: 90%", "*Case insensitive")
+  ),
+  binary_call_2o3_ke2 = p(
+    "The column corresponding to this endpoint should only contain the values:",
+    tags$ul(
+      tags$li("\"sensitizer\", \"sensitiser\", \"a\", \"active\", \"p\", \"pos\", \"positive\", or \"1\" to indicate positive assay outcomes.*"),
+      tags$li("\"non-sensitizer\", \"non-sensitiser\", \"i\", \"inactive\", \"n\", \"neg\", \"negative\", or \"0\" to indicate negative assay outcomes.*"),
+      tags$li("\"borderline\", \"border\", or \"bl\" to indicate borderline assay outcomes."),
+      tags$li("Missing values should be blank or labeled as \"NA\".")
+    ),
+    span(style = "font-size: 90%", "*Case insensitive")
+  ),
+  ###
   binary_call_ke1 = p("Alternatively, depletion values can be used to derive binary calls using the prediction models in", get_link[["tg442c"]], "."),
   numeric = p("The column corresponding to this endpoint should only contain numeric values. Missing values should be blank or labeled as \"NA\"."),
   ke3_value = p(
@@ -166,7 +188,7 @@ get_blr_fig <- list(
       label = "DPRA",
       url = "blr_diagrams/1_ke1_dpra_tree.png",
       alt = "Decision tree for a single run of the direct peptide reactivity assay (DPRA)",
-      caption =  p("The direct peptide reactivity assay (DPRA) measures depletion of two peptides containing either cysteine or lysine residues due to covalent binding.The borderline range for the mean cysteine and lysine % depletion is [4.95, 8.32]. If only cysteine % depletion can be evaluated, the borderline range is [10.56, 18.47]. For more details, see", get_link[["tg442c"]], ".")
+      caption =  p("The direct peptide reactivity assay (DPRA) measures depletion of two peptides containing either cysteine or lysine residues due to covalent binding.The borderline range for the mean cysteine and lysine % depletion is [4.95, 8.32]. If only cysteine % depletion can be evaluated, the borderline range is [10.56, 17]. For more details, see", get_link[["tg442c"]], ".")
     )
   ),
   ke2 = list(
@@ -261,7 +283,7 @@ modal_list <- tagList(
     modal_ui(
       id = "info_2o3_bl_modal",
       title = h4("2 out of 3 Borderline Evaluation"),
-      p("The 2 out of 3 (2o3) DA uses hazard outcomes from a set of KE1, KE2, and KE3 assays. Results from the assays may fall within a 'borderline range' of the assay decision threshold, which can yield inconclusive 2o3 results. Assay-specific decision trees can be applied to generate conclusive positive, conclusive negative, and borderline outcomes. For more details, see", get_link[["gl497"]], "."),
+      p("The 2 out of 3 (2o3) DA uses hazard outcomes from a set of KE1, KE2, and KE3 assays. Results from the assays may fall within a \"borderline range\" of the assay decision threshold, which can yield inconclusive 2o3 results. Assay-specific decision trees can be applied to generate conclusive positive, conclusive negative, and borderline outcomes. For more details, see", get_link[["gl497"]], "."),
       p("You may upload data from individual assay runs. The data will be processed using assay-specific decision trees and the results will be used to generate 2o3 predictions. Data formatting information is available in the next step and in the", get_link[["user_guide"]], ".")
     ),
   ## Data -----
@@ -269,8 +291,8 @@ modal_list <- tagList(
     id = "info_demo_data_modal",
     title = h4("Demo Data"),
     p("Select this option to load a demo data set instead of uploading your own data."),
-    p("For the standard workflow, the demo data set includes values for all possible endpoints across the available DAs. The column names are set up so that the selections in the next step are automatically assigned."),
-    p("For the 2o3 borderline workflow, the demo data set includes data for all possible assays and required endpoints. Use the worksheet dropdown list to view data for a specific assay. The worksheet and column names are set up so that the selections in the next step are automatically assigned.")
+    p("For the standard workflow, the demo data set includes values for all possible endpoints across the available DAs. The column names are set up so that the selections in the next step are automatically assigned. There are additional columns in the data set that can be used to demo the \"Compare\" section of the app."),
+    p("For the 2o3 borderline workflow, the demo data includes simulated data sets for the DPRA, KeratinoSens, and GARDskin. Use the worksheet dropdown list to view data for a specific assay. The worksheet and column names are set up so that the selections in the next step are automatically assigned. The demo data set also includes a worksheet that can be used to demo the 'Compare' section of the app. Chemical identifiers and values in this data set were arbitrarily assigned for demonstration purposes only.")
   ),
   ## Select Columns -----
   ### Standard -----
@@ -278,34 +300,34 @@ modal_list <- tagList(
     id = "info_ke1_call_modal",
     title = h4("Key Event 1 Assay Endpoint: Call"),
     p("Binary hazard results (sensitizer or non-sensitizer) from a KE1 assay are used in the 2o3 and KE3/1 STS defined approaches."),
-    format_info[["binary_call"]],
+    format_info[["binary_call_2o3_ke13"]],
     format_info[["binary_call_ke1"]]
   ),
   modal_ui(
     id = "info_ke1_std_assay_modal",
     title = h4("Key Event 1 Assay"),
-    p("For the 2o3, KE1 calls can be generated using quantitative data from either the ADRA or DPRA test methods."),
+    p("For the 2o3, KE1 calls can be generated using quantitative data from either the ADRA or DPRA test methods. "),
     p("For the ITS, scores can be generated using quantitative data from either the ADRA or DPRA test methods.")
   ),
   modal_ui(
     id = "info_ke1_mean_dep_modal",
     title = h4("Key Event 1 Assay Endpoint: Mean Depletion Value"),
-    p("The ADRA and DPRA KE1 test methods measure depletion of two peptides containing either cysteine or lysine residues due to covalent binding."),
-    p("You may provide either the mean depletion values or the individual cysteine and lysine depletion values."),
+    p("For the KE1 depletion values, you may provide either the mean depletion values or the individual cysteine and lysine depletion values."),
+    p("The 2o3 and ITS DAs can be used with data from ADRA or DPRA. The KE 3/1 STS DA can be used with data from the DPRA only."),
     format_info[["numeric"]],
-    p("Note: The KE 3/1 STS DA should only be used with data from DPRA.")
+    p("More details about the thresholds applied to the data are available in the user guide.")
   ),
   modal_ui(
     id = "info_ke2_std_call_modal",
     title = h4("Key Event 2 Assay Endpoint: Call"),
     p("Binary hazard results (sensitizer or non-sensitizer) from a KE2 assay are used in the 2o3 defined approach."),
-    format_info[["binary_call"]]
+    format_info[["binary_call_2o3_ke2"]]
   ),
   modal_ui(
     id = "info_ke3_call_modal",
     title = h4("Key Event 3 Assay Endpoint: Call"),
     p("Binary hazard results (sensitizer or non-sensitizer) from a KE3 assay are used in the 2o3 defined approach."),
-    format_info[["binary_call"]]
+    format_info[["binary_call_2o3_ke13"]]
   ),
   modal_ui(
     id = "info_ke3_std_assay_modal",
@@ -315,7 +337,7 @@ modal_list <- tagList(
   modal_ui(
     id = "info_ke3_std_val_modal",
     title = h4("Key Event 3 Assay Endpoint: Quantitative Value"),
-    p("The ITS uses a quantiative endpoint from a KE3 assay to assign a score. The KE 3/1 uses the minimum induction threshold from h-CLAT.",
+    p("The ITS uses a quantitative endpoint from a KE3 assay to assign a score. The KE 3/1 uses the minimum induction threshold from h-CLAT.",
       tags$dl(
         tags$dt("GARDskin: Input Concentration"),
         tags$dd(format_info[["ke3_value"]]),
@@ -430,7 +452,7 @@ modal_list <- tagList(
     title = h4("Key Event 2 Assay Data Columns"),
     tags$details(
       open = "open",
-      tags$summary("KeratinoSens"),
+      tags$summary(h5("KeratinoSens")),
       div(
         class = "detailsBody",
         tags$dl(
@@ -444,7 +466,7 @@ modal_list <- tagList(
       )
     ),
     tags$details(
-      tags$summary("LuSens"),
+      tags$summary(h5("LuSens")),
       div(
         class = "detailsBody",
         tags$dl(
@@ -494,7 +516,7 @@ modal_list <- tagList(
     title = h4("Key Event 3 Assay Data Columns"),
     tags$details(
       open = "open",
-      tags$summary("GARDskin"),
+      tags$summary(h5("GARDskin")),
       div(
         class = "detailsBody",
         tags$dl(
@@ -506,7 +528,7 @@ modal_list <- tagList(
       )
     ),
     tags$details(
-      tags$summary("h-CLAT"),
+      tags$summary(h5("h-CLAT")),
       div(
         class = "detailsBody",
         tags$dl(
@@ -526,7 +548,7 @@ modal_list <- tagList(
       )
     ),
     tags$details(
-      tags$summary("IL-8 Luc"),
+      tags$summary(h5("IL-8 Luc")),
       div(
         class = "detailsBody",
         tags$dl(
@@ -552,7 +574,7 @@ modal_list <- tagList(
       )
     ),
     tags$details(
-      tags$summary("U-SENS"),
+      tags$summary(h5("U-SENS")),
       div(
         class = "detailsBody",
         tags$dl(
@@ -584,7 +606,7 @@ modal_list <- tagList(
   ## Results -----
   modal_ui(
     id = "table_key",
-    title = "DA Result Table Key",
+    title = h4("DA Result Table Key"),
     size = "l",
     tags$dl(
       tags$dt("Selected Data Columns (Yellow)"),
@@ -616,6 +638,9 @@ modal_list <- tagList(
     id = "info_compare_ref_modal",
     title = h4("Reference Data for Comparisons"),
     p(
+      "For the standard worfklow, reference data should be included as additional columns in the file upload. For the borderline workflow, reference data should be included as an additional worksheet and include chemical identifiers to map to the DA results."
+    ),
+    p(
       tags$dl(
         tags$dt("Hazard"),
         tags$dd(format_info[["binary_call"]]),
@@ -628,7 +653,8 @@ modal_list <- tagList(
     id = "info_compare_ice_modal",
     title = h4("Reference Data from ICE"),
     p("You can compare the DA results against reference data that was used in the development of ", get_link[["gl497"]], ". The reference data were sourced from the Integrated Chemical Environment. The human reference data comprise human predictive patch test results for 66 chemicals. The local lymph node assay (LLNA) data comprise results for 156 chemicals."),
-    p("You must provide chemical identifiers (CASRN, DTXSID, or QSAR-Ready SMILES). The selected identifier will be used to pair DA results and reference data for comparison."),
+    p("For the standard workflow, you must provide chemical identifiers (CASRN, DTXSID, or QSAR-Ready SMILES). The selected identifier will be used to pair DA results and reference data for comparison."),
+    p(""),
     p(
       "Downloads: ", br(),
       div(
@@ -641,39 +667,63 @@ modal_list <- tagList(
   ),
   modal_ui(
     id = "info_compare_tables_modal",
-    title = h4("Performance Metrics"),
-    div(
-      # class = "hiddenBlock",
-      id = "binary_defs",
-      span("Table Definitions", style = "font-size: 1em; text-align: center;"),
-      HTML(
-        "<table class = 'defTab' border=1>
-<tr> <th> Metric </th> <th> Definition </th>  </tr>
-<tr> <td> N </td> <td> The number of valid reference values </td>  </tr>
-  <tr> <td> Accuracy  </td> <td>  (True positives + True negatives) / (All positives + All negatives) </td> </tr>
-  <tr> <td> Balanced Accuracy  </td> <td>  (True positive rate + True negative rate)/2 </td> </tr>
-  <tr> <td> F1 Score  </td> <td>  (2&times;True positives) / (2&times;True positives + False positives + False negatives) </td> </tr>
-  <tr> <td> True Positive Rate (Sensitivity)  </td> <td>  True positives / All positives </td> </tr>
-  <tr> <td> False Positive Rate  </td> <td>  False positives / All positives </td> </tr>
-  <tr> <td> True Negative Rate (Specificity)  </td> <td>  True negatives / All negatives </td> </tr>
-  <tr> <td> False Negative Rate  </td> <td>  False negatives / All negatives </td> </tr>
-   </table>"
+    title = h4("Performance Metric Table Definitions"),
+    tags$details(
+      id = "tabDef_hazard",
+      tags$summary(h5("Hazard")),
+      div(
+        class = "detailsBody",
+        tags$table(
+          class = "cm-table",
+          tags$thead(
+            tags$tr(
+              tags$th(scope = "col", "Metric"),
+              tags$th(scope = "col", "Definition")
+            )
+          ),
+          tags$tbody(
+            tags$tr(tags$td("N"), tags$td("The number of valid reference-prediction pairs for comparison")),
+            tags$tr(tags$td("True Positive"), tags$td("The number of true positive DA predictions")),
+            tags$tr(tags$td("False Positive"), tags$td("The number of false positive DA predictions")),
+            tags$tr(tags$td("False Negative"), tags$td("The number of false negative DA predictions")),
+            tags$tr(tags$td("True Negative"), tags$td("The number of true negative DA predictions")),
+            tags$tr(tags$td("Borderline"), tags$td("The number of borderline DA predictions")),
+            tags$tr(tags$td("Inconclusive"), tags$td("The number of inconclusive DA predictions")),
+            tags$tr(tags$td("True Positive Rate (Sensitivity)"), tags$td("True positives / All positives")),
+            tags$tr(tags$td("True Negative Rate (Specificity)"), tags$td("True negatives / All negatives")),
+            tags$tr(tags$td("Balanced Accuracy"), tags$td("(True positive rate + True negative rate)/2")),
+            tags$tr(tags$td("Accuracy"), tags$td("(True positives + True negatives) / (All positives + All negatives)")),
+            tags$tr(tags$td("F1 Score"), tags$td("(2×True positives) / (2×True positives + False positives + False negatives)"))
+          )
+        )
       )
     ),
-    div(
-      class = "hiddenBlock",
-      id = "potency_defs",
-      span("Table Definitions", style = "font-size: 1em; text-align: center;"),
-      HTML(
-        "<table class = 'defTab' border=1>
-         <tr> <th> Metric </th> <th> Definition </th>  </tr>
-    <tr> <td> N </td> <td> The number of valid reference values </td>  </tr>
-    <tr> <td> Accuracy  </td> <td>  The percentage of predicted values equal to reference values </td> </tr>
-    <tr> <td> Overpredicted </td> <td>  The percentage of predicted values with a more potent GHS category than the corresponding reference value </td> </tr>
-    <tr> <td> Underpredicted  </td> <td>  The percentage of predicted values with a less potent GHS category than the corresponding reference value </td> </tr>
-     </table>"
+    tags$details(
+      id = "tabDef_potency",
+      tags$summary(h5("Potency")),
+      div(
+        class = "detailsBody",
+        tags$table(
+          class = "cm-table",
+          tags$thead(
+            tags$tr(
+              tags$th(scope = "col", "Metric"),
+              tags$th(scope = "col", "Definition")
+            )
+          ),
+          tags$tbody(
+            tags$tr(tags$td("N"), tags$td("The number of valid reference-prediction pairs for comparison")),
+            tags$tr(tags$td("Accuracy"), tags$td("The percentage of predicted values equal to reference values")),
+            tags$tr(tags$td("Overpredicted"), tags$td("The percentage of predicted values with a more potent GHS category than the corresponding reference value")),
+            tags$tr(tags$td("Underpredicted"), tags$td("The percentage of predicted values with a less potent GHS category than the corresponding reference value")),
+            tags$tr(tags$td("Sensitivity"), tags$td("Among reference values with a given GHS category, the percentage of predicted values equal to the GHS category.")),
+            tags$tr(tags$td("Specificity"), tags$td("Among reference values not equal to a given GHS category, the percentage of predicted values not equal to the GHS category.")),
+            tags$tr(tags$td("Balanced Accuracy"), tags$td("(Sensitivity + Specificity)/2"))
+          )
+        )
       )
-    )
+    ),
+    size = "l"
   ),
   modal_ui(
     id = "download_compare_tables_modal",
@@ -687,7 +737,7 @@ modal_list <- tagList(
     ),
     br(),
     div(
-      p("You can download the results in table format as an Excel file or text file."),
+      p("You can download the flat table as an Excel file or text file."),
       downloadButton(outputId = "comp_table_flat_xl", label = "Excel (.xlsx)", icon = icon("file-excel"), class = "btn-dl"),
       downloadButton(outputId = "comp_table_flat_txt", label = "Tab-Delimited (.txt) ", icon = icon("file-alt"), class = "btn-dl")
     )
@@ -696,7 +746,7 @@ modal_list <- tagList(
     id = "info_comp_fig_modal",
     title = h4("Visualizing Results"),
     p("Two types of figures can be generated."),
-    p("If the quantitative endpoint column is \"None\", a bar chart will summarize the comparison results."),
-    p("Otherwise, you must select a column containing numeric data. This will generate density plots and scatter plots of the selected data, with data split based the comparison result. This may provide useful context for exploring your results.")
+    p("If the quantitative endpoint column is \"None\", a bar chart will summarize the comparison results. You can view a bar chart for a specific comparison by selecting the reference from the first dropdown list. If  \"All\" is selected, all comparisons will be shown."),
+    p("If a quantitative endpoint column is selected, the quantitative data values be plotted in a scatter plot next to a density curve, with data split based on the comparison result. This may provide useful context for exploring your results.")
   )
 )

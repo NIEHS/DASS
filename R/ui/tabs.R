@@ -501,7 +501,7 @@ tab_select_columns <- tabPanel(
                   class = "ind1",
                   pickerInput(
                     inputId = "ke1_bl_cid",
-                    label = "Chemical Identifier Columns",
+                    label = "Chemical Identifier Column",
                     choices = NULL
                   ),
                   pickerInput(
@@ -559,7 +559,7 @@ tab_select_columns <- tabPanel(
                   class = "ind1",
                   pickerInput(
                     inputId = "ke2_bl_cid",
-                    label = "Chemical Identifier Columns",
+                    label = "Chemical Identifier Column",
                     choices = NULL
                   ),
                   pickerInput(
@@ -632,7 +632,7 @@ tab_select_columns <- tabPanel(
                   class = "ind1",
                   pickerInput(
                     inputId = "ke3_bl_cid",
-                    label = "Chemical Identifier Columns",
+                    label = "Chemical Identifier Column",
                     choices = NULL
                   ),
                   pickerInput(
@@ -804,7 +804,7 @@ tab_results <- tabPanel(
       id = "ui_res_std",
       class = "hiddenBlock",
       div(
-        p("Results of the DASS App analysis are appended to your data in the table below. By default, the table shows the first three columns of data, your selected input columns, and the DA results. The buttons above the table can be used to hide or show columns. Use the \"Download Results\" button to export your results to an Excel spreadsheet or text file, which may allow for easier viewing.")
+        p("Results of the DASS App analysis are appended to your data in the table below. By default, the table shows the first three columns of data, your selected input columns, and the DA results. The \"Column Visibility\" dropdown list above the table can be used to hide or show columns. Use the \"Download Results\" button to export your results to an Excel spreadsheet or text file, which may allow for easier viewing.")
       ),
       div(
         id = "dl_container",
@@ -1003,7 +1003,7 @@ tab_compare <- tabPanel(
     div(
       class = "ind1",
       h3("Tables", info_button("info_compare_tables", "Performance Metric Information")),
-      p("Confusion matrices and performance metrics are shown below. Use the dropdown list to select the comparison you would like to view. Use the 'Download' button to open the download menu."),
+      p("Confusion matrices and performance metrics are shown below. Use the dropdown list to select the comparison you would like to view. Use the 'Download' button to open the download menu. Check the \"Show flat table\" checkbox to show a table with all comparisons."),
       actionButton(inputId = "download_compare_tables", label = "Download Tables", `data-bs-toggle` = "modal", `data-bs-target` = "#download_compare_tables_modal"),
       checkboxInput(inputId = "compare_show_flat", label = "Show flat table")
     ),
@@ -1044,7 +1044,8 @@ tab_compare <- tabPanel(
       div(
         class = "ind1",
         h3("Create Figures", info_button("info_comp_fig", "Comparison figures information")),
-        p("Use the first dropdown list to select the comparison you want to visualize. Use the second dropdown list to select quantitative data columns from your uploaded data set. Hover over the figure and click the camera icon in the top right corner to download the figure.")
+        p("An interactive figure summarizing results is shown below. Use the dropdown lists to select variables to display. The figure will updated when you change the selections. Use the first dropdown list to select the comparison to visualize. Use the second dropdown list to select and visualize a quantitative data column from your uploaded data set. Hover over the points to view details about a specific result."),
+        p("If chemical identifiers have not been specified before, a third dropdown list will be displayed. Use this dropdown list to select chemical identifiers to add to the hover labels in the scatterplot.")
       ),
       div(
         class = "ind1",
