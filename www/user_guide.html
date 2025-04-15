@@ -82,6 +82,7 @@
         <li><a href="#bl-step-3">Step 3: Select Data Columns for Predictions</a></li>
         <li><a href="#bl-step-4">Step 4: Review Selection</a></li>
         <li><a href="#bl-step-5">Step 5: Results</a></li>
+        <li><a href="#bl-compare">Compare</a></li>
     </ul>
     </li>
     <li><a href="#references">References</a></li>
@@ -90,6 +91,15 @@
 </ul>
 
 <h2 id="release-notes">Release Notes</h2>
+<h3>01 May 2025</h3>
+<p>
+  Version 2.1
+  <ul>
+    <li>A demo data set was added for the borderline workflow.</li>
+    <li>Results from the borderline workflow can be evaluated in the performance section.</li>
+    <li>Additional summary figures added to performance section.</li>
+  </ul>
+</p>
 <h3>26 October 2024</h3>
 <p>
     Version 2.0
@@ -105,11 +115,13 @@
 <h3>20 October 2023</h3>
 <p>
     Version 1.1
+    <ul>
     <li>A demo data set has been added so that users may try using the app without the need to upload their own data.</li>
     <li>A supplemental module has been added which allows derivation of confusion matrices and performance metrics against user-supplied reference data.</li>
     <li>Columns in the results table can be hidden allowing users to view only their columns of interest.</li>
     <li>User does not need to reload app to upload new data.</li>
     <li>Collapsible panels, updated scroll behavior.</li>
+  </ul>
 </p>
 
 <h2 id = "about">About</h2>
@@ -146,7 +158,7 @@
 </p>
 <p>TG 497 and the EPA's draft policy only define DPRA, KeratinoSens, and h-CLAT as acceptable TG information sources, however additional validated test methods from the TGs are relevant to DASS (Kleinstreuer 2018) and are included in the DASS App. In addition, one of the DAs, the Integrated Testing Strategy (ITS) method, integrates an in silico prediction of skin sensitization potential..</p>
 <p>The app runs the DA analysis using data from a file you provide; data templates are provided to help you correctly format your data. No data is provided by or retained by the app, and it can thus be used to analyze data from substances in development.</p>
-<p>This app was developed by the National Toxicology Program Interagency Center for the Evaluation of Alternative Toxicological Methods (NICEATM). Version 2.0 was tested on Windows 11 using R v.4.4.1 (R Core Team 2024) and Google Chrome v.129. The DASS App is available at <a href = "https://ntp.niehs.nih.gov/go/952311">https://ntp.niehs.nih.gov/go/952311</a>.</p>
+<p>This app was developed by the National Toxicology Program Interagency Center for the Evaluation of Alternative Toxicological Methods (NICEATM). Version 2.1 was tested on Windows 11 using R v.4.4.1 (R Core Team 2024) and Google Chrome v.129. The DASS App is available at <a href = "https://ntp.niehs.nih.gov/go/952311">https://ntp.niehs.nih.gov/go/952311</a>.</p>
 <p>For more information or to report a problem with the app, please contact NICEATM at <a href = "mailto:ICE-support@niehs.nih.gov">ICE-support@niehs.nih.gov</a>.</p>
 
 <h2 id = "step-1">Step 1: Select Defined Approach</h2>
@@ -339,7 +351,8 @@
     <li>Binary hazard calls should only contain the values:
       <ul>
         <li>“sensitizer”, “sensitiser”, “active”, “a”, “positive”, “pos”, “p”, or “1” to indicate positive outcomes.</li>
-        <li>“non-sensitizer”, “non-sensitiser”, “inactive”, “i”, “negative”, “neg”, “n”, or “0” to indicate positive outcomes. Values are not case sensitive.</li>
+        <li>“non-sensitizer”, “non-sensitiser”, “inactive”, “i”, “negative”, “neg”, “n”, or “0” to indicate positive outcomes.</li>
+        <li>For the the 2o3 DA, "borderline", "border", or "bl" to indicate borderline results.</li>
       </ul>
     </li>
     <li>KE1 depletion values should only contain numbers. Values with symbols (e.g., “&lt;2000”) are not valid.</li>
@@ -356,10 +369,9 @@
       </ul>
     </li>
   </ol>
-
+<p>Values are not case sensitive.</p>
 <h4>Column Names</h4>
 <p>Columns do not need to have specific names. However, if you use the column names in Table 3, the data columns will be automatically selected for you in the next step. </p>  
-
 <table>
     <tr>
       <th>Required Endpoint</th>
@@ -500,13 +512,13 @@
     <p>After the DA has been applied, a table will display your input data with the DASS predictions added as new columns. By default, the table only shows the first three columns of your data, the selected input columns, and the DA results.  To hide or show specific columns, click on “Column Visibility” and use the menu to select or deselect columns. You can also use the Download Results dropdown menu to download the results table as a tab-delimited or Excel file, which may allow easier viewing of the entire table.</p>
     <ul>
     <li>The data columns that were selected are highlighted in yellow. The column names are annotated with an asterisk. These data columns are reformatted for use in the DAs.</li>
-    <li>The reformatted columns are appended to the original data columns and highlighted in pink. The corresponding column names begin with “input”. For values that were calculated by the app, the column name will also end with “calculated”. These columns are hidden by default. </li>
+    <li>The reformatted columns are appended to the original data columns and highlighted in pink. The corresponding column names end with “input”. For values that were calculated by the app, the column name will end with “calculated_input”. These columns are hidden by default. </li>
     <li>The DASS predictions are appended to the uploaded data and are highlighted in blue. If the ITS DA was selected, then the individual and total ITS scores are also appended and highlighted in blue. </li>
     </ul>
 
     <p>It may be useful to review the selected columns against the reformatted columns to ensure your data were properly interpreted, especially if the DAs were run with flagged data. The data are reformatted as:</p>
     <ul>
-    <li>Binary hazard calls are transformed to "0" for negative outcomes and "1" for positive outcomes.</li>
+    <li>Binary hazard calls are transformed to "0" for negative outcomes, "1" for positive outcomes, and "-1" for borderline outcomes.</li>
     <li>Invalid numeric values are replaced with "NA".</li>
     <li>For the ITS, negative KE3 results are replaced with "Inf".</li>
     <li>For the ITS, applicability domain values are transformed to "0" to indicate "out of domain" and "1" to indicate "in domain".</li>
@@ -522,8 +534,9 @@
 <p>If your data contain chemicals in the reference lists, you can compare the reference data against the DA predictions by providing chemical identifiers. Specify the type of chemical identifier in your data and the column containing the chemical identifiers in your data file. When you are done setting up the reference data, click “Compare Data” to generate results.</p>
 
 <h4>Output</h4>
-<p>The output shows confusion matrices and performance metrics for the selected comparisons. If you specified more than one reference data set, two tables can be shown at a time. The tables are uniquely labeled by the names of the selected reference data used for comparison. Use the “Select Reference” dropdown lists to select the output you want to view. Click the “Download Tables” button to open a menu with options for exporting the results. Confusion matrices and performance metrics can be downloaded as a PDF. The results can also be downloaded in tabular format as an Excel file or text file.</p>  
-<p>Below the table, a bar chart summarizes the results of one comparison. If you specified more than one comparison, use the first dropdown list to select the comparison you want to view. If you provide quantitative data in your data input, you can generate density plots and scatter plots of the quantitative data, overlayed with the comparison results. Use the second dropdown list to select a column containing quantitative values in your data. The figure will update based on your selection. </p>   
+<p>The output shows confusion matrices and performance metrics for the selected comparisons. If you specified more than one reference data set, two tables can be shown at a time. The tables are uniquely labeled by the names of the selected reference data used for comparison. Use the “Select Reference” dropdown lists to select the output you want to view. Toggle the "Show flat table" checkbox to show a table with all comparison results. This  may be useful if there are more than two comparisons. "Click the “Download Tables” button to open a menu with options for exporting the results. Confusion matrices and performance metrics can be downloaded as a PDF. The results can also be downloaded in tabular format as an Excel file or text file.</p>  
+<p>Below the table, a bar chart summarizes the results of all comparisons. Use the first dropdown list to select the comparison you want to view. If you provide quantitative data in your data input, you can generate density plots and scatter plots of the quantitative data, overlayed with the comparison results. Use the second dropdown list to select a column containing quantitative values in your data. The figure will update based on your selection. </p>  
+<p>If you did not provide chemical identifiers in the setup, a third dropdown list will allow you to select a column from your data with chemical identifiers that will be added to the hover labels in the scatterplot.</p> 
 <p>When you hover over the figure, a tool bar appears in the top right corner displaying several icons for interacting with the figure. </p>   
 <ul>
 <li>Camera: Download the figure as a PNG.</li>
@@ -537,28 +550,110 @@
 
 <h5>Performance Metric Derivation</h5>
 <h6>Hazard</h6>
-<ul>
-<li>N = The number of valid reference values</li>
-<li>Accuracy = (True positives + True negatives) / (All positives + All negatives)</li>
-<li>Balanced Accuracy = (True positive rate + True negative rate)/2</li>
-<li>F1 Score = (2×True positives) / (2×True positives + False positives + False negatives)</li>
-<li>True Positive Rate (Sensitivity) = True positives / All positives</li>
-<li>False Positive Rate = False positives / All positives</li>
-<li>True Negative Rate (Specificity) = True negatives / All negatives</li>
-<li>False Negative Rate = False negatives / All negatives</li>
-</ul>
+<table>
+  <thead>
+    <tr>
+      <th scope="col">Metric</th>
+      <th scope="col">Definition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>N</td>
+      <td>The number of valid reference-prediction pairs for comparison</td>
+    </tr>
+    <tr>
+      <td>True Positive</td>
+      <td>The number of true positive DA predictions</td>
+    </tr>
+    <tr>
+      <td>False Positive</td>
+      <td>The number of false positive DA predictions</td>
+    </tr>
+    <tr>
+      <td>False Negative</td>
+      <td>The number of false negative DA predictions</td>
+    </tr>
+    <tr>
+      <td>True Negative</td>
+      <td>The number of true negative DA predictions</td>
+    </tr>
+    <tr>
+      <td>Borderline</td>
+      <td>The number of borderline DA predictions</td>
+    </tr>
+    <tr>
+      <td>Inconclusive</td>
+      <td>The number of inconclusive DA predictions</td>
+    </tr>
+    <tr>
+      <td>True Positive Rate (Sensitivity)</td>
+      <td>True positives / All positives</td>
+    </tr>
+    <tr>
+      <td>True Negative Rate (Specificity)</td>
+      <td>True negatives / All negatives</td>
+    </tr>
+    <tr>
+      <td>Balanced Accuracy</td>
+      <td>(True positive rate + True negative rate)/2</td>
+    </tr>
+    <tr>
+      <td>Accuracy</td>
+      <td>(True positives + True negatives) / (All positives + All negatives)</td>
+    </tr>
+    <tr>
+      <td>F1 Score</td>
+      <td>(2×True positives) / (2×True positives + False positives + False negatives)</td>
+    </tr>
+  </tbody>
+</table>
+
 <h6>Potency</h6>
-<ul>
-<li>N = The number of valid reference values</li>
-<li>Accuracy = The percentage of predicted values equal to reference values</li>
-<li>Overpredicted = The percentage of predicted values with a more potent GHS category than the corresponding reference value</li>
-<li>Underpredicted = The percentage of predicted values with a less potent GHS category than the corresponding reference value</li>
-</ul>
+<table>
+  <thead>
+    <tr>
+      <th scope="col">Metric</th>
+      <th scope="col">Definition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>N</td>
+      <td>The number of valid reference-prediction pairs for comparison</td>
+    </tr>
+    <tr>
+      <td>Accuracy</td>
+      <td>The percentage of predicted values equal to reference values</td>
+    </tr>
+    <tr>
+      <td>Overpredicted</td>
+      <td>The percentage of predicted values with a more potent GHS category than the corresponding reference value</td>
+    </tr>
+    <tr>
+      <td>Underpredicted</td>
+      <td>The percentage of predicted values with a less potent GHS category than the corresponding reference value</td>
+    </tr>
+    <tr>
+      <td>Sensitivity</td>
+      <td>Among reference values with a given GHS category, the percentage of predicted values equal to the GHS category.</td>
+    </tr>
+    <tr>
+      <td>Specificity</td>
+      <td>Among reference values not equal to a given GHS category, the percentage of predicted values not equal to the GHS category.</td>
+    </tr>
+    <tr>
+      <td>Balanced Accuracy</td>
+      <td>(Sensitivity + Specificity)/2</td>
+    </tr>
+  </tbody>
+</table>
 
 <h2 id="borderline-workflow">Borderline Workflow (2o3)</h2>
 <p>The DASS App enables you to apply borderline decision trees to your data prior to running the 2o3. Borderline evaluation is available for the ADRA, DPRA, GARDskin, h-CLAT, IL8-Luc, KeratinoSens, LuSens, and U-SENS test methods. </p>
 <h3 id="bl-step-2">Step 2: Upload Data</h3>
 <p>To upload the data, first click “Browse” and select your file using the dialog box that opens. Then click “Upload” to load the data into the app. Prior to uploading data, ensure that the data meet the data and formatting requirements.</p>
+<p>The app provides a demo data set that can be used to build an understanding of how to use the app. Check the box labeled “Use demo data” to load the demo data set.</p>
 <h4>Data and Formatting Requirements</h4>
 <h5>General</h5>
 <ol>
@@ -647,6 +742,24 @@
 
 <p>For the h-CLAT, IL-8 Luc and U-SENS assays, chemicals should have data from at least two runs.</p>
 
+<h4>Data for Comparison</h4>
+<p>If you would like to compare the DA results against reference data, you can provide hazard reference data in an additional worksheet in your input file. The DASS App can generate performance metrics and figures comparing the DA results with your reference data. You may also provide quantitative data to generate contextualized figures of the comparison results. </p>  
+
+<ul>
+  <li>
+    The worksheet must contain a chemical identifier column to map to the DA results.
+  </li>
+    <li>
+        Binary hazard calls should only contain the values:
+        <ul>
+            <li>“sensitizer”, “sensitiser”, “active”, “a”, “positive”, “pos”, “p”, or “1” to indicate positive outcomes.</li>
+            <li>“non-sensitizer”, “non-sensitiser”, “inactive”, “i”, “negative”, “neg”, “n”, or “0” to indicate positive outcomes. Values are not case sensitive.</li>
+        </ul>
+    </li>
+    <li>Quantitative data should only contain numeric values. No symbols.</li>
+</ul>
+
+
 <h4>Data Template</h4>
 <p>A downloadable data template is provided in Excel format. The template is filled with example data that must be deleted before entering your data. The template contains one worksheet for each assay available. Within each worksheet, all required data columns are shown. The chemical identifier column has CASRNs listed, but you may enter any identifier of your choice. The same chemical must have the same identifier across the three worksheets. You can delete worksheets for the remaining assays, but that is not required. </p>
 <p>Use of the template is not required.</p>
@@ -672,6 +785,92 @@
 <h3 id="bl-step-5">Step 5: Results</h3>
 <p>After the DA has been applied, a table will display the overall assay outcomes and 2o3 hazard prediction for each chemical. Below the DA results, tables for each KE assay display the individual run outcomes from the assay decision tree. If KeratinoSens was used, a KE2 table will not be shown. More details about the decision trees can be found in Appendix 1.</p>
 <p>Click the “Download Results” button to download an Excel file with the displayed tables.</p>
+
+<h3 id="bl-compare">Compare</h3>
+<h4>Input</h4>
+<p>You can compare the DA predictions against reference data. If you provided reference data in your data file, use the dropdown lists to select the worksheet and column(s) containing the reference data. You can also compare the DA results against reference chemical lists that were used in the development of GL 497. </p>
+<ul>
+<li>OECD Defined Approach to Skin Sensitization: Human (R) contains hazard and potency results from human predictive patch test data for 66 chemicals.</li>
+<li>OECD Defined Approach to Skin Sensitization: LLNA (R) contains hazard and potency results from the murine local lymph node assay for 156 chemicals.</li>
+</ul>
+<p>If your data contain chemicals in the reference lists, you can compare the reference data against the DA predictions by specifying the type of chemical identifier used in your data file. When you are done setting up the reference data, click “Compare Data” to generate results.</p>
+
+<h4>Output</h4>
+<p>The output shows confusion matrices and performance metrics for the selected comparisons. If you specified more than one reference data set, two tables can be shown at a time. The tables are uniquely labeled by the names of the selected reference data used for comparison. Use the “Select Reference” dropdown lists to select the output you want to view. Toggle the "Show flat table" checkbox to show a table with all comparison results. This  may be useful if there are more than two comparisons. "Click the “Download Tables” button to open a menu with options for exporting the results. Confusion matrices and performance metrics can be downloaded as a PDF. The results can also be downloaded in tabular format as an Excel file or text file.</p>  
+<p>Below the table, a bar chart summarizes the results of all comparisons. Use the first dropdown list to select the comparison you want to view. If you provide quantitative data in your data input, you can generate density plots and scatter plots of the quantitative data, overlayed with the comparison results. Use the second dropdown list to select a column containing quantitative values in your data. The figure will update based on your selection. </p>  
+<p>If you did not provide chemical identifiers in the setup, a third dropdown list will allow you to select a column from your data with chemical identifiers that will be added to the hover labels in the scatterplot.</p> 
+<p>When you hover over the figure, a tool bar appears in the top right corner displaying several icons for interacting with the figure. </p>   
+<ul>
+<li>Camera: Download the figure as a PNG.</li>
+<li>Zoom (magnifying glass): Zoom into an area of interest by clicking and dragging a box.</li>
+<li>Pan (four-sided arrow): Click and drag to navigate across the figure. Especially helpful when zoomed in.</li>
+<li>Zoom in (+)</li>
+<li>Zoom out (-)</li>
+<li>Reset axes (house): Readjust axes to the original scale.</li>
+<li>The last two icons let you choose what information is shown when you hover over the figure.</li>
+</ul>
+
+<h5>Performance Metric Derivation</h5>
+<h6>Hazard</h6>
+<table>
+  <thead>
+    <tr>
+      <th scope="col">Metric</th>
+      <th scope="col">Definition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>N</td>
+      <td>The number of valid reference-prediction pairs for comparison</td>
+    </tr>
+    <tr>
+      <td>True Positive</td>
+      <td>The number of true positive DA predictions</td>
+    </tr>
+    <tr>
+      <td>False Positive</td>
+      <td>The number of false positive DA predictions</td>
+    </tr>
+    <tr>
+      <td>False Negative</td>
+      <td>The number of false negative DA predictions</td>
+    </tr>
+    <tr>
+      <td>True Negative</td>
+      <td>The number of true negative DA predictions</td>
+    </tr>
+    <tr>
+      <td>Borderline</td>
+      <td>The number of borderline DA predictions</td>
+    </tr>
+    <tr>
+      <td>Inconclusive</td>
+      <td>The number of inconclusive DA predictions</td>
+    </tr>
+    <tr>
+      <td>True Positive Rate (Sensitivity)</td>
+      <td>True positives / All positives</td>
+    </tr>
+    <tr>
+      <td>True Negative Rate (Specificity)</td>
+      <td>True negatives / All negatives</td>
+    </tr>
+    <tr>
+      <td>Balanced Accuracy</td>
+      <td>(True positive rate + True negative rate)/2</td>
+    </tr>
+    <tr>
+      <td>Accuracy</td>
+      <td>(True positives + True negatives) / (All positives + All negatives)</td>
+    </tr>
+    <tr>
+      <td>F1 Score</td>
+      <td>(2×True positives) / (2×True positives + False positives + False negatives)</td>
+    </tr>
+  </tbody>
+</table>
+
 
 <h2 id="references">References</h2>
 <ol>
