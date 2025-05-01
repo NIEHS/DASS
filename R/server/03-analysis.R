@@ -242,7 +242,7 @@ export_std <- reactive({
   
   summary_df <- data.frame(
     `Required Endpoint` = c("DASS App", "Date Run", "", "Required Endpoint", "DA"),
-    `Selection` = c("v2.0", format.Date(Sys.Date()), "", "Selection", da_dict[[da()]]$abbrev),
+    `Selection` = c("v2.1", format.Date(Sys.Date()), "", "Selection", da_dict[[da()]]$abbrev),
     Flagged = c(rep("", 3), "Flagged", ""),
     check.names = F
   )
@@ -688,7 +688,7 @@ output$downloadres_bl_xl <- downloadHandler(
     
     summary_df <- data.frame(
       Endpoint = c("DASS App", "Date Run", "", "Required Endpoint"),
-      `Selected Column` = c("v2.0", format.Date(Sys.Date()), "", "Selection"),
+      `Selected Column` = c("v2.1", format.Date(Sys.Date()), "", "Selection"),
       Flagged = c(rep("", 3), "Flagged"),
       check.names = F
     )

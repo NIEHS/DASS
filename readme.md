@@ -4,7 +4,7 @@
 - Contact information: ICE-support@niehs.nih.gov
 
 ## Version
-- Version 2.0 (October 2024)  
+- Version 2.1 (May 2025)  
 
 ## About
 
@@ -17,18 +17,16 @@ Web application: https://rstudio.niehs.nih.gov/dass/
 Tested on R v.4.4.1<br>
 
 ><b>R packages</b><br>
--- data.table<br>
+-- bslib<br>
 -- DT<br>
 -- ggplot2<br>
 -- grid<br>
 -- gridExtra<br>
 -- openxlsx<br>
 -- plotly<br>
--- readxl<br>
 -- shiny<br>
--- shinyBS<br>
--- shinyjqui<br>
 -- shinyjs<br>
+-- shinyWidgets<br>
 
 ### LICENSE
 MIT

@@ -3,9 +3,9 @@
 # Original Creator: Kim To
 # Contact Information: ICE-support@niehs.nih.gov
 # Date Created: 2021-12-03
-# Last Modified: 2025-03-27
+# Last Modified: 2025-05-01
 # License: MIT
-# Version: 2.0.2
+# Version: 2.1
 # Description: Loads in files and builds DASS App
 #=============================================================================#
 
@@ -20,6 +20,7 @@ require(ggplot2)
 require(grid)
 require(gridExtra)
 require(plotly)
+require(readxl)
 
 options(DT.TOJSON_ARGS = list(na = "string")) # show NA and Inf in DT
 
